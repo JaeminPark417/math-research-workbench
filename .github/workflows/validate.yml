@@ -1,0 +1,56 @@
+name: Validate workbench
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    if: github.repository == 'JaeminPark417/math-research-workbench'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate public release
+        run: |
+          python scripts/validate-release.py
+          python scripts/remote-state.py
+          python scripts/setup-state.py
+
+      - name: Lint empty research workspace
+        run: python scripts/vault-lint.py
+
+      - name: Check and run POSIX doctor
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          bash -n scripts/doctor.sh
+          bash -n scripts/compile-tex.sh
+          bash scripts/doctor.sh
+
+      - name: Check and run PowerShell tools
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path scripts/compile-tex.ps1),
+            [ref]$tokens,
+            [ref]$errors
+          ) | Out-Null
+          if ($errors.Count -gt 0) { $errors | Write-Error; exit 1 }
+          powershell -NoProfile -ExecutionPolicy Bypass -File scripts/doctor.ps1

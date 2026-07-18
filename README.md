@@ -1,0 +1,141 @@
+# Math Research Workbench
+
+**A beginner-friendly Codex workspace for mathematical research.**
+
+[한국어 안내](README.ko.md) · [Detailed setup](GETTING_STARTED.md)
+
+Math Research Workbench helps mathematicians organize ideas, paper notes,
+proof work, and projects in ordinary Markdown files. It is designed for people
+who have used ChatGPT but have never used Git, a terminal, or a coding agent.
+No programming experience is required.
+
+This public repository contains only the reusable framework. It does **not**
+contain anyone's research notes, personal paths, credentials, or experimental
+machine-learning setup.
+
+## Start here
+
+The recommended route is a release ZIP. GitHub is optional.
+
+1. On macOS or Windows, install the
+   [ChatGPT desktop app](https://chatgpt.com/download/) and sign in. Linux users
+   currently need the [Codex CLI](https://developers.openai.com/codex/cli/) and
+   basic terminal familiarity.
+2. Download the ZIP from the
+   [latest release](https://github.com/JaeminPark417/math-research-workbench/releases/latest).
+3. Extract it into a local folder that is **not** managed by iCloud Drive,
+   OneDrive, Dropbox, or Google Drive. A folder named `MathResearch` directly
+   inside your home folder is usually a good choice.
+4. In the desktop app, select **Codex** and open the extracted folder.
+5. Send this message:
+
+   ```text
+   Start setup
+   ```
+
+Opening a folder gives Codex access to the workspace, but it does not send a
+message or begin setup by itself. You must send **Start setup** (or invoke
+`$first-run`).
+
+Codex then asks one question at a time about:
+
+- your preferred language;
+- optional private GitHub backup for text files;
+- optional storage for PDFs and other large files;
+- optional Obsidian installation and plugins; and
+- Overleaf or optional local TeX compilation.
+
+Nothing optional is required. Codex shows the exact effect and asks for
+approval before installing software, changing an account, creating a remote
+repository, or writing outside this folder.
+
+For screen-by-screen instructions and a glossary, read
+[GETTING_STARTED.md](GETTING_STARTED.md).
+
+## What is inside?
+
+| Folder | Purpose |
+| --- | --- |
+| `inbox/` | Unsorted material you want Codex to help classify |
+| `ideas/` | Questions, conjectures, and evolving research directions |
+| `papers/` | Bibliographic and reading notes; not copyrighted PDFs |
+| `notes/` | Reusable definitions, lemmas, examples, and explanations |
+| `projects/` | Active research, proof work, session notes, and drafts |
+| `files/` | Local large-file fallback; excluded from GitHub by default |
+| `meta/` | Conventions, schemas, safety rules, and templates |
+
+The files remain readable without Codex or Obsidian. Obsidian is an optional
+visual editor for the same Markdown files.
+
+## Useful first requests
+
+You can write naturally. For example:
+
+```text
+Put this research question into the inbox and help me formulate it precisely.
+```
+
+```text
+Read this arXiv link, verify the bibliographic details, and create a paper note.
+```
+
+```text
+Audit this proof. Separate established steps, gaps, and possible repairs.
+Do not call it verified based only on your own review.
+```
+
+```text
+Create a new project for this problem and explain every folder you create.
+```
+
+See [the daily workflow](docs/daily-workflow.md) for more examples.
+
+## Important safety defaults
+
+- Unpublished research repositories are **private by default**.
+- GitHub is not an automatic backup. Only changes that have been committed and
+  pushed appear there; ask Codex to explain and confirm each synchronization.
+- The workbench repository should not live inside a cloud-sync folder. Use an
+  external drive service for PDFs and other binaries instead.
+- Codex never needs your password, access token, private key, or browser cookie
+  pasted into chat.
+- Community plugins are optional third-party code. Install them one at a time
+  only after reading the explanation in [the plugin guide](docs/obsidian-plugins.md).
+- Obsidian can render mathematical notation without a local TeX installation.
+  Overleaf is the simplest default for compiling manuscripts.
+- A language-model review is not a proof. References and final mathematical
+  claims require independent verification.
+- A local folder does not make Codex an offline tool. Material needed for a
+  request may be sent to OpenAI for processing. Check your institution's rules
+  before using confidential collaboration, referee, student, patient, or
+  restricted material, and review your account's
+  [Data Controls](https://help.openai.com/en/articles/7730893-data-controls-faq).
+
+## Local desktop versus cloud
+
+On macOS or Windows, use the ChatGPT desktop app for the beginner first-run
+flow. It can work with a local folder when you grant access. There is currently
+no Linux desktop app; Linux users need the Codex CLI, which assumes some
+terminal familiarity; follow the current
+[official CLI guide](https://developers.openai.com/codex/cli/). A hosted
+Codex/cloud checkout cannot install Obsidian or
+TeX on your computer, inspect a local cloud-drive folder, or preserve this
+machine's ignored setup file. In that situation the workbench remains usable as
+Markdown, but Codex will point you back to the desktop setup guide instead of
+pretending local setup is complete. See OpenAI's
+[current desktop and Codex overview](https://help.openai.com/en/articles/20001275).
+
+The Codex CLI is supported for experienced users, but it is not required.
+
+## Help and project information
+
+- [Detailed setup](GETTING_STARTED.md)
+- [Obsidian guide](docs/obsidian.md)
+- [Troubleshooting](docs/troubleshooting.md)
+- [Updating safely](docs/updating.md)
+- [Security policy](SECURITY.md)
+- [Contributing](CONTRIBUTING.md)
+- [License and content notice](CONTENT-NOTICE.md)
+
+Math Research Workbench is an independent project and is not affiliated with
+OpenAI, Obsidian, GitHub, Overleaf, or any cloud-storage provider.

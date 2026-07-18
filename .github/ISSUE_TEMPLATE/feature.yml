@@ -1,0 +1,37 @@
+name: Feature request
+description: Suggest a beginner-friendly improvement to the public framework
+title: "[Feature]: "
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe the general workflow only. Do not attach confidential research or personal configuration.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      description: Explain the problem from a mathematician's point of view, without assuming software expertise.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Suggested behavior
+      description: What should a beginner see or be able to do?
+    validations:
+      required: true
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Area
+      options:
+        - First-run setup
+        - Research notes and templates
+        - Obsidian
+        - TeX
+        - GitHub backup
+        - Documentation
+        - Other
+    validations:
+      required: true

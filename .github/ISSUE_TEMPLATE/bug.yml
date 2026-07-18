@@ -1,0 +1,41 @@
+name: Bug report
+description: Report a reproducible problem in the public workbench framework
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include unpublished mathematics, private paths, credentials, tokens, or screenshots containing personal information.
+  - type: input
+    id: version
+    attributes:
+      label: Release
+      description: Which Math Research Workbench release are you using?
+      placeholder: Read the VERSION file, for example v0.1.0
+    validations:
+      required: true
+  - type: dropdown
+    id: operating-system
+    attributes:
+      label: Operating system
+      options:
+        - Windows
+        - macOS
+        - Linux
+        - Hosted/cloud checkout
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Describe the smallest reproducible example with private details removed.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+    validations:
+      required: true

@@ -1,0 +1,79 @@
+# Machine-specific setup
+.harness/local*
+
+# Local files and attachments (keep the explanation)
+files/*
+!files/README.md
+
+# Common research binaries (store them under files/ or external storage)
+*.[Pp][Dd][Ff]
+*.[Dd][Oo][Cc]
+*.[Dd][Oo][Cc][Xx]
+*.[Xx][Ll][Ss]
+*.[Xx][Ll][Ss][Xx]
+*.[Pp][Pp][Tt]
+*.[Pp][Pp][Tt][Xx]
+*.[Zz][Ii][Pp]
+*.7[Zz]
+*.[Tt][Aa][Rr]
+*.[Tt][Aa][Rr].[Gg][Zz]
+*.[Tt][Gg][Zz]
+*.[Pp][Nn][Gg]
+*.[Jj][Pp][Gg]
+*.[Jj][Pp][Ee][Gg]
+*.[Tt][Ii][Ff]
+*.[Tt][Ii][Ff][Ff]
+*.[Hh][Ee][Ii][Cc]
+*.[Mm][Pp]3
+*.[Ww][Aa][Vv]
+*.[Mm][Pp]4
+*.[Mm][Oo][Vv]
+
+# Obsidian device state and third-party code (keep safe shared defaults)
+.obsidian/*
+!.obsidian/app.json
+!.obsidian/core-plugins.json
+!.obsidian/templates.json
+
+# Secrets and credentials
+.env*
+!.env.example
+secrets/
+*.key
+*.pem
+*.p12
+*.pfx
+
+# TeX build output
+build/
+**/build/
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.run.xml
+*.synctex.gz
+*.toc
+
+# Python and tooling caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+
+# Editors and operating systems
+.DS_Store
+Thumbs.db
+Desktop.ini
+.idea/
+.vscode/
+*~
+*.swp
+
+# Conflict copies from sync clients
+* (conflicted copy *)
+*.conflicted-copy.*

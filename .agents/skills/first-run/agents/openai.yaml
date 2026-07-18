@@ -1,0 +1,4 @@
+interface:
+  display_name: "First-run setup"
+  short_description: "Set up a safe mathematics research workspace"
+  default_prompt: "Use $first-run to guide me through setting up this mathematics research workspace."

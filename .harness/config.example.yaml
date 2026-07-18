@@ -1,0 +1,22 @@
+setup_version: 1
+status: in_progress
+language: ""
+github:
+  choice: ""
+  repository: ""
+  visibility: ""
+external_storage:
+  choice: ""
+  provider: ""
+  root: ""
+obsidian:
+  choice: ""
+  installed: null
+  plugin_setup: ""
+  pending_plugin: ""
+  plugin_profile: ""
+  community_plugins: []
+tex:
+  choice: ""
+  engine: ""
+completed_at: ""
