@@ -24,9 +24,11 @@ def capture(*args: str) -> tuple[int, str]:
             stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL,
             text=True,
+            encoding="utf-8",
+            errors="strict",
             timeout=15,
         )
-    except (OSError, subprocess.SubprocessError):
+    except (OSError, subprocess.SubprocessError, UnicodeError):
         return 1, ""
     return result.returncode, result.stdout.strip()
 
@@ -40,7 +42,35 @@ def github_repository(raw: str) -> tuple[str, str] | None:
             parsed = urlsplit(value)
         except ValueError:
             return None
-        if (parsed.hostname or "").lower() != "github.com":
+        try:
+            port = parsed.port
+        except ValueError:
+            return None
+        scheme = parsed.scheme.casefold()
+        safe_https = (
+            scheme == "https"
+            and parsed.username is None
+            and parsed.password is None
+            and port is None
+        )
+        safe_ssh = (
+            scheme == "ssh"
+            and parsed.username == "git"
+            and parsed.password is None
+            and port in {None, 22}
+        )
+        safe_git = (
+            scheme == "git"
+            and parsed.username is None
+            and parsed.password is None
+            and port is None
+        )
+        if (
+            (parsed.hostname or "").lower() != "github.com"
+            or not (safe_https or safe_ssh or safe_git)
+            or parsed.query
+            or parsed.fragment
+        ):
             return None
         path = parsed.path.lstrip("/")
     if path.endswith(".git"):

@@ -1,29 +1,34 @@
 # GitHub setup reference
 
 Use this reference only after the user chooses GitHub. Explain every outcome in
-plain language and keep the research repository private unless the user clearly
-chooses otherwise after a publication-risk warning.
+plain language. This beginner backup flow requires a repository whose verified
+visibility is exactly `private`; publishing research is a separate workflow.
 
 ## Read-only checks
 
-Run only available checks and summarize without exposing credentials:
+Use the workbench's redacted helpers and summarize outcomes without exposing
+credentials or account identifiers:
 
 ```text
-git rev-parse --is-inside-work-tree
-git status --short
-git remote
-git config --get user.name
-git config --get user.email
-gh auth status
-gh repo view --json nameWithOwner,visibility,url
+bash scripts/doctor.sh                         # macOS/Linux
+powershell -NoProfile -File scripts/doctor.ps1 # Windows
+python3 scripts/remote-state.py
 ```
 
-`gh auth status` may identify the account but must not print a token. Never use
-debug or verbose authentication output. Never print raw Git remote configuration
-or run `git remote -v`: an HTTPS remote can contain a credential. Prefer the
-canonical, credential-free URL returned by `gh repo view`. For a non-GitHub
-remote, strip URL user information, query strings, and fragments before showing
-the host and path; if safe redaction is uncertain, show only the remote name.
+The doctor suppresses Git author and GitHub authentication values and reports
+only whether they are configured. Never run an unsuppressed `git config --get
+user.name`, `git config --get user.email`, or `gh auth status`. Never print raw
+Git remote configuration or run `git remote -v`: an HTTPS remote can contain a
+credential. `remote-state.py` reports only a redacted origin class and verified
+visibility. If a new repository needs an owner name, ask the user to type the
+GitHub owner they intend to use; do not discover it from raw authentication
+output.
+
+After GitHub setup is explicitly selected, `git status --short` and `git
+remote` may be used to show the relative tracked-file state and remote names;
+neither command prints a remote URL. Use `gh repo view` only with output limited
+to the user-approved repository's `visibility` after its owner/name is already
+known. Do not request `nameWithOwner`, a raw URL, or account fields.
 
 ## Acquisition cases
 
@@ -44,9 +49,12 @@ the host and path; if safe redaction is uncertain, show only the remote name.
 
 ### GitHub template: personal remote already present
 
-Inspect the remote owner and visibility. If it belongs to the user and is
-private, keep it. If it is public, warn before any research is added and offer
-to change visibility only after explicit approval.
+Inspect the remote owner and visibility. If it belongs to the user and reports
+exactly `private`, keep it. For `public`, `internal`, or `unknown`, warn before
+any research is added and offer to create or select a private destination.
+GitHub's `internal` visibility may expose a repository across an organization;
+it is not a private research backup. Change visibility only after explicit
+approval.
 
 ### GitHub template: private repository downloaded as a ZIP
 
@@ -96,5 +104,5 @@ changes appear online. Before each first-run synchronization, explain the file
 list, verify that the destination is the user's private research repository,
 and obtain approval. Also inspect Markdown links and embeds plus `files/` for
 ignored attachments, and list the relative attachments that will **not** be
-included. Do not describe unsynchronized or ignored files as backed up. If
-visibility is unknown, do not commit or push until it is confirmed private.
+included. Do not describe unsynchronized or ignored files as backed up. Unless
+visibility reports exactly `private`, do not commit or push research.

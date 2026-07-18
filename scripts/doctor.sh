@@ -62,10 +62,27 @@ else
   info "GitHub CLI is not installed; GitHub backup can be configured later."
 fi
 
-if command -v python3 >/dev/null 2>&1 || command -v python >/dev/null 2>&1; then
-  pass "Python is available for redacted setup diagnostics."
+if command -v claude >/dev/null 2>&1; then
+  pass "Claude Code is available."
+  info "Claude login readiness is checked privately only after Claude review is selected."
 else
-  info "Python was not detected. Markdown still works; remote visibility must be treated as unknown unless GitHub CLI can verify it."
+  info "Claude Code was not detected; Claude review is optional."
+fi
+
+info "ChatGPT Browser sign-in is not inferred by this shell check; verify it inside Codex's in-app Browser only when selected."
+
+python_command=""
+for candidate in python3 python; do
+  if command -v "$candidate" >/dev/null 2>&1 &&
+     "$candidate" -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 9) else 1)' >/dev/null 2>&1; then
+    python_command=$candidate
+    break
+  fi
+done
+if [ -n "$python_command" ]; then
+  pass "Python 3.9 or newer is available for redacted setup diagnostics."
+else
+  warn "Python 3.9 or newer was not detected. Markdown still works, but safe saved first-run setup and resume require a compatible bundled workspace runtime or an approved official Python installation."
 fi
 
 if command -v obsidian >/dev/null 2>&1 || [ -d /Applications/Obsidian.app ] || [ -d "${HOME:-}/Applications/Obsidian.app" ]; then
@@ -80,18 +97,55 @@ else
   info "latexmk was not detected; use Overleaf or configure local TeX later."
 fi
 
-if [ -f "$workbench_root/.harness/local.yaml" ]; then
-  if grep -Eq '^status:[[:space:]]*complete[[:space:]]*$' "$workbench_root/.harness/local.yaml"; then
-    if grep -Eq '^setup_version:[[:space:]]*1[[:space:]]*$' "$workbench_root/.harness/local.yaml"; then
-      pass "First-run setup is marked complete for setup version 1."
-    else
-      warn "First-run setup is complete but its setup version is missing or outdated. Run setup again."
-    fi
-  else
-    info "First-run setup has saved progress but is not marked complete."
-  fi
+local_state="$workbench_root/.harness/local.yaml"
+if [ -n "$python_command" ]; then
+  state_output=$("$python_command" "$workbench_root/scripts/setup-state.py" 2>/dev/null)
+  state_exit=$?
+  setup_state=$(printf '%s\n' "$state_output" | sed -n 's/^setup_state=//p' | sed -n '1p')
+  setup_status=$(printf '%s\n' "$state_output" | sed -n 's/^status=//p' | sed -n '1p')
+  case "$setup_state" in
+    missing)
+      info "First-run setup has not created local state yet."
+      ;;
+    ok)
+      if [ "$setup_status" = "complete" ]; then
+        pass "First-run setup is marked complete for setup version 2."
+      else
+        info "First-run setup has saved progress but is not marked complete."
+      fi
+      ;;
+    outdated)
+      if [ "$setup_status" = "complete" ]; then
+        info "An optional first-run update is available. Existing version 1 answers remain usable; after any required private-remote safety check, setup can ask the two new questions."
+      else
+        info "Version 1 setup has saved progress. Resume its remaining original questions first, then answer the two new questions."
+      fi
+      ;;
+    unsupported)
+      warn "The local setup was written by a newer unsupported setup version. Do not resume or write it; update the workbench first."
+      ;;
+    inconsistent)
+      warn "The saved first-run setup is internally inconsistent. Do not write it automatically; use the setup recovery guide."
+      ;;
+    invalid|unreadable)
+      warn "The saved first-run setup could not be read safely. Do not resume or write it; use the setup recovery guide."
+      ;;
+    *)
+      if [ "$state_exit" -ne 0 ]; then
+        warn "The redacted first-run state check failed. Do not resume or write setup state; use the recovery guide."
+      else
+        warn "First-run setup state could not be classified. Do not resume or write setup state; use the recovery guide."
+      fi
+      ;;
+  esac
 else
-  info "First-run setup has not created local state yet."
+  if [ -L "$workbench_root/.harness" ] || [ -L "$local_state" ]; then
+    warn "First-run state uses an unsafe link. Do not resume or write it; use the setup recovery guide."
+  elif [ -f "$local_state" ]; then
+    info "First-run state was found but cannot be inspected safely without Python. Do not change it automatically."
+  else
+    info "First-run setup has not created local state yet."
+  fi
 fi
 
 printf 'Doctor finished. WARN items need attention; INFO items are optional.\n'

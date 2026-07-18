@@ -39,15 +39,21 @@ message or begin setup by itself. You must send **Start setup** (or invoke
 
 Codex then asks one question at a time about:
 
+- a Python 3.9-or-newer helper runtime for safe saved setup and resume (Codex first uses an
+  existing or bundled runtime; no programming is required);
 - your preferred language;
 - optional private GitHub backup for text files;
 - optional storage for PDFs and other large files;
-- optional Obsidian installation and plugins; and
-- Overleaf or optional local TeX compilation.
+- optional Obsidian installation and plugins;
+- Overleaf or optional local TeX compilation;
+- optional Claude Code installation and Anthropic sign-in for Claude reviews;
+- optional ChatGPT sign-in inside the in-app Browser for compatible skills,
+  when that Browser is available.
 
-Nothing optional is required. Codex shows the exact effect and asks for
-approval before installing software, changing an account, creating a remote
-repository, or writing outside this folder.
+Python 3.9 or newer is used only for safe local setup-state checks; it is not a programming
+requirement. Every service and editor integration is optional. Codex shows the
+exact effect and asks for approval before installing software, changing an
+account, creating a remote repository, or writing outside this folder.
 
 For screen-by-screen instructions and a glossary, read
 [GETTING_STARTED.md](GETTING_STARTED.md).
@@ -99,6 +105,21 @@ See [the daily workflow](docs/daily-workflow.md) for more examples.
   external drive service for PDFs and other binaries instead.
 - Codex never needs your password, access token, private key, or browser cookie
   pasted into chat.
+- Claude Code and Claude are separate Anthropic services. Installation and
+  sign-in each require approval and this bundled review uses only a direct
+  personal Claude Pro or Max subscription login. Team, Enterprise, Console/API
+  keys, cloud providers, proxies, and custom gateways need a different reviewed
+  workflow. Because Claude safe mode does not disable managed policy, the
+  workflow stops when policy is detected or cannot be ruled out and asks the
+  user to confirm the CLI's policy-source screen before each review.
+  Follow the official
+  [installation](https://code.claude.com/docs/en/installation) and
+  [authentication](https://code.claude.com/docs/en/authentication) guidance.
+- Signing in is not permission to send research. Before every Claude review or
+  Browser-based upload or message, Codex must name the provider, show the exact
+  outbound files, diff, or text, and ask again for that one use.
+- Enter passwords, passkeys, MFA responses, and OAuth codes yourself. Codex
+  pauses at credential screens and does not inspect or capture them.
 - Community plugins are optional third-party code. Install them one at a time
   only after reading the explanation in [the plugin guide](docs/obsidian-plugins.md).
 - Obsidian can render mathematical notation without a local TeX installation.
@@ -125,7 +146,15 @@ Markdown, but Codex will point you back to the desktop setup guide instead of
 pretending local setup is complete. See OpenAI's
 [current desktop and Codex overview](https://help.openai.com/en/articles/20001275).
 
-The Codex CLI is supported for experienced users, but it is not required.
+The optional in-app Browser is available only on supported macOS or Windows
+desktop configurations, and its availability can depend on product capability,
+plan, or workspace policy. It is unavailable on Linux. Its profile is separate
+from your ordinary browser and other app sessions, so ChatGPT may ask you to
+sign in again. If no installed skill needs it, choose `later`. See the official
+[Browser guide](https://help.openai.com/en/articles/20001277-using-the-built-in-browser-in-the-chatgpt-desktop-app).
+
+On macOS or Windows, the Codex CLI is supported for experienced users but is
+not required for the beginner desktop route.
 
 ## Help and project information
 
@@ -138,4 +167,5 @@ The Codex CLI is supported for experienced users, but it is not required.
 - [License and content notice](CONTENT-NOTICE.md)
 
 Math Research Workbench is an independent project and is not affiliated with
-OpenAI, Obsidian, GitHub, Overleaf, or any cloud-storage provider.
+OpenAI, Anthropic, ChatGPT, Codex, Claude, Obsidian, GitHub, Overleaf, or any
+cloud-storage provider.

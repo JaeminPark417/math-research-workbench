@@ -1,0 +1,7 @@
+interface:
+  display_name: "Claude review"
+  short_description: "Get a privacy-gated review from Claude"
+  default_prompt: "Use $claude-review to get a second opinion on this work."
+
+policy:
+  allow_implicit_invocation: false

@@ -44,7 +44,91 @@ status and permissions; do not print private paths or change my answers.
 ```
 
 Common causes are an unwritable folder, a missing `.harness/local.yaml`, an
-interrupted setup, or an older setup version that needs one new question.
+interrupted setup, or an older setup version that needs two new questions.
+
+## Setup reports invalid, unreadable, inconsistent, or unsupported state
+
+Stop setup. Codex must not resume, overwrite, follow, or delete the local state
+entry. Your research notes are separate from this machine-only preference file
+and should remain untouched.
+
+Ask Codex:
+
+```text
+Help me recover the first-run state safely. Use only the redacted setup-state
+result. Do not read or follow the local state, and do not change anything yet.
+Explain whether I need a newer workbench or an approved quarantine rename.
+```
+
+For `unsupported`, update the framework before doing anything to the state. For
+the other results, Codex may propose renaming only the exact local state entry
+to a timestamped quarantine name without following it. It must first identify
+whether `.harness` itself or only `local.yaml` is link-like, show the exact
+non-destructive rename and recovery source, and ask for approval. Never delete
+the entry. If `.harness` itself is a link or junction, use a fresh release copy
+to restore the public `.harness` files after the link has been safely
+quarantined; do not copy files through the link.
+
+## Python 3.9 or newer was not detected
+
+Python 3.9 or newer runs only the local redacted setup and validation helpers; you do not
+need to learn Python. First-run checks for an existing command and a bundled
+Codex workspace runtime before asking you to install anything. If neither is
+available, it must not create or read saved setup state with ad hoc text
+commands.
+
+Choose `later` to continue ordinary Markdown work without saved setup, or ask
+Codex to explain the official <https://www.python.org/downloads/> per-user
+installer. Opening, downloading, and running an installer each require your
+approval. After installation, reopen the workbench and send `Start setup`.
+
+## Claude Code will not install or sign in
+
+Claude Code and Claude are separate Anthropic products. They are optional and
+this bundled review accepts only a direct personal Claude Pro or Max
+subscription login. Team, Enterprise, Console/API keys, cloud providers,
+proxies, and custom gateways need a separately reviewed workflow. It also
+stops when managed policy is detected or cannot be checked, because safe mode
+does not disable administrator policy hooks. If you do not have a suitable
+account, choose `later`; this does not prevent ordinary Codex work. Check
+Anthropic's current official
+[installation](https://code.claude.com/docs/en/installation) and
+[authentication](https://code.claude.com/docs/en/authentication) guidance.
+
+Installing Claude Code and starting its login require separate approvals. If a
+password, passkey, MFA, or OAuth prompt appears, Codex should pause while you
+complete it yourself. Do not paste a secret or authorization code into chat,
+and do not use `claude setup-token` for this setup. If authentication still
+fails, remove names, account identifiers, private paths, and codes before
+sharing an error message.
+
+When the redacted check is otherwise ready, Codex asks you to run Claude in
+safe mode, enter `/status`, and inspect only `Setting sources`. Do not copy the
+screen. If `Enterprise managed settings` appears, or you cannot confirm its
+absence, choose `later` and do not send the review.
+
+## Claude review asks for approval even though I am signed in
+
+This is expected. Login makes Claude available but does not authorize research
+transmission. For every review, Codex must name Anthropic as the provider,
+explain the purpose, list the exact files, diff, or text that would leave the
+workspace, and ask for approval for that one review. You can decline without
+disabling Claude Code or interrupting normal work.
+
+## I cannot find the in-app Browser, or ChatGPT asks me to sign in again
+
+The in-app Browser is available only on supported macOS or Windows desktop
+configurations. Product capability, plan, or workspace policy can make it
+unavailable, and it is unavailable on Linux. Choose `later` if it is missing or
+if no installed compatible skill needs it. See OpenAI's official
+[Browser guide](https://help.openai.com/en/articles/20001277-using-the-built-in-browser-in-the-chatgpt-desktop-app).
+
+The Browser uses a profile separate from your ordinary browser and other app
+sessions, so a new ChatGPT login can be normal. At a credentials screen, Codex
+must pause: enter passwords, passkeys, MFA responses, and OAuth codes yourself.
+Codex should not inspect or screenshot that screen. Login does not approve a
+file upload or message; each compatible skill must preview the exact outbound
+content and ask again before sending it.
 
 ## The workbench is inside OneDrive, iCloud, Dropbox, or Google Drive
 
@@ -109,9 +193,10 @@ Approval prompts are a safety feature. Read the exact command, target folder,
 account, and effect. It is always acceptable to decline and ask for a manual or
 less invasive alternative.
 
-GitHub connection, an external-storage write, Obsidian or TeX installation, and
-each community plugin are separate choices. Approving one does not approve the
-others.
+GitHub connection, an external-storage write, Obsidian or TeX installation,
+Claude Code installation, Anthropic login, each Claude review, Browser login,
+each Browser upload or message, and each community plugin are separate choices.
+Approving one does not approve the others.
 
 ## A file seems to be missing
 

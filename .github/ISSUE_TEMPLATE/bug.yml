@@ -12,7 +12,7 @@ body:
     attributes:
       label: Release
       description: Which Math Research Workbench release are you using?
-      placeholder: Read the VERSION file, for example v0.1.0
+      placeholder: Read the VERSION file, for example v0.2.0
     validations:
       required: true
   - type: dropdown

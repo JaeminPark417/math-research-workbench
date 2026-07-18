@@ -4,7 +4,7 @@ This guide assumes you have used ChatGPT in a browser but have not used Git,
 a terminal, Markdown, or Codex. You do not need to learn those tools before
 starting.
 
-## Five words used in this guide
+## Seven terms used in this guide
 
 - **Folder**: a container on your computer, like a paper filing box.
 - **Markdown**: ordinary text with a few simple symbols for headings, links,
@@ -15,6 +15,11 @@ starting.
   They are not the same as Google Drive or Dropbox.
 - **TeX/LaTeX**: a typesetting system that turns a `.tex` manuscript into a
   PDF. It is not needed for ordinary notes or Obsidian math display.
+- **Claude Code/Claude**: an optional Anthropic terminal tool and AI service
+  that can provide a second AI review. They are separate from OpenAI, ChatGPT,
+  and Codex.
+- **In-app Browser**: an optional browser profile inside the desktop app that
+  compatible skills can use. It is separate from your ordinary web browser.
 
 ## 1. Choose a safe place
 
@@ -100,9 +105,15 @@ Start setup
 
 You can also say `초기 설정을 시작해줘` or invoke `$first-run`.
 
-If you close the app halfway through, reopen the same folder and send the same
-message. Setup records completed answers locally and resumes at the first
-unfinished question.
+Before saving any answer, Codex checks for Python 3.9 or newer. It uses an existing or
+Codex-bundled runtime when available; you do not need to program. If none is
+available, Codex explains the official per-user installer and asks separately
+before opening, downloading, or running it. If you decline, ordinary Markdown
+work still works, but setup does not create a partial state or promise resume.
+
+Once that helper is available, closing the app halfway through is safe: reopen
+the same folder and send the same message. Setup records completed answers
+locally and resumes at the first unfinished question.
 
 ## 5. Answer the setup questions
 
@@ -120,8 +131,10 @@ GitHub can preserve versions of text files. It is optional. If you choose it:
 - unpublished research is private by default;
 - Codex uses browser or device login and never asks you to paste a password or
   token into chat;
-- Codex shows the repository name, owner, visibility, and remote address before
-  changing anything; and
+- Codex describes the current connection only as a redacted safety class. After
+  you name or approve the intended owner and repository, it shows the proposed
+  credential-free canonical address and visibility before changing anything;
+  and
 - large PDFs remain outside GitHub.
 
 GitHub is not an automatic backup. A change appears there only after it has
@@ -159,6 +172,66 @@ Codex first detects existing tools, explains the download and disk impact,
 shows the exact installation action, and asks for approval. A failed or
 postponed installation does not block the rest of setup.
 
+### Claude review
+
+Claude review is optional. It uses Claude Code, a terminal tool from
+Anthropic, to ask a separate AI service for a second opinion. It is not
+included with ChatGPT or an OpenAI account, and this workflow requires an eligible paid
+personal Claude Pro or Max subscription. This bundled beginner workflow does
+not use Team, Enterprise, Console/API keys, cloud providers, proxies, or custom
+gateways. Managed settings can remain active even in Claude safe mode, so the
+workflow stops when a managed policy is found or cannot be checked safely.
+Check Anthropic's current official
+[installation](https://code.claude.com/docs/en/installation) and
+[authentication](https://code.claude.com/docs/en/authentication) guidance.
+
+If you choose `yes`, Codex first checks for Claude Code. If installation is
+needed, it explains the official source and exact action, then asks for
+approval. Starting the Anthropic login is a second, separate approval. Claude
+Code runs in a terminal, but you personally complete any password, passkey,
+MFA, or OAuth step in the interactive terminal or browser that opens. Codex
+pauses and does not inspect or capture the credentials screen. Never paste an
+authentication code into chat, and do not use `claude setup-token` for this
+beginner setup.
+
+You do not need to understand terminal commands. On macOS, open **Terminal**
+from Spotlight; on Windows, open **Terminal** or **PowerShell** from the Start
+menu. Codex shows the exact `claude auth login` command for you to type and
+waits while you complete the private sign-in screens yourself.
+
+After login, Codex asks you to open Claude in safe mode and type `/status`
+yourself. Look only at `Setting sources`, close Claude, and report whether an
+`Enterprise managed settings` source appeared. Do not copy the rest of that
+screen into chat. Setup and every later review stop unless you can confirm that
+no such source was listed.
+
+A successful login only makes Claude available; it does not permit a review
+transmission. Before every review, the `claude-review` skill must identify
+Anthropic as the provider, state the purpose, list the exact files, diff, or
+text that would be sent, and ask for approval for that one review. You may
+decline and continue normally. A Claude review is still an AI review, not a
+verified proof.
+
+### ChatGPT in the in-app Browser
+
+This login is optional and is useful only for an installed, compatible skill
+that uses ChatGPT through the in-app Browser. If no such skill is installed,
+choose `later` rather than adding another account session.
+
+The in-app Browser is available only in supported macOS or Windows desktop
+configurations. It can be unavailable because of product capability, plan, or
+workspace policy, and it is unavailable on Linux. Its profile is separate from
+your ordinary browser and other app sessions, so an existing ChatGPT login may
+not carry over. See OpenAI's official
+[Browser guide](https://help.openai.com/en/articles/20001277-using-the-built-in-browser-in-the-chatgpt-desktop-app).
+
+If ChatGPT asks you to sign in, Codex pauses. You personally enter passwords,
+passkeys, MFA responses, and OAuth codes; Codex does not inspect or screenshot
+the credentials screen. Signing in only prepares the Browser profile. It does
+not approve a file upload or message. Before each compatible skill sends
+anything, Codex must show the provider, purpose, and exact outbound file or
+text and ask for approval for that one action.
+
 ## 6. Confirm that setup finished
 
 Codex will run a non-destructive check and explain:
@@ -178,11 +251,12 @@ Run setup again, but only help me configure Obsidian.
 ## If you are in a hosted or cloud environment
 
 A cloud checkout is a copy running on another computer. It cannot install
-Obsidian or TeX on your own PC, inspect your local cloud-drive directories, or
-store this machine's ignored preferences. It may still read and edit the
-Markdown framework available in that checkout. The setup assistant should
-explain the limitation and direct you to local desktop setup; it must not mark
-your local setup complete.
+Obsidian, TeX, or Claude Code on your own PC, prepare your desktop app's Browser
+profile, inspect your local cloud-drive directories, or store this machine's
+ignored preferences. It may still read and edit the Markdown framework
+available in that checkout. The setup assistant should explain the limitation
+and direct you to local desktop setup; it must not mark your local setup
+complete.
 
 ## Privacy before research
 
@@ -205,7 +279,15 @@ It will not:
 - change a Git remote;
 - move the open workspace;
 - write into an external drive;
-- install community plugins in bulk; or
+- install community plugins in bulk;
+- install Claude Code or start an Anthropic login;
+- send research to Claude or ChatGPT without a new, exact outbound-content
+  preview and per-use approval; or
 - permanently delete research files.
 
+Two authentication boundaries are absolute, not actions that can be approved:
+setup never runs `claude setup-token`, and Codex never inspects or captures a
+credentials screen. The user always completes authentication personally.
+
 For a normal working routine, continue with [docs/daily-workflow.md](docs/daily-workflow.md).
+Before applying a later release, read [docs/updating.md](docs/updating.md).

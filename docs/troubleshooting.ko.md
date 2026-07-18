@@ -47,7 +47,86 @@ Codex에게 다음과 같이 요청하세요.
 ```
 
 흔한 원인은 쓰기 권한이 없는 폴더, 없어진 `.harness/local.yaml`, 중단된 설정,
-또는 질문 하나를 새로 답해야 하는 이전 버전의 설정입니다.
+또는 새 질문 두 개에 답해야 하는 이전 버전의 설정입니다.
+
+## 설정 상태가 invalid, unreadable, inconsistent 또는 unsupported라고 나옵니다
+
+초기 설정을 멈추세요. Codex는 로컬 설정 항목을 이어서 쓰거나, 덮어쓰거나,
+링크를 따라가거나, 삭제해서는 안 됩니다. 연구 노트는 이 컴퓨터에서만 쓰는 설정
+파일과 별개이므로 그대로 두어야 합니다.
+
+Codex에게 다음과 같이 요청하세요.
+
+```text
+초기 설정 상태를 안전하게 복구하도록 도와줘. 값이 가려진 setup-state 결과만
+사용하고, 로컬 설정 파일을 읽거나 링크를 따라가지 말아줘. 아직 아무것도 바꾸지
+말고, 새 버전이 필요한지 또는 승인 후 격리 이름으로 바꿔야 하는지 설명해줘.
+```
+
+`unsupported`라면 상태 파일보다 먼저 workbench 프레임워크를 업데이트합니다. 나머지
+경우에는 Codex가 정확한 로컬 설정 항목만 타임스탬프가 붙은 격리 이름으로 바꾸는
+방법을 제안할 수 있습니다. 먼저 `.harness` 자체가 링크인지, `local.yaml`만 링크인지
+구분하고, 링크를 따라가지 않는 정확한 이동 작업과 복구 출처를 보여준 뒤 승인을
+받아야 합니다. 항목을 삭제하지 마세요. `.harness` 자체가 링크나 junction이라면 그
+링크를 안전하게 격리한 뒤 새 릴리스 사본에서 공개 `.harness` 파일을 복구하고,
+링크를 통과해 파일을 복사하지 마세요.
+
+## Python 3.9 이상을 찾지 못했습니다
+
+Python 3.9 이상은 값이 가려진 로컬 설정·검증 도우미만 실행합니다. Python을 배울 필요는
+없습니다. 초기 설정은 설치를 제안하기 전에 이미 있는 명령과 Codex에 번들된
+workspace 실행 환경부터 확인합니다. 둘 다 없다면 임시 텍스트 명령으로 저장된
+설정 상태를 만들거나 읽지 않습니다.
+
+저장되는 초기 설정 없이 일반 Markdown 작업을 계속하려면 `나중에`를 고르세요.
+설치하려면 Codex에게 공식 <https://www.python.org/downloads/> 사용자용 설치
+프로그램을 설명해 달라고 하세요. 열기·다운로드·실행에는 각각 승인이 필요합니다.
+설치 뒤 workbench를 다시 열고 `초기 설정을 시작해줘`라고 보내세요.
+
+## Claude Code가 설치되지 않거나 로그인되지 않습니다
+
+Claude Code와 Claude는 Anthropic이 제공하는 별도 제품입니다. 선택 사항이며,
+이 배포판의 검토는 Claude Pro 또는 Max의 개인 직접 로그인만 허용합니다. Team,
+Enterprise, Console/API key, 클라우드 제공자, proxy, 별도 gateway는 별도로 검토된
+흐름이 필요합니다. safe mode도 관리자 정책 훅을 끄지 못하므로, 관리형 정책이
+감지되거나 확인할 수 없을 때도 멈춥니다.
+맞는 구독이 없다면 `나중에`를 선택하세요. 평소 Codex 작업에는 지장이 없습니다.
+Anthropic의 최신 공식 [설치 안내](https://code.claude.com/docs/en/installation)와
+[인증 안내](https://code.claude.com/docs/en/authentication)를 확인하세요.
+
+Claude Code 설치와 로그인 시작은 각각 별도로 승인해야 합니다. 비밀번호,
+passkey, MFA, OAuth 입력 화면이 나오면 Codex는 멈추고 사용자가 직접 완료해야
+합니다. 비밀 정보나 인증 코드를 채팅에 붙여 넣지 말고, 이 설정에서는
+`claude setup-token`을 사용하지 마세요. 인증이 계속 실패한다면 오류 메시지에서
+이름, 계정 식별자, 비공개 경로, 인증 코드를 지운 뒤 공유하세요.
+
+값이 가려진 점검이 준비 상태라면 Codex가 사용자가 Claude를 safe mode로 열고
+`/status`의 `Setting sources`만 확인하도록 안내합니다. 화면을 복사하지 마세요.
+`Enterprise managed settings`가 보이거나 없다고 확인할 수 없으면 `나중에`를
+선택하고 검토 자료를 보내지 않습니다.
+
+## 로그인했는데 Claude 검토가 다시 승인을 요청합니다
+
+정상입니다. 로그인은 Claude를 사용할 준비가 되었다는 뜻일 뿐 연구자료 전송을
+허용하지 않습니다. Codex는 검토할 때마다 Anthropic이 제공자임을 밝히고, 목적을
+설명하고, workspace 밖으로 나갈 정확한 파일·diff·본문을 나열한 뒤 그 한 번의
+검토에 대해 승인받아야 합니다. 거절해도 Claude Code 설정을 해제할 필요가 없고
+평소 작업을 계속할 수 있습니다.
+
+## 앱 내 Browser가 보이지 않거나 ChatGPT가 다시 로그인하라고 합니다
+
+앱 내 Browser는 지원되는 macOS 또는 Windows 데스크톱 환경에서만 사용할 수
+있습니다. 제품 기능 제공 여부, 요금제, workspace 정책에 따라 보이지 않을 수
+있으며 Linux에서는 사용할 수 없습니다. Browser가 없거나 이를 쓰는 호환 스킬이
+설치되어 있지 않다면 `나중에`를 선택하세요. OpenAI의 공식
+[Browser 안내](https://help.openai.com/en/articles/20001277-using-the-built-in-browser-in-the-chatgpt-desktop-app)를 확인하세요.
+
+Browser는 일반 브라우저나 다른 앱의 로그인 상태와 분리된 로그인 공간(profile)을
+사용하므로 ChatGPT 로그인을 새로 요구할 수 있습니다. 인증 화면에서는 Codex가
+멈춰야 하며, 비밀번호, passkey, MFA 응답, OAuth 코드는 사용자가 직접 입력합니다.
+Codex는 그 화면을 검사하거나 캡처하지 않습니다. 로그인은 파일 업로드나 메시지
+전송을 허용하지 않습니다. 호환 스킬은 전송할 정확한 내용을 미리 보여주고 작업할
+때마다 다시 승인을 받아야 합니다.
 
 ## workbench가 OneDrive, iCloud, Dropbox, Google Drive 안에 있습니다
 
@@ -119,9 +198,10 @@ vault를 새로 만들지 마세요. Obsidian 공식
 효과를 읽어 보세요. 언제든 거절하고 수동 방법이나 덜 침습적인 방법을 요청해도
 됩니다.
 
-특히 GitHub 연결, 외부 저장소에 폴더 만들기, Obsidian 또는 TeX 설치, 커뮤니티
-플러그인 설치는 각각 별도의 선택입니다. 하나에 동의했다고 다른 작업까지 승인한
-것은 아닙니다.
+특히 GitHub 연결, 외부 저장소에 폴더 만들기, Obsidian 또는 TeX 설치, Claude
+Code 설치, Anthropic 로그인, 각 Claude 검토, Browser 로그인, 각 Browser 파일
+업로드나 메시지 전송, 커뮤니티 플러그인 설치는 모두 별도의 선택입니다. 하나에
+동의했다고 다른 작업까지 승인한 것은 아닙니다.
 
 ## 파일이 사라진 것 같습니다
 

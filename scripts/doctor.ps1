@@ -94,13 +94,33 @@ if ($Gh) {
     Write-Info "GitHub CLI is not installed; GitHub backup can be configured later."
 }
 
-$PythonCommand = @("python3", "python", "py") |
-    ForEach-Object { Get-Command $_ -ErrorAction SilentlyContinue } |
-    Select-Object -First 1
-if ($PythonCommand) {
-    Write-Pass "Python is available for redacted setup diagnostics."
+$Claude = Get-Command claude -ErrorAction SilentlyContinue
+if ($Claude) {
+    Write-Pass "Claude Code is available."
+    Write-Info "Claude login readiness is checked privately only after Claude review is selected."
 } else {
-    Write-Info "Python was not detected. Markdown still works; remote visibility must be treated as unknown unless GitHub CLI can verify it."
+    Write-Info "Claude Code was not detected; Claude review is optional."
+}
+
+Write-Info "ChatGPT Browser sign-in is not inferred by this shell check; verify it inside Codex's in-app Browser only when selected."
+
+$PythonCommand = $null
+$PythonPrefixArgs = @()
+foreach ($PythonName in @("python3", "python", "py")) {
+    $Candidate = Get-Command $PythonName -ErrorAction SilentlyContinue
+    if (-not $Candidate) { continue }
+    $CandidatePrefixArgs = if ($PythonName -eq "py") { @("-3") } else { @() }
+    & $Candidate.Source @CandidatePrefixArgs -c "import sys; raise SystemExit(0 if sys.version_info >= (3, 9) else 1)" *> $null
+    if ($LASTEXITCODE -eq 0) {
+        $PythonCommand = $Candidate
+        $PythonPrefixArgs = $CandidatePrefixArgs
+        break
+    }
+}
+if ($PythonCommand) {
+    Write-Pass "Python 3.9 or newer is available for redacted setup diagnostics."
+} else {
+    Write-Warn "Python 3.9 or newer was not detected. Markdown still works, but safe saved first-run setup and resume require a compatible bundled workspace runtime or an approved official Python installation."
 }
 
 $ObsidianCandidates = @()
@@ -124,18 +144,62 @@ if (Get-Command latexmk -ErrorAction SilentlyContinue) {
 }
 
 $LocalState = Join-Path $WorkBenchRoot ".harness\local.yaml"
-if (Test-Path $LocalState) {
-    if (Select-String -Path $LocalState -Pattern '^status:\s*complete\s*$' -Quiet) {
-        if (Select-String -Path $LocalState -Pattern '^setup_version:\s*1\s*$' -Quiet) {
-            Write-Pass "First-run setup is marked complete for setup version 1."
-        } else {
-            Write-Warn "First-run setup is complete but its setup version is missing or outdated. Run setup again."
+if ($PythonCommand) {
+    $SetupStateScript = Join-Path $WorkBenchRoot "scripts\setup-state.py"
+    $StateOutput = @(& $PythonCommand.Source @PythonPrefixArgs $SetupStateScript 2>$null)
+    $StateExit = $LASTEXITCODE
+    $SetupStateLine = $StateOutput | Where-Object { $_ -like "setup_state=*" } | Select-Object -First 1
+    $SetupStatusLine = $StateOutput | Where-Object { $_ -like "status=*" } | Select-Object -First 1
+    $SetupState = if ($SetupStateLine) { $SetupStateLine.Substring("setup_state=".Length) } else { "" }
+    $SetupStatus = if ($SetupStatusLine) { $SetupStatusLine.Substring("status=".Length) } else { "" }
+    switch ($SetupState) {
+        "missing" {
+            Write-Info "First-run setup has not created local state yet."
         }
-    } else {
-        Write-Info "First-run setup has saved progress but is not marked complete."
+        "ok" {
+            if ($SetupStatus -eq "complete") {
+                Write-Pass "First-run setup is marked complete for setup version 2."
+            } else {
+                Write-Info "First-run setup has saved progress but is not marked complete."
+            }
+        }
+        "outdated" {
+            if ($SetupStatus -eq "complete") {
+                Write-Info "An optional first-run update is available. Existing version 1 answers remain usable; after any required private-remote safety check, setup can ask the two new questions."
+            } else {
+                Write-Info "Version 1 setup has saved progress. Resume its remaining original questions first, then answer the two new questions."
+            }
+        }
+        "unsupported" {
+            Write-Warn "The local setup was written by a newer unsupported setup version. Do not resume or write it; update the workbench first."
+        }
+        "inconsistent" {
+            Write-Warn "The saved first-run setup is internally inconsistent. Do not write it automatically; use the setup recovery guide."
+        }
+        { $_ -in @("invalid", "unreadable") } {
+            Write-Warn "The saved first-run setup could not be read safely. Do not resume or write it; use the setup recovery guide."
+        }
+        default {
+            if ($StateExit -ne 0) {
+                Write-Warn "The redacted first-run state check failed. Do not resume or write setup state; use the recovery guide."
+            } else {
+                Write-Warn "First-run setup state could not be classified. Do not resume or write setup state; use the recovery guide."
+            }
+        }
     }
 } else {
-    Write-Info "First-run setup has not created local state yet."
+    $HarnessItem = Get-Item -LiteralPath (Join-Path $WorkBenchRoot ".harness") -Force -ErrorAction SilentlyContinue
+    $StateItem = Get-Item -LiteralPath $LocalState -Force -ErrorAction SilentlyContinue
+    $UnsafeStateLink =
+        ($HarnessItem -and ($HarnessItem.Attributes -band [System.IO.FileAttributes]::ReparsePoint)) -or
+        ($StateItem -and ($StateItem.Attributes -band [System.IO.FileAttributes]::ReparsePoint))
+    if ($UnsafeStateLink) {
+        Write-Warn "First-run state uses an unsafe link or junction. Do not resume or write it; use the setup recovery guide."
+    } elseif ($StateItem) {
+        Write-Info "First-run state was found but cannot be inspected safely without Python. Do not change it automatically."
+    } else {
+        Write-Info "First-run setup has not created local state yet."
+    }
 }
 
 Write-Host "Doctor finished. WARN items need attention; INFO items are optional."

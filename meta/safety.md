@@ -58,6 +58,37 @@ approval of changes to the computer.
   personal paths, tracked binaries, and hidden configuration files.
 - External-drive links should not expose credentials or private sharing tokens.
 
+## External AI review and Browser sessions
+
+- Claude Code and Claude are provided by Anthropic, separately from Codex,
+  ChatGPT, and OpenAI. A Claude review creates a separate data flow to
+  Anthropic under the user's Anthropic account and its current terms and data
+  controls.
+- Installing Claude Code, signing in to Anthropic, and sending a particular
+  review are three separate choices. Approval for one does not approve the
+  others. Never use `claude setup-token` during beginner setup.
+- The bundled Claude review supports only a personal Pro or Max direct login.
+  Safe mode does not override managed policy. Stop for Team, Enterprise,
+  alternate routing or telemetry export, any detected policy source, an unverifiable policy check,
+  or a user who cannot confirm that `/status` lists no enterprise-managed
+  settings source for the current run.
+- Before each external review, identify Anthropic as the provider, explain the
+  purpose, and show the exact files, diff, or text proposed for transmission.
+  Send only after the user approves that one review. Declining must leave the
+  ordinary Codex workflow usable.
+- A ChatGPT login inside the in-app Browser is separate from ordinary browser
+  and app sessions. Availability can depend on the operating system, product
+  capability, plan, and workspace policy; an unavailable Browser is not a
+  setup failure.
+- Pause at every password, passkey, MFA, or OAuth screen so the user can take
+  control. Do not inspect, screenshot, record, or echo credentials or
+  authentication codes.
+- Signing in does not authorize an upload or message. Before every compatible
+  Browser skill sends text or a file, show the exact outbound content,
+  provider, destination, and purpose, then request per-use approval.
+- A review by Claude or ChatGPT is still an AI-only review and must remain
+  `unchecked` unless the required human or formal review is documented.
+
 ## Changes to the computer
 
 - Explain installations and system changes in beginner-friendly language.

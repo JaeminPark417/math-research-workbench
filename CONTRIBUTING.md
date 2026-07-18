@@ -58,12 +58,27 @@ root:
 
 ```text
 python3 scripts/vault-lint.py
-python3 scripts/validate-release.py
+python3 scripts/validate-release.py --release
 ```
+
+The release validator rejects every file outside the reviewed public allowlist.
+Run it before staging, pushing, or opening a pull request so private filenames
+and content never leave the computer. If a pull request intentionally
+adds a reusable framework file, update the allowlist in the validator and
+explain why the file belongs in the public distribution; never allowlist
+personal research content.
 
 If a check cannot run on your computer, say so in the pull request. A maintainer
 can help; lack of terminal experience should not prevent a documentation
 contribution.
+
+Maintainers must build a downloadable ZIP from the reviewed committed tree or
+tag (for example with `git archive`), never by compressing a working directory.
+A working directory can contain `.git` history and ignored local or research
+files that the release validator intentionally does not read. Extract the
+candidate ZIP into a new temporary directory and run both checks there before
+uploading it, using `python3 scripts/validate-release.py --release-artifact`
+for the extracted archive. Artifact mode fails if `.git` metadata is present.
 
 Keep each pull request focused. Describe what a beginner could not do before,
 what changed, and how you verified the new behavior.
