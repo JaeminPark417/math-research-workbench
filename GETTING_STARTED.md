@@ -160,9 +160,7 @@ Obsidian is optional. If selected, Codex checks whether it is installed, offers
 the official installation route, and asks before installing anything. You then
 open the **existing workbench folder** as a vault; do not create a second copy.
 
-Start with core plugins only. Community plugins are third-party code and are
-offered one at a time by purpose. See [Obsidian](docs/obsidian.md) and
-[Obsidian plugins](docs/obsidian-plugins.md).
+Start with core plugins only. Codex separately offers the inert, Workbench-provided LaTeX delimiter compatibility plugin and explains its access, unofficial-directory status, update method, and testing steps before asking whether to install it. Third-party community plugins remain optional and are offered one at a time through Obsidian's official directory. See [Obsidian](docs/obsidian.md) and [Obsidian plugins](docs/obsidian-plugins.md).
 
 ### TeX
 
@@ -214,9 +212,9 @@ verified proof.
 
 ### ChatGPT in the in-app Browser
 
-This login is optional and is useful only for an installed, compatible skill
-that uses ChatGPT through the in-app Browser. If no such skill is installed,
-choose `later` rather than adding another account session.
+This login is optional. The bundled `$pro-context-bundle` uses ChatGPT through
+the in-app Browser for an explicitly requested Pro consultation. Choose `later`
+if you do not plan to use that skill.
 
 The in-app Browser is available only in supported macOS or Windows desktop
 configurations. It can be unavailable because of product capability, plan, or
@@ -230,7 +228,9 @@ passkeys, MFA responses, and OAuth codes; Codex does not inspect or screenshot
 the credentials screen. Signing in only prepares the Browser profile. It does
 not approve a file upload or message. Before each compatible skill sends
 anything, Codex must show the provider, purpose, and exact outbound file or
-text and ask for approval for that one action.
+text and ask for approval for that one action. After sending, the skill waits
+without an overall time limit and selects `Answer now` only if you explicitly
+request it during that consultation.
 
 ## 6. Confirm that setup finished
 

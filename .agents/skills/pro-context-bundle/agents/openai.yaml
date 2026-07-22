@@ -1,0 +1,7 @@
+interface:
+  display_name: "ChatGPT Pro context bridge"
+  short_description: "Get a privacy-gated consultation from ChatGPT Pro"
+  default_prompt: "Use $pro-context-bundle to prepare selected context for a ChatGPT Pro consultation."
+
+policy:
+  allow_implicit_invocation: false

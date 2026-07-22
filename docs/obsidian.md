@@ -82,8 +82,10 @@ only for compiling `.tex` manuscripts into PDFs. See Obsidian's
 
 No community plugin is required. Start with the core-only profile for a few
 sessions, then install only a plugin that solves a specific problem. Community
-plugins execute third-party code with access to your vault; Obsidian explicitly
+plugins execute additional project or third-party code with access to your vault; Obsidian explicitly
 warns users about this in its [community plugin guide](https://help.obsidian.md/community-plugins).
+
+The Workbench also includes one inert, project-authored compatibility plugin under `optional/` for imported `\(...\)` and `\[...\]` notation. It is not installed or enabled by default. Its separate consent and testing procedure is documented in the plugin guide.
 
 Continue with [obsidian-plugins.md](obsidian-plugins.md) before installing one.
 

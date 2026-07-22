@@ -51,6 +51,7 @@ ALLOWED = {
     "obsidian.plugin_setup": {"", "in_progress", "complete", "later"},
     "obsidian.pending_plugin": {
         "",
+        "mrw-latex-delimiter-compat",
         "latex-suite",
         "zotero-integration",
         "dataview",
@@ -73,13 +74,14 @@ VERSION_2_REQUIRED_CHOICES = LEGACY_REQUIRED_CHOICES + (
     "chatgpt_browser.choice",
 )
 COMMUNITY_PLUGIN_IDS = {
+    "mrw-latex-delimiter-compat",
     "latex-suite",
     "zotero-integration",
     "dataview",
     "obsidian-git",
 }
 ISO_TIMESTAMP_WITH_ZONE = re.compile(
-    r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})"
+    r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2})"
 )
 FORBIDDEN_DETAIL_KEYS = {
     "account",
@@ -133,7 +135,12 @@ def decode_scalar(key: str, raw: str) -> str | None:
 def is_valid_iso_timestamp(value: str) -> bool:
     if not ISO_TIMESTAMP_WITH_ZONE.fullmatch(value):
         return False
-    normalized = value[:-1] + "+00:00" if value.endswith("Z") else value
+    normalized = re.sub(
+        r"\.(\d{1,6})(?=Z|[+-]\d{2}:\d{2}$)",
+        lambda match: "." + match.group(1).ljust(6, "0"),
+        value,
+    )
+    normalized = normalized[:-1] + "+00:00" if normalized.endswith("Z") else normalized
     try:
         parsed = datetime.fromisoformat(normalized)
     except ValueError:
@@ -411,10 +418,13 @@ def main() -> int:
                 for key in ("external_storage.provider", "external_storage.root")
             )
         if values.get("obsidian.choice") == "yes":
-            inconsistent = inconsistent or values.get("obsidian.plugin_setup") not in {
-                "complete",
-                "later",
-            }
+            allowed_plugin_setup = {"complete", "later"}
+            if values.get("status") == "in_progress":
+                allowed_plugin_setup.add("in_progress")
+            inconsistent = (
+                inconsistent
+                or values.get("obsidian.plugin_setup") not in allowed_plugin_setup
+            )
             inconsistent = inconsistent or details.get("obsidian.installed") != "true"
             inconsistent = inconsistent or not details.get("obsidian.plugin_profile")
         if values.get("tex.choice") == "local":

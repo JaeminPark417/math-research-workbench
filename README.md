@@ -47,8 +47,8 @@ Codex then asks one question at a time about:
 - optional Obsidian installation and plugins;
 - Overleaf or optional local TeX compilation;
 - optional Claude Code installation and Anthropic sign-in for Claude reviews;
-- optional ChatGPT sign-in inside the in-app Browser for compatible skills,
-  when that Browser is available.
+- optional ChatGPT sign-in inside the in-app Browser for the bundled
+  `$pro-context-bundle` consultation skill, when that Browser is available.
 
 Python 3.9 or newer is used only for safe local setup-state checks; it is not a programming
 requirement. Every service and editor integration is optional. Codex shows the
@@ -117,11 +117,16 @@ See [the daily workflow](docs/daily-workflow.md) for more examples.
   [authentication](https://code.claude.com/docs/en/authentication) guidance.
 - Signing in is not permission to send research. Before every Claude review or
   Browser-based upload or message, Codex must name the provider, show the exact
-  outbound files, diff, or text, and ask again for that one use.
+  outbound files, diff, or text, and ask again for that one use. The bundled
+  `$pro-context-bundle` waits for Pro to finish without an overall time limit
+  and never selects `Answer now` unless the user explicitly asks during that
+  consultation.
 - Enter passwords, passkeys, MFA responses, and OAuth codes yourself. Codex
   pauses at credential screens and does not inspect or capture them.
-- Community plugins are optional third-party code. Install them one at a time
-  only after reading the explanation in [the plugin guide](docs/obsidian-plugins.md).
+- The project-provided LaTeX delimiter compatibility plugin is bundled inertly
+  and requires separate consent, manual enabling, and a rendering test.
+  Third-party community plugins remain optional; install them one at a time
+  only after reading [the plugin guide](docs/obsidian-plugins.md).
 - Obsidian can render mathematical notation without a local TeX installation.
   Overleaf is the simplest default for compiling manuscripts.
 - A language-model review is not a proof. References and final mathematical
@@ -150,7 +155,8 @@ The optional in-app Browser is available only on supported macOS or Windows
 desktop configurations, and its availability can depend on product capability,
 plan, or workspace policy. It is unavailable on Linux. Its profile is separate
 from your ordinary browser and other app sessions, so ChatGPT may ask you to
-sign in again. If no installed skill needs it, choose `later`. See the official
+sign in again. The bundled `$pro-context-bundle` uses it; choose `later` if you
+do not plan to use that skill. See the official
 [Browser guide](https://help.openai.com/en/articles/20001277-using-the-built-in-browser-in-the-chatgpt-desktop-app).
 
 On macOS or Windows, the Codex CLI is supported for experienced users but is

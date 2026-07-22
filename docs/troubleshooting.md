@@ -173,8 +173,25 @@ and check the installed-plugin toggle. Update one plugin at a time, then restart
 Obsidian if its own documentation asks. If the problem began after installation,
 disable that plugin first; your Markdown notes remain available.
 
+For **MRW LaTeX Delimiter Compatibility**, do not search **Browse**. Ask Codex to run `python3 scripts/install-bundled-obsidian-plugin.py` with no flags. `installed_current` means the bundled and installed runtime match; `installed_stale` means a separately approved Workbench update is available. After enabling or updating it, test Reading view, Live Preview, cursor movement into and out of a formula-containing table cell, and one Obsidian restart.
+
+| Status or result | Meaning and safe next step |
+| --- | --- |
+| `not_installed` | Nothing has been copied. Continue without it, or return to the consent-based installation guide. |
+| `installed_current` | The installed runtime matches this Workbench release. Check the Enable toggle and run the rendering tests. |
+| `installed_stale` | A newer bundled version is available. Read the change explanation, close Obsidian, and approve that update separately if wanted. |
+| `empty` | An earlier attempt left an empty plugin directory. Codex may reinstall only after showing the exact action and receiving approval. |
+| `installed_modified` | The installed files differ from the same-version bundle. Do not overwrite them; ask Codex to compare and archive the differing copy. |
+| `installed_newer` | The installed plugin is newer than this Workbench release. Update the Workbench or preserve the newer copy; do not downgrade it. |
+| `unsafe` or `result=unsafe_path` | A link, junction, or non-file object makes the path unsafe. Stop and inspect only this plugin path; never follow it or write through it. |
+| `unrecognized`, `install_refused`, or `update_refused` | The directory contains missing or unexpected files. Close Obsidian and ask Codex to inventory this one directory without deleting anything. Installer-owned `.main.js.mrw-*` or `.manifest.json.mrw-*` remnants may be moved to an ignored recovery folder only after their origin is verified and the move is approved. |
+| `invalid_bundle` or `bundle_unavailable` | The optional source bundle is incomplete or changed. Re-download or safely update the Workbench; do not fetch a standalone `main.js`. |
+| `close_obsidian_and_retry` | Obsidian is probably holding a runtime file open. Close it fully, then retry only the already approved action. |
+
+Finder and Windows metadata files such as `.DS_Store`, `Thumbs.db`, and `Desktop.ini` are ignored by the installer. Other unexpected files are preserved and require inspection rather than automatic cleanup.
+
 Never solve a plugin problem by downloading unknown `main.js` files or copying
-someone else's `.obsidian/plugins` folder. See [the plugin guide](obsidian-plugins.md).
+someone else's `.obsidian/plugins` folder. The fixed Workbench installer is the only reviewed copy-install exception. See [the plugin guide](obsidian-plugins.md).
 
 ## Equations display in Obsidian but a `.tex` file will not compile
 

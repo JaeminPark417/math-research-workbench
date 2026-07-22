@@ -159,9 +159,13 @@ TeX, record the verified engine. Community plugin names go in
 `obsidian.community_plugins` only after each one is enabled and tested.
 `obsidian.plugin_setup` is `"in_progress"`, `"complete"`, or `"later"`; a
 completed empty plugin list means core plugins only. While a plugin is being
-guided, `obsidian.pending_plugin` is one of `"latex-suite"`,
+guided, `obsidian.pending_plugin` is one of
+`"mrw-latex-delimiter-compat"`, `"latex-suite"`,
 `"zotero-integration"`, `"dataview"`, or `"obsidian-git"`. Never put
-credentials in any field.
+credentials in any field. The `mrw-` ID belongs to the fixed
+project-provided bundle and must never be resolved through Obsidian's
+**Browse** screen; every other ID in this list is installed through that
+screen.
 
 ### A. Language
 
@@ -205,8 +209,25 @@ without it.
 - Guide the user to open this existing folder as an Obsidian vault. Do not copy
   or relocate it into an Obsidian-specific directory.
 - Then read `references/obsidian-plugins.md`. Recommend the core-only profile.
-  Offer community plugins by purpose and guide UI installation one at a time;
-  never download or copy plugin code directly.
+  Offer the project-provided delimiter compatibility plugin separately and
+  offer third-party community plugins by purpose, one at a time.
+- For `mrw-latex-delimiter-compat`, explain its purpose, unofficial-directory
+  status, plugin-level vault access, lack of automatic Obsidian updates, and
+  the global trust change caused by turning on community plugins. Ask whether
+  to install it now, skip it, or resume later. Before an approved install, set
+  `obsidian.plugin_setup: "in_progress"` and
+  `obsidian.pending_plugin: "mrw-latex-delimiter-compat"`, then run only
+  `python3 scripts/install-bundled-obsidian-plugin.py --install --consent`.
+  Never search for this ID in **Browse**, copy it by hand, edit
+  `community-plugins.json`, or enable it automatically. The user personally
+  turns on community plugins, enables the installed plugin, and confirms the
+  Reading view, Live Preview, table-cell cursor-movement, and restart checks in
+  the reference. Record completion only after all checks pass.
+- For a project-provided plugin update, first run the installer with no flags
+  for its path-free status. If it reports a stale installed version, explain
+  the update, ask for separate approval, ask the user to close Obsidian, and
+  run only `--update --consent`. Preserve `data.json`; do not treat an equal or
+  newer modified installation as safe to replace automatically.
 - Set `obsidian.plugin_setup: "in_progress"` while guiding a community plugin.
   Record its whitelisted ID in `obsidian.pending_plugin` so an interrupted run
   resumes that exact plugin. Only after the user confirms it was installed,
@@ -310,3 +331,13 @@ a future compatible skill; it is not required for Codex or Markdown work.
 When explicitly asked to reconfigure, change only the requested preference.
 Run diagnostics first, preview side effects, preserve unrelated answers, and
 update the timestamp. Never repeat an installation that is already healthy.
+For a post-setup installation of `mrw-latex-delimiter-compat`, follow the same
+disclosure, fixed installer, user activation, and rendering checks as Step 2D;
+before setting the pending plugin, change the overall `status` back to
+`in_progress` and clear `completed_at`. This makes an interrupted installation
+resumable without creating a contradictory setup state. Only after the user
+passes the activation and rendering checks should setup add the ID to
+`obsidian.community_plugins`, clear the pending value, restore
+`status: "complete"`, write a new timezone-bearing `completed_at`, and retain
+every other choice unchanged. If the user postpones, use the existing
+`plugin_setup: "later"` representation before restoring completed status.

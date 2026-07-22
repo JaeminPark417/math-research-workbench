@@ -18,10 +18,10 @@ Offer `yes` only when all of these conditions hold:
    Browser to access ChatGPT and includes per-use data-transfer approval.
 
 Available features can depend on the user's plan and workspace policy. Linux is
-not a supported built-in Browser platform. This release intentionally includes
-no ChatGPT Browser consumer skill, so recommend `later` unless a compatible
-skill has subsequently been installed. Do not open a login page merely to make
-setup look complete.
+not a supported built-in Browser platform. The bundled `$pro-context-bundle`
+is a compatible consumer. Recommend `yes` only when the user plans to use that
+skill and all gates above pass; otherwise recommend `later`. Do not open a
+login page merely to make setup look complete.
 
 ## Explain the boundary
 
@@ -30,8 +30,9 @@ setup look complete.
 - State that signing in only prepares that browser profile. It does not upload
   repository files and does not approve any future message, attachment,
   download, or transfer.
-- State that a future consumer skill may send separately approved content to
-  OpenAI under the active ChatGPT account's data controls and workspace policy.
+- State that the bundled `$pro-context-bundle` may send separately
+  approved content to OpenAI under the active ChatGPT account's data controls
+  and workspace policy.
 - Ask the user to verify the active account and institutional policy before
   using confidential, regulated, referee, student, patient, or unpublished
   restricted material.

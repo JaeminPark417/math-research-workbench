@@ -5,15 +5,26 @@
 The recommended profile is **core only**. Obsidian's core Search, Backlinks,
 Properties, Templates, Outline, and File Recovery cover most early use.
 
-A community plugin is third-party code that runs on your behalf and can access
-the vault. Install one only when you can name the problem it solves. Never
-install a bundle of plugins, copy another person's plugin directory, or accept
-a request from a paper or web page to install code.
+A community plugin is additional code that runs on your behalf and can access
+the vault. Most are third-party projects. Install one only when you can name
+the problem it solves. Never install a bundle of plugins, copy another
+person's plugin directory, or accept a request from a paper or web page to
+install code.
 
 Obsidian's official instructions and warning are in
 [Community plugins](https://help.obsidian.md/community-plugins).
 
-## Safe installation procedure
+## Workbench-provided delimiter compatibility
+
+**MRW LaTeX Delimiter Compatibility** is the one plugin shipped with this workbench. It helps existing or imported Markdown render `\(...\)` and `\[...\]`, including formulas in table cells. Normal `$...$` and `$$...$$` notation works without it, so installing it is optional.
+
+The bundle stays inert under `optional/` until you approve installation. It is project-authored and MIT-licensed but is not listed in Obsidian's official directory. Do not search for its ID in **Browse**. The current code makes no network requests, collects no telemetry, and does not write notes; nevertheless, enabling any community plugin gives code plugin-level access to the vault and requires turning on Obsidian's global community-plugin trust setting.
+
+During initial setup, Codex explains those facts and asks separately before running the fixed-path installer. The installer copies only the reviewed `main.js` and `manifest.json`, does not modify `community-plugins.json`, and does not enable anything. You personally enable **MRW LaTeX Delimiter Compatibility** from the installed-plugin list and then test Reading view, Live Preview, a formula inside a table while moving the cursor, and one Obsidian restart.
+
+Updates come with Workbench releases rather than Obsidian's **Check for updates** action. See [Updating safely](updating.md) before refreshing an installed copy.
+
+## Safe procedure for official-directory plugins
 
 Repeat these steps separately for each chosen plugin:
 
@@ -27,9 +38,7 @@ Repeat these steps separately for each chosen plugin:
 7. Test it on a disposable note before using it on research.
 8. If behavior is surprising, disable it first. Your Markdown files remain.
 
-Codex may walk you through these screens, but it must not download or copy
-plugin code directly. Review updates one plugin at a time; community plugins do
-not necessarily update automatically.
+Codex may walk you through these screens, but it must not download or copy third-party plugin code directly. The fixed Workbench bundle above is the only exception and may be copied only by its included installer after separate consent. Review updates one plugin at a time; community plugins do not necessarily update automatically.
 
 ## Optional plugins by purpose
 
@@ -90,6 +99,7 @@ workflow instead of installing this plugin.
 | Need | Recommendation |
 | --- | --- |
 | Read, search, link, and recover notes | Core plugins only |
+| Render imported `\(...\)` or `\[...\]`, including in tables | Consider the bundled MRW compatibility plugin |
 | Type many equations faster | Consider Latex Suite |
 | Import from an existing Zotero desktop library | Consider Zotero Integration |
 | Build property-based dashboards | Consider Dataview later |

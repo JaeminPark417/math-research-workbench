@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 import re
 import runpy
@@ -29,6 +30,9 @@ REQUIRED = {
     ".agents/skills/first-run/references/tex.md",
     ".agents/skills/claude-review/SKILL.md",
     ".agents/skills/claude-review/agents/openai.yaml",
+    ".agents/skills/pro-context-bundle/SKILL.md",
+    ".agents/skills/pro-context-bundle/agents/openai.yaml",
+    ".agents/skills/pro-context-bundle/scripts/build_pro_bundle.py",
     ".github/workflows/validate.yml",
     ".gitattributes",
     ".gitignore",
@@ -74,6 +78,10 @@ REQUIRED = {
     "meta/templates/research-log.md",
     "meta/templates/session.md",
     "notes/README.md",
+    "optional/obsidian-plugins/mrw-latex-delimiter-compat/LICENSE",
+    "optional/obsidian-plugins/mrw-latex-delimiter-compat/README.md",
+    "optional/obsidian-plugins/mrw-latex-delimiter-compat/main.js",
+    "optional/obsidian-plugins/mrw-latex-delimiter-compat/manifest.json",
     "papers/README.md",
     "projects/README.md",
     "scripts/compile-tex.ps1",
@@ -81,9 +89,11 @@ REQUIRED = {
     "scripts/claude-readiness.py",
     "scripts/doctor.ps1",
     "scripts/doctor.sh",
+    "scripts/install-bundled-obsidian-plugin.py",
     "scripts/migrate-setup-v1.py",
     "scripts/remote-state.py",
     "scripts/setup-state.py",
+    "scripts/tests/mrw-latex-delimiter-compat.test.js",
     "scripts/validate-release.py",
     "scripts/vault-lint.py",
 }
@@ -490,6 +500,40 @@ def validate_setup_state_fixtures(errors: list[str]) -> None:
         '  plugin_profile: "custom"\n  community_plugins:\n'
         '    - latex-suite',
     )
+    bundled_plugin_v2 = complete_setup_state(2, True).replace(
+        'obsidian:\n  choice: "no"\n  installed: null\n'
+        '  plugin_setup: ""\n  pending_plugin: ""\n'
+        '  plugin_profile: ""\n  community_plugins: []',
+        'obsidian:\n  choice: "yes"\n  installed: true\n'
+        '  plugin_setup: "complete"\n  pending_plugin: ""\n'
+        '  plugin_profile: "custom"\n  community_plugins:\n'
+        '    - "mrw-latex-delimiter-compat"',
+    )
+    unknown_bundled_plugin_v2 = bundled_plugin_v2.replace(
+        '    - "mrw-latex-delimiter-compat"',
+        '    - "latex-delimiter-compat"',
+    )
+    reconfiguring_bundled_plugin_v2 = (
+        complete_setup_state(2, True)
+        .replace("status: complete", "status: in_progress")
+        .replace(
+            'obsidian:\n  choice: "no"\n  installed: null\n'
+            '  plugin_setup: ""\n  pending_plugin: ""\n'
+            '  plugin_profile: ""\n  community_plugins: []',
+            'obsidian:\n  choice: "yes"\n  installed: true\n'
+            '  plugin_setup: "in_progress"\n'
+            '  pending_plugin: "mrw-latex-delimiter-compat"\n'
+            '  plugin_profile: "core-only"\n  community_plugins: []',
+        )
+        .replace('completed_at: "2026-07-19T12:00:00+00:00"', 'completed_at: ""')
+    )
+    fractional_timestamp_v2 = complete_setup_state(2, True).replace(
+        'completed_at: "2026-07-19T12:00:00+00:00"',
+        'completed_at: "2026-07-19T12:00:00.5+00:00"',
+    )
+    completed_with_pending_plugin_v2 = reconfiguring_bundled_plugin_v2.replace(
+        "status: in_progress", "status: complete"
+    ).replace('completed_at: ""', 'completed_at: "2026-07-19T12:00:00+00:00"')
     fixtures = [
         ("missing local state", None, "missing", 0),
         ("blank in-progress version 2", blank_version_2_setup_state(), "ok", 0),
@@ -540,6 +584,11 @@ def validate_setup_state_fixtures(errors: list[str]) -> None:
         ("valid version 1", complete_setup_state(1, False), "outdated", 0),
         ("valid version 2", complete_setup_state(2, True), "ok", 0),
         ("valid private GitHub URL", private_github_v2, "ok", 0),
+        ("valid bundled Obsidian plugin", bundled_plugin_v2, "ok", 0),
+        ("unlisted bundled Obsidian plugin ID", unknown_bundled_plugin_v2, "invalid", 1),
+        ("resumable bundled plugin reconfiguration", reconfiguring_bundled_plugin_v2, "ok", 0),
+        ("completed setup with pending bundled plugin", completed_with_pending_plugin_v2, "inconsistent", 1),
+        ("short fractional completed timestamp", fractional_timestamp_v2, "ok", 0),
         (
             "version 2 public GitHub destination",
             private_github_v2.replace('visibility: "private"', 'visibility: "public"'),
@@ -1095,6 +1144,276 @@ def validate_remote_state_fixtures(errors: list[str]) -> None:
         errors.append("remote-state did not fail closed on invalid UTF-8")
 
 
+def run_bundled_plugin_installer(
+    fixture_root: Path, *arguments: str
+) -> subprocess.CompletedProcess[str]:
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(fixture_root / "scripts/install-bundled-obsidian-plugin.py"),
+            *arguments,
+        ],
+        cwd=fixture_root,
+        text=True,
+        encoding="utf-8",
+        errors="strict",
+        capture_output=True,
+        check=False,
+    )
+    fixture_text = str(fixture_root)
+    if fixture_text in result.stdout or fixture_text in result.stderr:
+        return subprocess.CompletedProcess(
+            result.args,
+            99,
+            result.stdout,
+            "installer output exposed its workspace path",
+        )
+    return result
+
+
+def make_bundled_plugin_fixture(parent: Path) -> Path:
+    fixture_root = parent / "workbench"
+    scripts_dir = fixture_root / "scripts"
+    bundle_parent = fixture_root / "optional" / "obsidian-plugins"
+    scripts_dir.mkdir(parents=True)
+    (fixture_root / ".obsidian").mkdir()
+    shutil.copy2(
+        ROOT / "scripts/install-bundled-obsidian-plugin.py",
+        scripts_dir / "install-bundled-obsidian-plugin.py",
+    )
+    shutil.copytree(
+        ROOT / "optional/obsidian-plugins/mrw-latex-delimiter-compat",
+        bundle_parent / "mrw-latex-delimiter-compat",
+    )
+    return fixture_root
+
+
+def validate_bundled_obsidian_plugin(errors: list[str]) -> None:
+    plugin_id = "mrw-latex-delimiter-compat"
+    bundle = ROOT / "optional" / "obsidian-plugins" / plugin_id
+    expected_files = {"LICENSE", "README.md", "main.js", "manifest.json"}
+    try:
+        bundle_files = {entry.name for entry in os.scandir(bundle)}
+    except OSError:
+        errors.append("bundled Obsidian plugin directory could not be read")
+        return
+    if bundle_files != expected_files:
+        errors.append("bundled Obsidian plugin must contain exactly four reviewed files")
+
+    try:
+        manifest = json.loads((bundle / "manifest.json").read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        errors.append("bundled Obsidian plugin manifest is invalid JSON")
+        return
+    required_strings = (
+        "id",
+        "name",
+        "version",
+        "minAppVersion",
+        "description",
+        "author",
+    )
+    semver = re.compile(r"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$")
+    if (
+        not isinstance(manifest, dict)
+        or manifest.get("id") != plugin_id
+        or bundle.name != plugin_id
+        or any(
+            not isinstance(manifest.get(key), str) or not manifest[key]
+            for key in required_strings
+        )
+        or not semver.fullmatch(str(manifest.get("version", "")))
+        or not semver.fullmatch(str(manifest.get("minAppVersion", "")))
+        or not isinstance(manifest.get("isDesktopOnly"), bool)
+    ):
+        errors.append("bundled Obsidian plugin manifest fields are invalid")
+
+    main_js = read_text(bundle / "main.js")
+    if not main_js:
+        errors.append("bundled Obsidian plugin main.js is missing or unreadable")
+    else:
+        forbidden_capabilities = (
+            "fetch(",
+            "requestUrl",
+            "XMLHttpRequest",
+            "WebSocket",
+            "child_process",
+            "vault.create",
+            "vault.modify",
+            "adapter.write",
+        )
+        if any(capability in main_js for capability in forbidden_capabilities):
+            errors.append("bundled Obsidian plugin gained an undisclosed external or write capability")
+
+    installer = read_text(ROOT / "scripts/install-bundled-obsidian-plugin.py")
+    required_installer_boundaries = (
+        'PLUGIN_ID = "mrw-latex-delimiter-compat"',
+        'PRESERVED_LOCAL_FILES = {"data.json"}',
+        'IGNORED_METADATA_FILES = {".DS_Store"',
+        'action.add_argument("--install"',
+        'action.add_argument("--update"',
+        '"--consent"',
+        "ensure_safe_chain",
+        "is_link_like",
+        "community-plugins.json",
+    )
+    if not installer or any(
+        boundary not in installer for boundary in required_installer_boundaries
+    ):
+        errors.append("bundled Obsidian plugin installer is missing safety boundaries")
+
+    workflow = read_text(ROOT / ".github/workflows/validate.yml")
+    required_workflow_checks = (
+        'python-version: ["3.9", "3.12"]',
+        "actions/setup-node@v6",
+        "node --check optional/obsidian-plugins/mrw-latex-delimiter-compat/main.js",
+        "node scripts/tests/mrw-latex-delimiter-compat.test.js",
+    )
+    if not workflow or any(check not in workflow for check in required_workflow_checks):
+        errors.append("CI is missing Python compatibility or bundled plugin tests")
+
+    with tempfile.TemporaryDirectory(prefix="workbench-plugin-") as temp_name:
+        fixture_root = make_bundled_plugin_fixture(Path(temp_name))
+        obsidian_dir = fixture_root / ".obsidian"
+        installed_dir = obsidian_dir / "plugins" / plugin_id
+        community_state = obsidian_dir / "community-plugins.json"
+        community_sentinel = '["existing-plugin"]\n'
+        community_state.write_text(community_sentinel, encoding="utf-8")
+        (
+            fixture_root
+            / "optional/obsidian-plugins/mrw-latex-delimiter-compat/.DS_Store"
+        ).write_text("fixture\n", encoding="utf-8")
+
+        initial_status = run_bundled_plugin_installer(fixture_root)
+        if (
+            initial_status.returncode != 0
+            or "plugin_status=not_installed" not in initial_status.stdout
+            or installed_dir.exists()
+        ):
+            errors.append("bundled plugin status check was not read-only")
+
+        missing_consent = run_bundled_plugin_installer(fixture_root, "--install")
+        if (
+            missing_consent.returncode != 2
+            or "result=consent_required" not in missing_consent.stdout
+            or installed_dir.exists()
+        ):
+            errors.append("bundled plugin install did not fail closed without consent")
+
+        installed = run_bundled_plugin_installer(
+            fixture_root, "--install", "--consent"
+        )
+        copied_files = (
+            {entry.name for entry in os.scandir(installed_dir)}
+            if installed_dir.is_dir()
+            else set()
+        )
+        copied_bytes_match = installed_dir.is_dir() and all(
+            (installed_dir / name).read_bytes()
+            == (bundle / name).read_bytes()
+            for name in ("main.js", "manifest.json")
+        )
+        if (
+            installed.returncode != 0
+            or "result=installed" not in installed.stdout
+            or copied_files != {"main.js", "manifest.json"}
+            or not copied_bytes_match
+            or community_state.read_text(encoding="utf-8") != community_sentinel
+        ):
+            errors.append("bundled plugin consented install fixture failed")
+
+        current = run_bundled_plugin_installer(fixture_root)
+        if current.returncode != 0 or "plugin_status=installed_current" not in current.stdout:
+            errors.append("bundled plugin current-version detection failed")
+
+        (installed_dir / "Thumbs.db").write_text("fixture\n", encoding="utf-8")
+        current_with_metadata = run_bundled_plugin_installer(fixture_root)
+        if (
+            current_with_metadata.returncode != 0
+            or "plugin_status=installed_current" not in current_with_metadata.stdout
+        ):
+            errors.append("bundled plugin rejected harmless operating-system metadata")
+
+        local_data = '{"fixture":true}\n'
+        (installed_dir / "data.json").write_text(local_data, encoding="utf-8")
+        old_manifest = json.loads((installed_dir / "manifest.json").read_text(encoding="utf-8"))
+        old_manifest["version"] = "0.3.3"
+        (installed_dir / "manifest.json").write_text(
+            json.dumps(old_manifest, indent=2) + "\n", encoding="utf-8"
+        )
+        (installed_dir / "main.js").write_text("// older fixture\n", encoding="utf-8")
+
+        stale = run_bundled_plugin_installer(fixture_root)
+        update_without_consent = run_bundled_plugin_installer(fixture_root, "--update")
+        if (
+            stale.returncode != 0
+            or "plugin_status=installed_stale" not in stale.stdout
+            or update_without_consent.returncode != 2
+            or "result=consent_required" not in update_without_consent.stdout
+            or (installed_dir / "main.js").read_text(encoding="utf-8")
+            != "// older fixture\n"
+        ):
+            errors.append("bundled plugin update did not preserve consent or stale state")
+
+        updated = run_bundled_plugin_installer(
+            fixture_root, "--update", "--consent"
+        )
+        if (
+            updated.returncode != 0
+            or "result=updated" not in updated.stdout
+            or (installed_dir / "data.json").read_text(encoding="utf-8") != local_data
+            or community_state.read_text(encoding="utf-8") != community_sentinel
+            or any(
+                (installed_dir / name).read_bytes() != (bundle / name).read_bytes()
+                for name in ("main.js", "manifest.json")
+            )
+        ):
+            errors.append("bundled plugin consented update fixture failed")
+
+        (installed_dir / "unexpected.js").write_text("fixture\n", encoding="utf-8")
+        refused = run_bundled_plugin_installer(
+            fixture_root, "--update", "--consent"
+        )
+        if refused.returncode == 0 or "result=update_refused" not in refused.stdout:
+            errors.append("bundled plugin installer accepted unexpected destination files")
+
+    with tempfile.TemporaryDirectory(prefix="workbench-plugin-link-") as temp_name:
+        fixture_parent = Path(temp_name)
+        fixture_root = make_bundled_plugin_fixture(fixture_parent)
+        plugins_path = fixture_root / ".obsidian" / "plugins"
+        redirect_target = fixture_parent / "redirect-target"
+        redirect_target.mkdir()
+        link_ready = False
+        try:
+            os.symlink(redirect_target, plugins_path, target_is_directory=True)
+            link_ready = True
+        except OSError:
+            if os.name == "nt":
+                junction = subprocess.run(
+                    [
+                        "cmd",
+                        "/d",
+                        "/c",
+                        "mklink",
+                        "/J",
+                        str(plugins_path),
+                        str(redirect_target),
+                    ],
+                    text=True,
+                    capture_output=True,
+                    check=False,
+                )
+                link_ready = junction.returncode == 0
+        if not link_ready:
+            errors.append("could not create bundled plugin link-safety fixture")
+        else:
+            linked = run_bundled_plugin_installer(
+                fixture_root, "--install", "--consent"
+            )
+            if linked.returncode == 0 or any(redirect_target.iterdir()):
+                errors.append("bundled plugin installer wrote through a link or junction")
+
+
 def execute_vault_lint(
     note_text: str | None = None,
     binary_name: str | None = None,
@@ -1190,9 +1509,11 @@ def main() -> int:
         for unexpected in sorted(relative_files - RELEASE_ALLOWLIST):
             errors.append(f"unexpected file in public release: {unexpected}")
 
-    for forbidden in (".claude", ".codex", ".obsidian/plugins"):
+    for forbidden in (".claude", ".codex"):
         if os.path.lexists(ROOT / forbidden):
             errors.append(f"forbidden public path exists: {forbidden}")
+    if strict_release and os.path.lexists(ROOT / ".obsidian/plugins"):
+        errors.append("forbidden public path exists: .obsidian/plugins")
     harness_dir = ROOT / ".harness"
     if strict_release and not is_link_like(harness_dir) and harness_dir.is_dir():
         try:
@@ -1245,7 +1566,7 @@ def main() -> int:
                 if not resolved.exists():
                     errors.append(f"broken local link in {relative}: {target}")
 
-    for skill_name in ("first-run", "claude-review"):
+    for skill_name in ("first-run", "claude-review", "pro-context-bundle"):
         skill = ROOT / f".agents/skills/{skill_name}/SKILL.md"
         if skill.exists():
             skill_text = skill.read_text(encoding="utf-8")
@@ -1283,6 +1604,43 @@ def main() -> int:
         ui_text = claude_review_ui.read_text(encoding="utf-8")
         if "allow_implicit_invocation: false" not in ui_text:
             errors.append("Claude review skill must disable implicit invocation")
+
+    pro_skill = ROOT / ".agents/skills/pro-context-bundle/SKILL.md"
+    if pro_skill.exists():
+        pro_text = pro_skill.read_text(encoding="utf-8")
+        required_pro_boundaries = (
+            "fresh approval",
+            "Do not put absolute local paths in an outbound bundle.",
+            "without an overall time limit",
+            "Never click `Answer now` automatically",
+            "Click `Answer now` only when the user explicitly requests",
+        )
+        missing_boundaries = [
+            boundary for boundary in required_pro_boundaries if boundary not in pro_text
+        ]
+        if missing_boundaries:
+            errors.append("Pro context skill is missing required approval or wait boundaries")
+
+    pro_builder = ROOT / ".agents/skills/pro-context-bundle/scripts/build_pro_bundle.py"
+    if pro_builder.exists():
+        builder_text = pro_builder.read_text(encoding="utf-8")
+        required_builder_boundaries = (
+            "TEXT_SUFFIXES",
+            "SENSITIVE_SKIP_SUFFIXES",
+            "Skipping an input outside the workbench root.",
+            "Additional instruction files must stay inside the workbench root.",
+            "# ChatGPT Pro Handoff Bundle",
+        )
+        if any(boundary not in builder_text for boundary in required_builder_boundaries):
+            errors.append("Pro context builder is missing required privacy boundaries")
+        if "- absolute_path:" in builder_text:
+            errors.append("Pro context builder must not put absolute paths in outbound bundles")
+
+    pro_ui = ROOT / ".agents/skills/pro-context-bundle/agents/openai.yaml"
+    if pro_ui.exists():
+        ui_text = pro_ui.read_text(encoding="utf-8")
+        if "allow_implicit_invocation: false" not in ui_text:
+            errors.append("Pro context skill must disable implicit invocation")
 
     example_config = ROOT / ".harness/config.example.yaml"
     if example_config.exists():
@@ -1332,6 +1690,7 @@ def main() -> int:
     validate_secret_fixtures(errors)
     validate_claude_readiness_fixtures(errors)
     validate_remote_state_fixtures(errors)
+    validate_bundled_obsidian_plugin(errors)
     validate_vault_lint_fixtures(errors)
 
     for wrapper_name in ("scripts/compile-tex.sh", "scripts/compile-tex.ps1"):

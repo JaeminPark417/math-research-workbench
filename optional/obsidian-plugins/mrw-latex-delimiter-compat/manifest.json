@@ -1,0 +1,9 @@
+{
+  "id": "mrw-latex-delimiter-compat",
+  "name": "MRW LaTeX Delimiter Compatibility",
+  "version": "0.3.4",
+  "minAppVersion": "1.0.0",
+  "description": "Render LaTeX math delimiters \\(...\\) and \\[...\\] in Reading view and Live Preview.",
+  "author": "Jaemin Park",
+  "isDesktopOnly": false
+}

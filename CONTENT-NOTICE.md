@@ -15,7 +15,10 @@ and templates distributed by Math Research Workbench are available under the
 - Third-party papers, figures, data, templates, fonts, software, plugins, and
   trademarks remain subject to their own licenses and terms.
 - Links to third-party services do not bundle, redistribute, or endorse their
-  software. Obsidian community plugins are not included in this repository.
+  software. Third-party Obsidian community plugins are not included in this
+  repository. One project-authored, MIT-licensed compatibility plugin is
+  included under `optional/` as inert source and runtime files. It is not
+  installed, enabled, or updated without a separate explanation and approval.
 
 Do not add a copyrighted paper PDF to a public contribution unless you have
 the right to redistribute it. A bibliographic note and a lawful link are the

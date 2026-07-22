@@ -79,7 +79,7 @@ Provide the new release folder only when Codex asks. Grant access to that one
 folder, not to an entire home directory or cloud drive.
 
 Framework files normally include `AGENTS.md`, `.agents/skills/`, `meta/`,
-`scripts/`, `docs/`, and distributed templates. Research content normally
+`scripts/`, `docs/`, `optional/`, and distributed templates. Research content normally
 includes `inbox/`, `ideas/`, `papers/`, `notes/`, `projects/`, and `files/`.
 If a release note says a research schema changed, ask Codex for a migration
 preview before approving it.
@@ -88,6 +88,14 @@ Even if Codex proposes several changes together, one approval is not blanket
 permission for all of them. Review the file list and diff, then approve one
 operation at a time. Software installation, an external-service action, and a
 visibility change each require a separate explanation and approval.
+
+## Refresh the optional Workbench Obsidian plugin
+
+The project-provided `mrw-latex-delimiter-compat` plugin is not in Obsidian's official directory, so **Check for updates** does not refresh it. Updating the files under `optional/` also does not silently replace the installed local copy.
+
+After a framework update, ask Codex to run `python3 scripts/install-bundled-obsidian-plugin.py` with no flags. This is a read-only, path-free comparison. If it reports `installed_current` or `not_installed`, no update is needed. If it reports `installed_stale`, Codex must explain the version change and ask for separate approval. Close Obsidian before an approved `--update --consent` operation. The helper preserves `data.json`, never edits `community-plugins.json`, refuses modified or unknown installations, and does not enable the plugin. For `empty`, `installed_modified`, `installed_newer`, `unsafe`, `unrecognized`, or `invalid_bundle`, stop and follow the exact-status recovery table in [Troubleshooting](troubleshooting.md); do not delete or overwrite the plugin folder.
+
+After reopening Obsidian, verify inline and display equations in Reading view and Live Preview, move the cursor into and out of a table cell containing a formula, and restart Obsidian once. Existing users who install the plugin after completing first-run setup should ask Codex to run the Obsidian part of setup again. Codex temporarily marks setup `in_progress` and clears the old completion timestamp before installation, then records a new completion timestamp only after the tests pass or the plugin step is explicitly postponed; all other answers remain unchanged.
 
 ## If you use GitHub
 

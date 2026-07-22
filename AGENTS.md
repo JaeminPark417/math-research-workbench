@@ -91,8 +91,14 @@ invoke `$first-run`.
 - Keep machine-specific state in `.harness/local.yaml`; it is ignored by Git.
 - Do not enable TeX shell escape. Do not compile untrusted TeX without warning
   the user.
-- Do not install Obsidian community plugins in bulk or by copying plugin files.
-  Guide the user through Obsidian's plugin browser one plugin at a time.
+- Do not install third-party Obsidian community plugins in bulk or by copying
+  plugin files. Guide the user through Obsidian's plugin browser one plugin at
+  a time. The only copy-install exception is the reviewed, fixed-ID
+  `mrw-latex-delimiter-compat` bundle shipped with this workbench: after the
+  separate disclosure and explicit approval, use only
+  `scripts/install-bundled-obsidian-plugin.py --install --consent` (or its
+  approved `--update --consent` mode). Never edit `community-plugins.json` or
+  enable the plugin automatically.
 
 ## Mathematical integrity
 

@@ -177,9 +177,26 @@ vault를 새로 만들지 마세요. Obsidian 공식
 설치 직후 문제가 생겼다면 그 플러그인부터 끄세요. Markdown 노트는 그대로 남아
 있습니다.
 
+**MRW LaTeX Delimiter Compatibility** 문제는 **Browse**에서 검색해 해결하지 마세요. Codex에게 `python3 scripts/install-bundled-obsidian-plugin.py`를 옵션 없이 실행해 달라고 하세요. `installed_current`는 번들 파일과 설치본이 같다는 뜻이고, `installed_stale`은 별도 승인을 받아 적용할 Workbench 업데이트가 있다는 뜻입니다. 활성화하거나 갱신한 뒤 Reading view, Live Preview, 수식이 있는 표 셀 안팎으로 커서를 옮길 때의 동작, Obsidian 재시작 후 동작을 확인하세요.
+
+| 상태 또는 결과 | 의미와 안전한 다음 단계 |
+| --- | --- |
+| `not_installed` | 아직 아무 파일도 복사되지 않았습니다. 그대로 사용하거나 동의 기반 설치 안내로 돌아갑니다. |
+| `installed_current` | 설치 파일과 이 Workbench 릴리스가 같습니다. Enable 스위치와 렌더링 테스트를 확인합니다. |
+| `installed_stale` | 더 새 번들 버전이 있습니다. 변경 설명을 읽고 Obsidian을 닫은 뒤, 원할 때만 이 업데이트를 별도로 승인합니다. |
+| `empty` | 이전 시도가 빈 플러그인 폴더를 남겼습니다. Codex가 정확한 작업을 보여주고 승인을 받은 뒤에만 다시 설치합니다. |
+| `installed_modified` | 같은 버전의 설치 파일이 번들과 다릅니다. 덮어쓰지 말고 Codex에게 차이를 비교해 다른 복사본을 보관하도록 요청합니다. |
+| `installed_newer` | 설치 플러그인이 현재 Workbench보다 새 버전입니다. Workbench를 갱신하거나 새 설치본을 보존하고, 이전 버전으로 내리지 않습니다. |
+| `unsafe` 또는 `result=unsafe_path` | 링크, junction 또는 일반 파일이 아닌 항목 때문에 경로가 안전하지 않습니다. 이 플러그인 경로만 조사하고 링크를 따라 쓰지 않습니다. |
+| `unrecognized`, `install_refused`, `update_refused` | 필요한 파일이 없거나 예상하지 못한 파일이 있습니다. Obsidian을 닫고 Codex에게 이 폴더 하나만 삭제 없이 목록화하도록 요청합니다. 설치 도우미가 남긴 `.main.js.mrw-*`, `.manifest.json.mrw-*` 파일은 출처를 확인하고 이동 승인을 받은 뒤에만 Git에서 제외되는 복구 폴더로 옮깁니다. |
+| `invalid_bundle` 또는 `bundle_unavailable` | 선택형 원본 번들이 불완전하거나 바뀌었습니다. Workbench를 다시 받거나 안전하게 갱신하고, `main.js`만 따로 내려받지 않습니다. |
+| `close_obsidian_and_retry` | Obsidian이 실행 파일을 사용 중일 가능성이 큽니다. 완전히 닫은 뒤 이미 승인한 작업만 다시 실행합니다. |
+
+Finder와 Windows가 만드는 `.DS_Store`, `Thumbs.db`, `Desktop.ini`는 설치 도우미가 무시합니다. 그 밖의 예상하지 못한 파일은 자동으로 정리하지 않고 그대로 보존한 채 확인합니다.
+
 인터넷에서 알 수 없는 `main.js` 파일을 내려받거나 다른 사람의
 `.obsidian/plugins` 폴더를 복사하는 방식으로 문제를 해결하지 마세요.
-[플러그인 안내](obsidian-plugins.ko.md)를 따르세요.
+고정된 Workbench 설치 도우미만 검토된 직접 설치 예외입니다. [플러그인 안내](obsidian-plugins.ko.md)를 따르세요.
 
 ## Obsidian에서는 수식이 보이지만 `.tex` 파일은 조판되지 않습니다
 
