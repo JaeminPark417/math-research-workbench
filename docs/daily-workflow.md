@@ -71,6 +71,16 @@ Create a project for this problem. Explain the proposed files before writing
 them, keep a list of open gaps, and record today's decisions and next steps.
 ```
 
+### Let Codex maintain the Research State Spine
+
+Keep chatting naturally while you explore. Codex maintains the project `README.md` as the **Research State Spine**: a compact view of the stable mathematical objects, their dependencies and status, the important unresolved gaps, and the next useful actions. You do not need to edit its tables manually.
+
+The spine uses `Def-NNN`, `Lem-NNN`, `Prop-NNN`, `Thm-NNN`, `Cor-NNN`, and `Gap-NNN`. A tentative consequence stays in a log or draft; it becomes `Cor-NNN` only after it is a stable downstream consequence that matters to the paper or a research decision. Scratch calculations, discarded routes, and evolving prose also stay in `sessions/`, `logs/`, or `drafts/` rather than crowding the spine.
+
+```text
+Keep working with me in the usual conversational way. Update the project Research State Spine only with stable definitions, lemmas, propositions, theorems, corollaries, and unresolved gaps that matter to the paper or a research decision. Keep scratch work in the logs or drafts, and tell me what you promoted.
+```
+
 ### Prepare a manuscript
 
 ```text

@@ -145,6 +145,28 @@ The project status describes the project, not the truth of an individual
 claim. Claims and proof gaps must be recorded explicitly in the body and in
 linked research logs.
 
+### Project README body contract
+
+The project README contains a `Research State Spine`: a compact current map of paper-relevant or decision-relevant definitions, claims, dependencies, gaps, and next actions. This is a body structure, not a new note type or YAML field. Exploratory calculations, failed routes, and detailed arguments remain in linked `logs/` or `drafts/`.
+
+Use stable IDs with explicit prefixes:
+
+- `Def-NNN` for a definition or fixed notation;
+- `Lem-NNN` for a lemma;
+- `Prop-NNN` for a proposition;
+- `Thm-NNN` for a theorem;
+- `Cor-NNN` for a stable downstream corollary;
+- `Gap-NNN` for an unresolved gap or blocking issue.
+
+The three state axes in the claim ledger are independent of the project YAML `status` and the research-log YAML `review_status`:
+
+- Mathematical state: `conjectural`, `partial`, `gap-found`, `supported`, `closed-by-researcher`, or `refuted`.
+- Review provenance: `unchecked`, `AI-assisted`, `human-reviewed` with scope and date, `formal-tool-checked` with the encoded statement, tool, and version, or `human-and-formal`. In project README tables, `AI-assisted` is descriptive provenance only; a linked research log remains `review_status: unchecked` unless a permitted human or formal review actually occurred.
+- Integration state: `isolated`, `integrated`, `review-stale`, or `retired`.
+- Gap state: `open`, `resolved`, or `retired`. Keep resolved and retired gap IDs for provenance.
+
+`supported` means that the linked evidence currently supports the claim within its recorded scope; it is not a certificate issued by an AI. Only the researcher may set `closed-by-researcher`. If an upstream definition or statement changes, mark affected downstream claims `review-stale` in the integration axis until their dependencies are rechecked; do not automatically mark them refuted.
+
 ## `session`
 
 A short record of one research session.

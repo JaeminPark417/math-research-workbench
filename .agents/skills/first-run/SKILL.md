@@ -321,6 +321,7 @@ a future compatible skill; it is not required for Codex or Markdown work.
    - `notes/`: reusable definitions, lemmas, and explanations.
    - `projects/`: active research with sessions and proof work.
    - `files/`: local ignored binaries or links to external storage.
+   Explain that each active project's `README.md` is its Research State Spine. Codex maintains its `Def-NNN`, `Lem-NNN`, `Prop-NNN`, `Thm-NNN`, `Cor-NNN`, and `Gap-NNN` entries from ordinary conversation, promoting only stable objects that matter to the paper or a research decision. A consequence becomes `Cor-NNN` only when it is a stable downstream consequence; scratch work remains in sessions, logs, or drafts. The user does not need to edit tables manually. Keep the Spine's structural headings and table headers in the template's stable English form while writing surrounding explanations in the selected language.
 4. Offer four first prompts in the user's language, such as processing an
    arXiv link, auditing a proof, starting a project, and ending a session.
 5. Point to `docs/daily-workflow.md` and state that setup can be changed later

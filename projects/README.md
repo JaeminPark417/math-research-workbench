@@ -17,6 +17,8 @@ Create the project `README.md` from `meta/templates/project.md`. Create session
 notes from `meta/templates/session.md`, and use `research-log.md` or
 `proof-audit.md` for inspectable mathematical work.
 
+Treat the project `README.md` as its **Research State Spine**. The researcher can keep talking to Codex naturally; Codex maintains the spine, and the researcher does not need to edit its tables manually. Promote only stable objects that matter to the paper or a research decision: `Def-NNN` definitions, `Lem-NNN` lemmas, `Prop-NNN` propositions, `Thm-NNN` theorems, `Cor-NNN` corollaries, and `Gap-NNN` unresolved gaps. Give a consequence a `Cor-NNN` identifier only when it is a stable downstream consequence worth tracking. Keep scratch calculations, tentative consequences, failed routes, and evolving exposition in `sessions/`, `logs/`, or `drafts/`.
+
 At the end of a session, update both the session note and the project
 `README.md`. The README should always tell a returning researcher:
 
@@ -27,3 +29,5 @@ At the end of a session, update both the session note and the project
 
 Project status is organizational. It never certifies that an individual
 mathematical claim is true.
+
+Existing project READMEs are not rewritten automatically when this framework changes. Migrate one project at a time only when the researcher asks, preview the proposed mapping first, and preserve the original notes and mathematical meaning.

@@ -26,6 +26,12 @@ Summarize the state at the beginning of the session and link relevant notes.
 - Decision:
   - Reason:
 
+## Research State Spine updates
+
+- Stable IDs added or changed:
+- Dependencies or states changed:
+- Project README reconciled: no
+
 ## Unresolved questions
 
 - TODO

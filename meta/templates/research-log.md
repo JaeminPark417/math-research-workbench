@@ -19,6 +19,11 @@ setup for prose and headings. -->
 
 State what this log attempts to establish, refute, calculate, or clarify.
 
+## Research State Spine links
+
+- Stable claim or gap IDs touched: none yet
+- Expected project README update: none yet
+
 ## Assumptions and dependencies
 
 - TODO
@@ -37,8 +42,7 @@ Record enough intermediate reasoning that another mathematician can inspect it.
 
 ## Scoped conclusion
 
-State only what the work supports. `status: complete` means this activity ended;
-it does not mean that a theorem is proved.
+State only what the work supports. `status: complete` means this activity ended; it does not mean that a theorem is proved. If the result changes a paper-relevant claim, dependency, or gap, update the linked project's Research State Spine.
 
 ## Review record
 

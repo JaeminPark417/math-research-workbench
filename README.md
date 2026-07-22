@@ -70,6 +70,20 @@ For screen-by-screen instructions and a glossary, read
 | `files/` | Local large-file fallback; excluded from GitHub by default |
 | `meta/` | Conventions, schemas, safety rules, and templates |
 
+## How project research stays organized
+
+You can keep working exactly as you would in an ordinary conversation: ask questions, add information, test approaches, and solve the problem with Codex. For each active project, Codex maintains the project `README.md` as a compact **Research State Spine** so that the important mathematical state remains easy to recover.
+
+The spine gives stable, paper- or decision-relevant objects explicit identifiers: `Def-NNN` for definitions, `Lem-NNN` for lemmas, `Prop-NNN` for propositions, `Thm-NNN` for theorems, `Cor-NNN` for corollaries, and `Gap-NNN` for unresolved gaps. These identifiers organize the work; they do not certify that a claim is true. A consequence receives a `Cor-NNN` identifier only when it has become a stable downstream consequence worth carrying into the paper or later decisions.
+
+Exploratory calculations, temporary observations, failed approaches, and tentative consequences stay in `sessions/`, `logs/`, or `drafts/`. Codex promotes only the stable objects that matter to the paper or a research decision, and you do not need to edit the spine's tables by hand.
+
+For example, you can simply ask:
+
+```text
+Keep researching this problem with me as usual. Update the project Research State Spine with any stable definition, lemma, proposition, theorem, corollary, or unresolved gap that matters to the paper, and leave scratch work in the logs or drafts.
+```
+
 The files remain readable without Codex or Obsidian. Obsidian is an optional
 visual editor for the same Markdown files.
 

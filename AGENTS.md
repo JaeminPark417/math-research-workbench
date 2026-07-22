@@ -116,6 +116,9 @@ invoke `$first-run`.
 - New, unclassified material goes to `inbox/`.
 - Refine it into `ideas/`, `papers/`, `notes/`, or `projects/`.
 - Store project sessions and research logs under the relevant project.
+- For every new sustained mathematical research project, create the project `README.md` from `meta/templates/project.md` and maintain its Research State Spine during ordinary work. The user may keep speaking naturally and should not need to edit the tables manually.
+- Give only paper-relevant or major-decision-relevant objects stable explicit IDs: `Def-NNN`, `Lem-NNN`, `Prop-NNN`, `Thm-NNN`, `Cor-NNN`, and `Gap-NNN`. Never replace them with ambiguous single-letter or collective initialisms, never renumber or reuse an ID, and keep exploratory work in logs or drafts.
+- Keep mathematical state, review provenance, and integration state separate. If an upstream definition or claim changes, mark downstream integration `review-stale` until rechecked; never infer truth from AI review provenance.
 - Put PDFs and binaries in `files/` or the configured external storage. Files
   under `files/` are not backed up to GitHub by default.
 - Follow `meta/schemas.md`, `meta/conventions.md`, `meta/math-workflow.md`, and

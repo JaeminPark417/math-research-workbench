@@ -65,9 +65,9 @@ projects/project-slug/
 └── drafts/
 ```
 
-The project `README.md` is the current map: research question, definitions,
-claim ledger, open gaps, important links, and next actions. Update it when the
-direction changes so a later session can resume without reconstructing context.
+The project `README.md` is the Research State Spine: the clean current map of the research question, paper-relevant definitions and claims, logical dependencies, open gaps, important links, and next actions. Use the stable IDs and separate state axes defined in `meta/schemas.md`. Codex maintains this map during ordinary conversation; the researcher does not need to edit Markdown tables by hand.
+
+Only promote stable objects that affect a paper or a major research decision into the Spine. Keep exploratory calculations, mixed notes, and failed routes in `logs/` or `drafts`, with links from the Spine when they become relevant.
 
 ## 6. Develop an argument
 
@@ -86,6 +86,8 @@ Useful checks include:
 
 Do not erase a failed route. Mark why it failed and link it from the project
 map if it is likely to recur.
+
+When a log changes a stable definition, lemma, proposition, theorem, corollary, or gap, update the corresponding `Def-NNN`, `Lem-NNN`, `Prop-NNN`, `Thm-NNN`, `Cor-NNN`, or `Gap-NNN` entry in the project README. Record dependencies rather than repeating detailed proofs in the table. If an upstream statement changes, mark downstream integration states `review-stale` until they are rechecked.
 
 ## 7. Audit a proof
 
@@ -125,8 +127,7 @@ Create a `session` note that records:
 - the next small, concrete action;
 - notes created or updated.
 
-Then update the project `README.md` so its current state agrees with the new
-logs. Archive source material; do not permanently delete it.
+Then reconcile the project `README.md` with the new logs: add or update stable IDs, dependencies, mathematical state, review provenance, integration state, open gaps, and the next action. Do not renumber existing IDs or infer that a claim became true because an AI review found no problem. Archive source material; do not permanently delete it.
 
 ## 10. Promote durable knowledge
 

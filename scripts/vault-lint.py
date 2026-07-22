@@ -82,6 +82,27 @@ BINARY_SUFFIXES = {
 }
 YAML_KEY = re.compile(r"^([A-Za-z][A-Za-z0-9_-]*):(?:\s*(.*))?$")
 WIKILINK = re.compile(r"\[\[([^\]]+)\]\]")
+STATE_SPINE_HEADER = (
+    "| ID | Claim | Mathematical state | Depends on | Evidence or source | "
+    "Review provenance | Integration state | Next action |"
+)
+LEGACY_CLAIM_HEADER = "| ID | Claim | State | Evidence or gap | Source log |"
+MATHEMATICAL_STATES = {
+    "conjectural",
+    "partial",
+    "gap-found",
+    "supported",
+    "closed-by-researcher",
+    "refuted",
+}
+INTEGRATION_STATES = {"isolated", "integrated", "review-stale", "retired"}
+REVIEW_PROVENANCE_PREFIXES = (
+    "unchecked",
+    "AI-assisted",
+    "human-reviewed",
+    "formal-tool-checked",
+    "human-and-formal",
+)
 
 
 def portable_kebab_filename(name: str) -> bool:
@@ -137,6 +158,169 @@ def is_link_like(path: Path) -> bool:
         return False
     reparse_flag = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0)
     return bool(reparse_flag and attributes & reparse_flag)
+
+
+def split_markdown_table_row(line: str) -> list[str]:
+    """Split one Markdown table row while preserving escaped/code/math pipes."""
+    stripped = line.strip()
+    if not stripped.startswith("|"):
+        return []
+    body = stripped[1:-1] if stripped.endswith("|") else stripped[1:]
+    cells: list[str] = []
+    current: list[str] = []
+    code = False
+    math_mode = ""
+    index = 0
+    while index < len(body):
+        char = body[index]
+        next_char = body[index + 1] if index + 1 < len(body) else ""
+        pair = char + next_char
+        if char == "\\" and next_char:
+            if pair in {"\\(", "\\["} and not code and not math_mode:
+                math_mode = pair
+            elif (
+                (pair == "\\)" and math_mode == "\\(")
+                or (pair == "\\]" and math_mode == "\\[")
+            ):
+                math_mode = ""
+            current.extend((char, next_char))
+            index += 2
+            continue
+        if char == "`" and not math_mode:
+            code = not code
+            current.append(char)
+            index += 1
+            continue
+        if char == "$" and not code and math_mode not in {"\\(", "\\["}:
+            math_mode = "" if math_mode == "$" else "$"
+            current.append(char)
+            index += 1
+            continue
+        if char == "|" and not code and not math_mode:
+            cells.append("".join(current).strip())
+            current = []
+        else:
+            current.append(char)
+        index += 1
+    cells.append("".join(current).strip())
+    return cells
+
+
+def markdown_subsection(text: str, heading: str) -> str:
+    if heading not in text:
+        return ""
+    after_heading = text.split(heading, 1)[1]
+    next_heading = re.search(r"^#{2,3}\s+", after_heading, re.MULTILINE)
+    return after_heading[: next_heading.start()] if next_heading else after_heading
+
+
+def normalized_table_id(value: str) -> str:
+    return value.strip().strip("`*_ ")
+
+
+def review_provenance_valid(value: str) -> bool:
+    return any(
+        value == prefix
+        or (
+            value.startswith(prefix)
+            and value[len(prefix) : len(prefix) + 1] in {" ", "(", "[", ":", ";", "-", "—"}
+        )
+        for prefix in REVIEW_PROVENANCE_PREFIXES
+    )
+
+
+def validate_research_state_spine(
+    path: Path,
+    text: str,
+    data: dict[str, str] | None,
+    errors: list[str],
+    warnings: list[str],
+) -> None:
+    if data is None or data.get("type") != "project" or path.name != "README.md":
+        return
+    relative = path.relative_to(ROOT)
+    if "## Research State Spine" not in text:
+        if STATE_SPINE_HEADER in text:
+            errors.append(f"Research State Spine missing its section heading: {relative}")
+            return
+        if LEGACY_CLAIM_HEADER in text or re.search(r"^\|\s*C1\s*\|", text, re.MULTILINE):
+            warnings.append(
+                f"legacy project claim ledger; optional per-project migration available: {relative}"
+            )
+        return
+
+    for heading in (
+        "## Research State Spine",
+        "### Definition registry",
+        "### Claim ledger",
+        "### Open gaps",
+    ):
+        if heading not in text:
+            errors.append(f"Research State Spine missing {heading!r}: {relative}")
+    if STATE_SPINE_HEADER not in text:
+        errors.append(f"Research State Spine has an invalid claim-ledger header: {relative}")
+
+    spine_start = text.index("## Research State Spine")
+    after_spine_heading = text[spine_start + len("## Research State Spine") :]
+    next_section = re.search(r"^##(?!#)\s+", after_spine_heading, re.MULTILINE)
+    spine_text = (
+        after_spine_heading[: next_section.start()]
+        if next_section is not None
+        else after_spine_heading
+    )
+
+    stable_ids: list[str] = []
+    table_specs = (
+        ("### Definition registry", re.compile(r"Def-\d{3}"), 4),
+        ("### Claim ledger", re.compile(r"(?:Lem|Prop|Thm|Cor)-\d{3}"), 8),
+        ("### Open gaps", re.compile(r"Gap-\d{3}"), 6),
+    )
+    for heading, id_pattern, expected_cells in table_specs:
+        section = markdown_subsection(spine_text, heading)
+        for line in section.splitlines():
+            cells = split_markdown_table_row(line)
+            if not cells:
+                continue
+            first_cell = normalized_table_id(cells[0])
+            if first_cell == "ID" or re.fullmatch(r":?-+:?", first_cell):
+                continue
+            if not first_cell:
+                warnings.append(f"blank stable research ID in {heading}: {relative}")
+                continue
+            if id_pattern.fullmatch(first_cell) is None:
+                errors.append(
+                    f"invalid stable research ID {first_cell!r} in {heading}: {relative}"
+                )
+                continue
+            stable_ids.append(first_cell)
+            if len(cells) != expected_cells:
+                errors.append(
+                    f"Research State Spine row for {first_cell} has {len(cells)} cells; expected {expected_cells}: {relative}"
+                )
+                continue
+            if heading == "### Claim ledger":
+                mathematical_state = cells[2]
+                review_provenance = cells[5]
+                integration_state = cells[6]
+                if mathematical_state not in MATHEMATICAL_STATES:
+                    errors.append(
+                        f"invalid mathematical state {mathematical_state!r} for {first_cell}: {relative}"
+                    )
+                if not review_provenance_valid(review_provenance):
+                    errors.append(
+                        f"invalid review provenance {review_provenance!r} for {first_cell}: {relative}"
+                    )
+                if integration_state not in INTEGRATION_STATES:
+                    errors.append(
+                        f"invalid integration state {integration_state!r} for {first_cell}: {relative}"
+                    )
+
+    duplicates = sorted({item for item in stable_ids if stable_ids.count(item) > 1})
+    if duplicates:
+        errors.append(
+            f"duplicate stable research IDs {', '.join(duplicates)}: {relative}"
+        )
+
 
 
 def scan_content() -> tuple[list[Path], list[Path], list[Path], list[Path], list[Path]]:
@@ -241,6 +425,8 @@ def main() -> int:
                 value = data[field]
                 if not valid_iso_date(value):
                     errors.append(f"invalid ISO date in {field}: {relative}")
+
+        validate_research_state_spine(path, text, data, errors, warnings)
 
         for raw_link in WIKILINK.findall(text):
             target = raw_link.split("|", 1)[0].split("#", 1)[0].strip()

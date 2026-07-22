@@ -89,6 +89,16 @@ permission for all of them. Review the file list and diff, then approve one
 operation at a time. Software installation, an external-service action, and a
 visibility change each require a separate explanation and approval.
 
+## Adopt the Research State Spine in an existing project
+
+Updating the framework does not automatically rewrite an existing project's `README.md`. The new template tracks stable, paper- or decision-relevant definitions, lemmas, propositions, theorems, corollaries, and unresolved gaps as `Def-NNN`, `Lem-NNN`, `Prop-NNN`, `Thm-NNN`, `Cor-NNN`, and `Gap-NNN`, but each existing project may migrate separately when you choose.
+
+Ask Codex to preview one project's mapping before changing it. Scratch work remains in `sessions/`, `logs/`, or `drafts/`, and a consequence receives `Cor-NNN` only when it is a stable downstream consequence worth tracking. The migration must preserve the original notes and mathematical meaning; it must not treat an identifier as proof verification.
+
+```text
+Preview how this one project's README would migrate to the Research State Spine. Do not change any file yet. Keep scratch work in sessions, logs, or drafts; assign Def-NNN, Lem-NNN, Prop-NNN, Thm-NNN, Cor-NNN, and Gap-NNN only to stable objects that matter to the paper or a research decision, and explain every proposed mapping in ordinary language.
+```
+
 ## Refresh the optional Workbench Obsidian plugin
 
 The project-provided `mrw-latex-delimiter-compat` plugin is not in Obsidian's official directory, so **Check for updates** does not refresh it. Updating the files under `optional/` also does not silently replace the installed local copy.

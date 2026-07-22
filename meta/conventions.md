@@ -23,6 +23,7 @@ Codex. They deliberately use a small vocabulary.
 
 - During first-run setup, the user selects `en` or `ko`.
 - Codex writes explanations, headings, and note prose in the selected language.
+- In a project README, keep the `Research State Spine` structural headings and table headers exactly as written in `meta/templates/project.md`. They are stable machine-readable labels maintained by Codex; surrounding explanation and ordinary headings use the selected language.
 - YAML field names, enum values, filenames, LaTeX commands, and standard
   mathematical terminology remain stable in English where translation would
   make searching harder.
@@ -51,6 +52,14 @@ Codex. They deliberately use a small vocabulary.
 - Preserve failed approaches and counterexamples because they prevent repeated
   work.
 
+## Stable research IDs
+
+- In a project's Research State Spine, use `Def-NNN`, `Lem-NNN`, `Prop-NNN`, `Thm-NNN`, `Cor-NNN`, and `Gap-NNN`. Do not replace these with ambiguous single-letter or collective initialisms.
+- Assign an ID only to a definition, claim, corollary, or gap that is stable enough to affect a paper or a major research decision. Ordinary scratch work stays in logs or drafts without an ID.
+- A corollary receives `Cor-NNN` when it is a stable downstream consequence that should be rechecked if an upstream claim changes; a passing observation does not need its own ID.
+- IDs remain stable when rows move. Never renumber live entries for appearance, never reuse a retired ID, and retain refuted or retired entries with a short reason so old links remain understandable.
+- Record dependencies with the same stable IDs. When an upstream item changes, mark affected downstream entries `review-stale` in their integration state until they have been checked again.
+
 ## Status and provenance
 
 - Use only the status values defined in `meta/schemas.md`.
@@ -59,6 +68,7 @@ Codex. They deliberately use a small vocabulary.
   suggestion.
 - Give external claims a source. If a source cannot be checked, label the claim
   `unverified` rather than completing the citation from memory.
+- Keep mathematical state, review provenance, and manuscript integration state in separate columns. A review label never establishes mathematical truth.
 
 ## Archive instead of delete
 

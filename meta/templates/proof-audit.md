@@ -15,26 +15,34 @@ related_logs: []
 <!-- This is a specialized research-log, not a separate note type. Use the
 language selected during setup for prose and headings. -->
 
-# Claim being audited
+# Proof audit
+
+## Audit scope
+
+- Stable claim ID: `Thm-001`
+- Statement or proof version:
+- Included:
+- Excluded:
+
+## Claim being audited
 
 Copy the exact statement, including all hypotheses, quantifiers, domains, and
 exceptional cases. Link its source.
 
 ## Definitions and dependencies
 
-- Definition or earlier result:
-  - Exact source:
-  - Assumptions imported:
+| ID | Definition or dependency | Exact formulation or source | Role in the claim | Current status |
+|---|---|---|---|---|
+| Def-001 |  |  |  | fixed / proposed |
+| Lem-001 |  |  |  | conjectural |
 
 ## Argument map
 
-| Step | Claim | Justification supplied | Audit state |
-|---|---|---|---|
-| 1 |  |  | unchecked |
+| Step | Claim or inference | Depends on | Justification supplied | Mathematical state |
+|---|---|---|---|---|
+| S1 |  | Def-001 |  | partial |
 
-Use audit states such as `unchecked`, `clear`, `needs-detail`, `gap`, and
-`depends-on-source`. An AI assistant may suggest a state, but a human decides
-whether a substantive gap is closed.
+Reference the same stable IDs used in the project README. Use the project's mathematical-state vocabulary and reference a `Gap-NNN` whenever a step is blocked. An AI assistant may suggest a state, but a human decides whether a substantive gap is closed.
 
 ## Hidden-assumption check
 
@@ -59,33 +67,40 @@ Absence of a found counterexample is not proof.
 
 | Gap ID | Location | Issue | What would resolve it | State |
 |---|---|---|---|---|
-| G1 |  |  |  | open |
+| Gap-001 | S1 |  |  | open |
 
-## Formal check, if used
+## Formal check record, if used
 
-- Encoded statement:
-- Definitions and assumptions:
-- Tool and version:
-- Source file or durable reference:
-- Checker result:
-- Human comparison with intended claim:
+| Date | System and version | Artifact or theorem ID | Scope checked | Result | Limitations |
+|---|---|---|---|---|---|
+| YYYY-MM-DD |  |  |  | not run |  |
 
-A successful checker result applies to the encoding only. Leave
-`review_status` unchanged until the corresponding review is documented.
+A successful checker result applies to the encoding only. Leave `review_status` unchanged until the corresponding review is documented and a human has assessed whether the encoding matches the intended statement.
 
-## Human review
+## AI-assisted review record
 
-- Reviewer:
-- Date:
-- Scope reviewed:
-- Outcome:
-- Remaining qualifications:
+| Date | System or model | Material provided | Review scope | Findings retained | Unresolved cautions |
+|---|---|---|---|---|---|
+| YYYY-MM-DD |  |  |  |  |  |
 
-## Conclusion
+AI-assisted review is provenance, not proof certification, and does not by itself change `review_status` from `unchecked`.
 
-Choose a scoped conclusion such as `unresolved`, `gap identified`,
-`conditionally accepted`, or `accepted by the named human reviewer`. Do not
-declare the proof complete solely from AI review.
+## Human review record
+
+| Date | Reviewer | Version reviewed | Scope | Outcome | Remaining qualifications |
+|---|---|---|---|---|---|
+| YYYY-MM-DD |  |  |  |  |  |
+
+## Scoped conclusion
+
+- Mathematical verdict:
+- Scope of verdict:
+- Remaining assumptions:
+- Open gaps:
+- Review provenance:
+- Not claimed:
+
+Choose a scoped verdict such as `unresolved`, `gap identified`, `conditionally accepted`, or `accepted by the named human reviewer`. Do not declare the proof complete solely from AI review.
 
 ## Next action
 

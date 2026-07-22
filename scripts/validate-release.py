@@ -1417,6 +1417,7 @@ def validate_bundled_obsidian_plugin(errors: list[str]) -> None:
 def execute_vault_lint(
     note_text: str | None = None,
     binary_name: str | None = None,
+    note_relative: str = "notes/fixture.md",
 ) -> subprocess.CompletedProcess[str]:
     with tempfile.TemporaryDirectory(prefix="workbench-lint-") as temp_name:
         fixture_root = Path(temp_name) / "workbench"
@@ -1426,9 +1427,9 @@ def execute_vault_lint(
         for name in ("inbox", "ideas", "papers", "notes", "projects"):
             (fixture_root / name).mkdir()
         if note_text is not None:
-            (fixture_root / "notes" / "fixture.md").write_text(
-                note_text, encoding="utf-8"
-            )
+            note_path = fixture_root / note_relative
+            note_path.parent.mkdir(parents=True, exist_ok=True)
+            note_path.write_text(note_text, encoding="utf-8")
         if binary_name is not None:
             (fixture_root / "notes" / binary_name).write_bytes(b"fixture")
         return subprocess.run(
@@ -1469,17 +1470,209 @@ def validate_vault_lint_fixtures(errors: list[str]) -> None:
         "review_status: unchecked",
         "review_status: unchecked\nreview_status: human-reviewed",
     )
+    project_spine = textwrap.dedent(
+        """\
+        ---
+        type: project
+        title: "Fixture project"
+        status: active
+        created: 2026-07-22
+        updated: 2026-07-22
+        language: en
+        research_question: "Fixture question"
+        ---
+        ## Research State Spine
+        ### Definition registry
+        | ID | Definition or notation | Exact formulation or source | Notes |
+        |---|---|---|---|
+        | Def-001 | Fixture | | |
+        ### Claim ledger
+        | ID | Claim | Mathematical state | Depends on | Evidence or source | Review provenance | Integration state | Next action |
+        |---|---|---|---|---|---|---|---|
+        | Lem-001 | Fixture \( |x| \) | conjectural | Def-001 | | unchecked | isolated | |
+        ### Open gaps
+        | ID | Affects | Precise missing justification or issue | Severity | State | Next action |
+        |---|---|---|---|---|---|
+        | Gap-001 | Lem-001 | Fixture | local | open | |
+        """
+    )
+    duplicate_project_id = project_spine.replace(
+        "### Open gaps",
+        "| Lem-001 | Duplicate | conjectural | Def-001 | | unchecked | isolated | |\n### Open gaps",
+    )
+    malformed_project_id = project_spine.replace("| Lem-001 |", "| L1 |")
+    long_form_project_id = project_spine.replace("| Lem-001 |", "| Lemma-001 |")
+    invalid_state_axes = project_spine.replace(
+        "| conjectural | Def-001 | | unchecked | isolated |",
+        "| human-reviewed | Def-001 | | supported | conjectural |",
+    )
+    missing_spine_heading = project_spine.replace("## Research State Spine\n", "")
+    invalid_claim_header = project_spine.replace(
+        "| ID | Claim | Mathematical state | Depends on | Evidence or source | Review provenance | Integration state | Next action |",
+        "| ID | Claim | State | Evidence or gap | Source log |",
+    )
+    legacy_project = project_spine.replace(
+        "## Research State Spine\n### Definition registry\n| ID | Definition or notation | Exact formulation or source | Notes |\n|---|---|---|---|\n| Def-001 | Fixture | | |\n### Claim ledger\n| ID | Claim | Mathematical state | Depends on | Evidence or source | Review provenance | Integration state | Next action |\n|---|---|---|---|---|---|---|---|\n| Lem-001 | Fixture \\( |x| \\) | conjectural | Def-001 | | unchecked | isolated | |\n### Open gaps\n| ID | Affects | Precise missing justification or issue | Severity | State | Next action |\n|---|---|---|---|---|---|\n| Gap-001 | Lem-001 | Fixture | local | open | |",
+        "## Claim ledger\n| ID | Claim | State | Evidence or gap | Source log |\n|---|---|---|---|---|\n| C1 | Fixture | conjectural | | |",
+    )
+    legacy_project_result = execute_vault_lint(
+        note_text=legacy_project,
+        note_relative="projects/fixture/README.md",
+    )
     cases = (
         ("valid research log", execute_vault_lint(note_text=valid), 0),
         ("invalid research-log enums", execute_vault_lint(note_text=invalid_enums), 1),
         ("impossible research date", execute_vault_lint(note_text=invalid_date), 1),
         ("duplicate frontmatter key", execute_vault_lint(note_text=duplicate_review), 1),
+        (
+            "valid project Research State Spine",
+            execute_vault_lint(
+                note_text=project_spine,
+                note_relative="projects/fixture/README.md",
+            ),
+            0,
+        ),
+        (
+            "duplicate stable project ID",
+            execute_vault_lint(
+                note_text=duplicate_project_id,
+                note_relative="projects/fixture/README.md",
+            ),
+            1,
+        ),
+        (
+            "abbreviated project ID",
+            execute_vault_lint(
+                note_text=malformed_project_id,
+                note_relative="projects/fixture/README.md",
+            ),
+            1,
+        ),
+        (
+            "long-form project ID",
+            execute_vault_lint(
+                note_text=long_form_project_id,
+                note_relative="projects/fixture/README.md",
+            ),
+            1,
+        ),
+        (
+            "swapped Research State Spine axes",
+            execute_vault_lint(
+                note_text=invalid_state_axes,
+                note_relative="projects/fixture/README.md",
+            ),
+            1,
+        ),
+        (
+            "missing Research State Spine heading",
+            execute_vault_lint(
+                note_text=missing_spine_heading,
+                note_relative="projects/fixture/README.md",
+            ),
+            1,
+        ),
+        (
+            "invalid Research State Spine claim header",
+            execute_vault_lint(
+                note_text=invalid_claim_header,
+                note_relative="projects/fixture/README.md",
+            ),
+            1,
+        ),
+        (
+            "legacy project ledger",
+            legacy_project_result,
+            0,
+        ),
         ("ignored binary suffix", execute_vault_lint(binary_name="private-data.xlsx"), 1),
         ("ignored archive suffix", execute_vault_lint(binary_name="private-data.tgz"), 1),
     )
     for label, result, expected_exit in cases:
         if result.returncode != expected_exit:
             errors.append(f"vault-lint {label} fixture expected exit {expected_exit}")
+        combined_output = result.stdout + result.stderr
+        if "Traceback" in combined_output or "Checked " not in result.stdout:
+            errors.append(f"vault-lint {label} fixture crashed or omitted its summary")
+        if expected_exit == 1 and "ERROR:" not in result.stdout:
+            errors.append(f"vault-lint {label} fixture failed without the expected diagnostic")
+    if "WARN: legacy project claim ledger" not in legacy_project_result.stdout:
+        errors.append("vault-lint legacy project fixture did not offer optional migration")
+
+
+def validate_math_project_harness(errors: list[str]) -> None:
+    project_template = read_text(ROOT / "meta/templates/project.md") or ""
+    exact_claim_header = (
+        "| ID | Claim | Mathematical state | Depends on | Evidence or source | "
+        "Review provenance | Integration state | Next action |"
+    )
+    required_project_markers = (
+        "## Research State Spine",
+        "### Current research state",
+        "### Definition registry",
+        "### Claim ledger",
+        "### Open gaps",
+        exact_claim_header,
+        "Def-001",
+        "Lem-001",
+        "Prop-001",
+        "Thm-001",
+        "Cor-001",
+        "Gap-001",
+        "Mathematical state",
+        "Review provenance",
+        "Integration state",
+        "review-stale",
+        "closed-by-researcher",
+    )
+    missing_project_markers = [
+        marker for marker in required_project_markers if marker not in project_template
+    ]
+    if missing_project_markers:
+        errors.append("project template is missing the Research State Spine contract")
+    if (
+        "| ID | Claim | State | Evidence or gap | Source log |" in project_template
+        or re.search(r"^\|\s*C1\s*\|", project_template, re.MULTILINE)
+    ):
+        errors.append("project template still contains the legacy mixed-state claim ledger")
+
+    proof_audit = read_text(ROOT / "meta/templates/proof-audit.md") or ""
+    required_audit_markers = (
+        "## Audit scope",
+        "Stable claim ID",
+        "Def-001",
+        "Lem-001",
+        "Gap-001",
+        "## Formal check record",
+        "## AI-assisted review record",
+        "## Human review record",
+        "## Scoped conclusion",
+    )
+    if any(marker not in proof_audit for marker in required_audit_markers):
+        errors.append("proof-audit template is not aligned with stable research IDs")
+    if re.search(r"^\|\s*G1\s*\|", proof_audit, re.MULTILINE):
+        errors.append("proof-audit template still contains the legacy G1 identifier")
+
+    documentation_contracts = {
+        "AGENTS.md": ("Research State Spine", "Def-NNN", "Cor-NNN", "Gap-NNN", "review-stale"),
+        ".agents/skills/first-run/SKILL.md": (
+            "Research State Spine",
+            "Def-NNN",
+            "Cor-NNN",
+            "Gap-NNN",
+            "does not need to edit tables manually",
+        ),
+        "README.md": ("Research State Spine", "Def-NNN", "Cor-NNN", "Gap-NNN"),
+        "README.ko.md": ("Research State Spine", "Def-NNN", "Cor-NNN", "Gap-NNN"),
+        "docs/daily-workflow.md": ("Research State Spine", "Def-NNN", "Cor-NNN", "Gap-NNN"),
+        "docs/daily-workflow.ko.md": ("Research State Spine", "Def-NNN", "Cor-NNN", "Gap-NNN"),
+        "docs/updating.md": ("Research State Spine", "does not automatically rewrite", "Cor-NNN"),
+        "docs/updating.ko.md": ("Research State Spine", "자동으로 다시 작성되지 않습니다", "Cor-NNN"),
+    }
+    for relative, markers in documentation_contracts.items():
+        text = read_text(ROOT / relative) or ""
+        if any(marker not in text for marker in markers):
+            errors.append(f"math project harness guidance is incomplete in {relative}")
 
 
 def main() -> int:
@@ -1692,6 +1885,7 @@ def main() -> int:
     validate_remote_state_fixtures(errors)
     validate_bundled_obsidian_plugin(errors)
     validate_vault_lint_fixtures(errors)
+    validate_math_project_harness(errors)
 
     for wrapper_name in ("scripts/compile-tex.sh", "scripts/compile-tex.ps1"):
         wrapper = ROOT / wrapper_name
