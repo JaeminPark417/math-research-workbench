@@ -67,7 +67,7 @@ projects/project-slug/
 
 The project `README.md` contains the Research State Spine: the clean current map of the research question, paper-relevant definitions and claims, logical dependencies, open gaps, important links, and next actions. Use the stable IDs and separate state axes defined in `meta/schemas.md`. Codex maintains this map during ordinary conversation; the researcher does not need to edit Markdown tables by hand.
 
-Record only stable objects that affect a paper or a major research decision in the Spine. Adding a row is editorial integration, not promotion of its mathematical state. Keep exploratory calculations, mixed notes, and failed routes in `logs/` or `drafts`, with links from the Spine when they become relevant.
+Record only stable objects that affect a paper or a major research decision in the Spine. Editorial integration may add a new object copied without semantic change from a researcher-provided or already-canonical source at baseline state (`conjectural` for claims, `open` for gaps, `unchecked` review, and `isolated` integration), or update source/dependency/next-action metadata. Mark dependents `review-stale` only after an upstream change is already canonical or is applied after Human Promotion; keep the stale effects of a merely proposed upstream change in the run's proposal. A new AI-authored formulation, a change to an existing statement's hypotheses, quantifiers, or scope, a truth-bearing mathematical or gap-state change, statement matching, closure, retirement, or a circulation-baseline decision remains proposed until Human Promotion. Keep exploratory calculations, mixed notes, and failed routes in `logs/` or `drafts`, with links from the Spine when they become relevant.
 
 ## 6. Use a bounded research run for sustained work
 
@@ -91,8 +91,15 @@ Use this control loop:
    headings and field labels, and do not leave SPEC until `Exact target`,
    `Success criterion`, and `Refutation criterion` are explicit.
    The Problem Contract is authoritative only within that run. The project
-   README Research State Spine remains canonical; cite existing targets by
-   stable ID and statement version, and keep every divergence proposed until
+   README Research State Spine remains canonical. Put an existing target's
+   stable ID and repository-relative project README path in the
+   `Spine target reference` field. If its exact wording matches the current `HEAD` at the start of
+   SPEC, record that commit hash; otherwise use `working snapshot
+   Run-YYYYMMDD-NNN`, replacing the placeholder with the run's actual ID. In
+   every case, copy the current Spine wording into `Exact target`; that text is
+   the working snapshot's content anchor. The Contract version tracks run-local
+   revisions; never invent a separate Spine version number. Apply only the
+   editorial changes defined above and keep all other changes proposed until
    Human Promotion.
 2. **ROUTE:** choose natural proof development, formal encoding, constructive
    or computational evaluation, literature-sensitive comparison, or a scoped
@@ -118,6 +125,8 @@ Use this control loop:
    stable confirmation fields at `not confirmed` until a human makes a dated,
    scoped decision. Record `statement-matched` only after explicit dated human
    confirmation that the checked statement matches the intended mathematics.
+   A circulation baseline is the exact artifact version the researcher
+   designates as ready to share outside the private working context.
    Set `closed-by-researcher` only with dated, scoped researcher provenance and
    linked evidence. Use only a user-consented reviewer identifier or role and
    avoid unnecessary personal information. Automation records these fields; it

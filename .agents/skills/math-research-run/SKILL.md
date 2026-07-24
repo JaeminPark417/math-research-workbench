@@ -61,8 +61,26 @@ theorem; do not silently choose a stronger or weaker statement.
 
 Treat the Problem Contract as a run-local execution snapshot, not the canonical
 project state. When it targets an existing Research State Spine object, record
-the stable ID and statement version. Keep every divergence from the Spine as a
-proposed change until HUMAN PROMOTION.
+the stable ID in the `Spine target reference` field together with the
+repository-relative project README path. If `Exact target` matches the wording
+in the current `HEAD` at the start of SPEC, record that commit hash. Otherwise
+write `working snapshot Run-YYYYMMDD-NNN`, replacing the placeholder with the
+run's actual ID. In every case, copy the exact current Spine wording into
+`Exact target`; that text is the content anchor for a working snapshot. The
+Contract version tracks run-local revisions. Never invent a separate Spine
+version number.
+
+Only editorial Spine integration is automatic: add a new stable object copied
+without semantic change from a researcher-provided or already-canonical source
+at the baseline states (`conjectural` for a claim, `open` for a gap,
+`unchecked` review, and `isolated` integration); update source, dependency, or
+next-action metadata. Mark dependents `review-stale` only after an upstream
+change is already canonical or is applied after HUMAN PROMOTION. For a merely
+proposed upstream change, keep its downstream stale effects in the run's
+proposal. Keep a new AI-authored formulation, a change to an existing
+statement's hypotheses, quantifiers, or scope, a truth-bearing mathematical or
+gap-state change, statement matching, closure, retirement, or a
+circulation-baseline decision as a proposed change until HUMAN PROMOTION.
 
 ### 2. ROUTE
 
@@ -87,10 +105,11 @@ scope`.
 
 Decompose the target into exact, testable obligations. Record dependencies,
 what would establish each obligation, what would refute it, and known edge
-cases. Keep run-local obligation IDs in the log. Record an object in the
-Research State Spine only when it has become stable and paper- or
-decision-relevant. Adding a row is editorial integration, not promotion of its
-mathematical state.
+cases. Keep run-local obligation IDs in the log. Keep candidate objects
+run-local during this stage. Reconcile an object into the Research State Spine
+only after it has become stable and paper- or decision-relevant, and only under
+the editorial boundary defined in SPEC; otherwise list it under Proposed
+Research State Spine changes.
 
 ### 4. PROVE / DISPROVE
 
@@ -126,9 +145,11 @@ scope.
 Reconcile supporting attempts, failure searches, adapter results, and
 contradictions obligation by obligation. State what is supported within scope,
 what is refuted, what remains open, and what is not claimed. Update the run log
-and then reconcile stable changes with the project Research State Spine.
-Changing an upstream statement makes dependent integration `review-stale`
-until it is rechecked.
+and then apply only permitted editorial changes to the project Research State
+Spine. Leave every other stable change proposed for HUMAN PROMOTION. After an
+authorized upstream statement change becomes canonical, mark dependent
+integration `review-stale` until it is rechecked; for a proposed upstream
+change, record that downstream effect only in the proposal.
 
 ### 7. HUMAN PROMOTION
 
@@ -142,6 +163,8 @@ claim may become `closed-by-researcher` only with dated, scoped human
 provenance and linked evidence. Without those confirmations, retain the
 existing mathematical state and unresolved gap. The workflow records the
 researcher's assertion; it does not authenticate or prove a person's identity.
+Here, the circulation baseline is the exact artifact version the researcher
+designates as ready to share outside the private working context.
 
 ## Record evidence without a ladder
 

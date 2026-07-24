@@ -25,7 +25,8 @@ the language selected during setup. Treat this log as unpublished research. -->
 ## Problem Contract
 
 - Contract version: `v1`
-- Exact target: <include the stable ID and statement version when targeting an existing Spine object>
+- Spine target reference: <stable ID; repository-relative project README path; current `HEAD` commit hash at SPEC start if `Exact target` matches it, otherwise `working snapshot Run-YYYYMMDD-NNN` using this run's actual ID; use `not applicable` for a new object>
+- Exact target: <copy the exact current Spine wording when targeting an existing object; otherwise state the proposed target exactly>
 - Objects and definitions:
 - Hypotheses and quantifiers:
 - Exceptional and boundary cases:
@@ -39,8 +40,20 @@ Do not continue past an ambiguity that would change the mathematical
 statement. Do not leave SPEC until `Exact target`, `Success criterion`, and
 `Refutation criterion` are explicit. Record every later contract change and
 why it was made. This contract is authoritative only inside this run; the
-project Research State Spine remains canonical, and any divergence is proposed
-until Human Promotion.
+project Research State Spine remains canonical. The Contract version tracks
+run-local revisions. The exact wording in `Exact target` is the content anchor
+for a working snapshot; never invent a separate Spine version number.
+
+Only editorial Spine integration is automatic: copy a researcher-provided or
+already-canonical new object without semantic change at the baseline states
+`conjectural` or `open`, `unchecked`, and `isolated`, or update source,
+dependency, or next-action metadata. Mark dependents `review-stale` only after
+an upstream change is already canonical or is applied after Human Promotion;
+keep the stale effects of a merely proposed upstream change in this run's
+proposal. A new AI-authored formulation, a change to an existing statement's
+hypotheses, quantifiers, or scope, a truth-bearing mathematical or gap-state change,
+statement matching, closure, retirement, or a circulation-baseline decision
+remains proposed until Human Promotion.
 
 ## Run manifest
 
@@ -122,8 +135,10 @@ consented to record; omit unnecessary personal information.
 - Closed-by-researcher confirmation date:
 - Researcher decision and qualifications:
 
-AI agreement, a successful computation, a formal checker result, or a
-completed run never performs this promotion automatically. Keep each
+The circulation baseline is the exact artifact version the researcher
+designates as ready to share outside the private working context. AI agreement,
+a successful computation, a formal checker result, or a completed run never
+performs this promotion automatically. Keep each
 confirmation at `not confirmed` until a human explicitly supplies the dated,
 scoped decision. These fields record that decision; they do not authenticate
 the person's identity.

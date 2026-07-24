@@ -2044,6 +2044,13 @@ def validate_math_project_harness(errors: list[str]) -> None:
         'adapter_scope: ""',
         "# Research run",
         "## Problem Contract",
+        "Spine target reference:",
+        "working snapshot Run-YYYYMMDD-NNN",
+        "content anchor",
+        "never invent a separate Spine version number",
+        "AI-authored formulation",
+        "merely proposed upstream change",
+        "exact artifact version",
         "## Run manifest",
         "## Obligations",
         "## Attempt ledger",
@@ -2059,6 +2066,14 @@ def validate_math_project_harness(errors: list[str]) -> None:
     ) or ""
     required_run_skill_markers = (
         "Problem Contract",
+        "Spine target reference",
+        "current `HEAD`",
+        "working snapshot Run-YYYYMMDD-NNN",
+        "content anchor",
+        "Never invent a separate Spine",
+        "new AI-authored formulation",
+        "proposed upstream change",
+        "exact artifact version",
         "Attempt ledger",
         "Human promotion",
     )
@@ -2077,9 +2092,45 @@ def validate_math_project_harness(errors: list[str]) -> None:
         "constructive-search",
         "literature-audit",
         "mixed",
+        "Spine target",
+        "current `HEAD`",
+        "working snapshot",
+        "content anchor",
+        "never invent a separate Spine",
+        "AI-authored formulation",
+        "merely proposed upstream change",
+        "exact artifact version",
     )
     if any(marker not in schemas for marker in required_run_schema_markers):
         errors.append("research-run schema is missing an optional metadata contract")
+
+    math_workflow = read_text(ROOT / "meta/math-workflow.md") or ""
+    required_run_workflow_markers = (
+        "Spine target reference",
+        "current `HEAD`",
+        "working snapshot",
+        "content anchor",
+        "never invent a separate Spine version number",
+        "new AI-authored formulation",
+        "merely proposed upstream change",
+        "exact artifact version",
+    )
+    if any(marker not in math_workflow for marker in required_run_workflow_markers):
+        errors.append("math workflow is missing the research-run authority contract")
+
+    legacy_statement_version = re.compile(
+        r"\b(?:record|include|cite|provide|require)\b[^.\n]{0,160}"
+        r"\bstatement version\b",
+        re.IGNORECASE,
+    )
+    for label, content in (
+        ("research-run template", research_run),
+        ("math-research-run skill", research_run_skill),
+        ("research-run schema", schemas),
+        ("math workflow", math_workflow),
+    ):
+        if legacy_statement_version.search(content):
+            errors.append(f"{label} still requires an undefined statement version")
 
     documentation_contracts = {
         "AGENTS.md": ("Research State Spine", "Def-NNN", "Cor-NNN", "Gap-NNN", "review-stale"),

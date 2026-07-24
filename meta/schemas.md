@@ -223,9 +223,28 @@ inspectable without creating another note type:
   claim ID or truth status.
 - A Problem Contract is authoritative only within its run; the project README
   Research State Spine remains the canonical current state. When a run targets
-  an existing stable object, record its stable ID and statement version in the
-  exact target. Treat every divergence as a proposed change until Human
-  Promotion.
+  an existing stable object, record its stable ID in the
+  `Spine target reference` field together with the repository-relative project
+  README path.
+  If the wording copied into `Exact target` matches the current `HEAD` at the
+  start of SPEC, record that commit hash; otherwise write `working snapshot
+  Run-YYYYMMDD-NNN`, replacing the placeholder with the run's actual ID. Always
+  copy the exact current Spine wording into `Exact target`; that text is the
+  content anchor for a working snapshot. The Contract version tracks run-local
+  revisions; never invent a separate Spine version number.
+- Only editorial Spine integration is automatic: add a new stable object copied
+  without semantic change from a researcher-provided or already-canonical
+  source at baseline state (`conjectural` for claims, `open` for gaps,
+  `unchecked` review, and `isolated` integration), update source, dependency,
+  or next-action metadata. Mark dependents `review-stale` only after an
+  upstream change is already canonical or is applied after Human Promotion;
+  keep the stale effects of a merely proposed upstream change in the run's
+  proposal. A new AI-authored formulation, a change to an existing statement's
+  hypotheses, quantifiers, or scope, a truth-bearing mathematical or gap-state
+  change, statement matching, closure, retirement, or a circulation-baseline
+  decision remains proposed until Human Promotion.
+- A circulation baseline is the exact artifact version the researcher
+  designates as ready to share outside the private working context.
 - `adapter` records the primary route or scoped aid as `natural-proof`,
   `formalization`, `constructive-search`, `literature-audit`, or `mixed`. Leave
   it empty when no adapter is selected.
