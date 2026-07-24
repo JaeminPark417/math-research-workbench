@@ -221,6 +221,11 @@ inspectable without creating another note type:
   is unique within the project. Ordinary research logs omit all three
   research-run fields. The ID identifies a research activity; it is not a
   claim ID or truth status.
+- A Problem Contract is authoritative only within its run; the project README
+  Research State Spine remains the canonical current state. When a run targets
+  an existing stable object, record its stable ID and statement version in the
+  exact target. Treat every divergence as a proposed change until Human
+  Promotion.
 - `adapter` records the primary route or scoped aid as `natural-proof`,
   `formalization`, `constructive-search`, `literature-audit`, or `mixed`. Leave
   it empty when no adapter is selected.

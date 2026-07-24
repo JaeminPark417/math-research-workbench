@@ -65,9 +65,9 @@ projects/project-slug/
 └── drafts/
 ```
 
-The project `README.md` is the Research State Spine: the clean current map of the research question, paper-relevant definitions and claims, logical dependencies, open gaps, important links, and next actions. Use the stable IDs and separate state axes defined in `meta/schemas.md`. Codex maintains this map during ordinary conversation; the researcher does not need to edit Markdown tables by hand.
+The project `README.md` contains the Research State Spine: the clean current map of the research question, paper-relevant definitions and claims, logical dependencies, open gaps, important links, and next actions. Use the stable IDs and separate state axes defined in `meta/schemas.md`. Codex maintains this map during ordinary conversation; the researcher does not need to edit Markdown tables by hand.
 
-Only promote stable objects that affect a paper or a major research decision into the Spine. Keep exploratory calculations, mixed notes, and failed routes in `logs/` or `drafts`, with links from the Spine when they become relevant.
+Record only stable objects that affect a paper or a major research decision in the Spine. Adding a row is editorial integration, not promotion of its mathematical state. Keep exploratory calculations, mixed notes, and failed routes in `logs/` or `drafts`, with links from the Spine when they become relevant.
 
 ## 6. Use a bounded research run for sustained work
 
@@ -90,6 +90,10 @@ Use this control loop:
    ambiguity that would change the statement. Preserve the template's English
    headings and field labels, and do not leave SPEC until `Exact target`,
    `Success criterion`, and `Refutation criterion` are explicit.
+   The Problem Contract is authoritative only within that run. The project
+   README Research State Spine remains canonical; cite existing targets by
+   stable ID and statement version, and keep every divergence proposed until
+   Human Promotion.
 2. **ROUTE:** choose natural proof development, formal encoding, constructive
    or computational evaluation, literature-sensitive comparison, or a scoped
    combination. The route selects methods, not truth. Record one row per

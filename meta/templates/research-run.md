@@ -25,7 +25,7 @@ the language selected during setup. Treat this log as unpublished research. -->
 ## Problem Contract
 
 - Contract version: `v1`
-- Exact target:
+- Exact target: <include the stable ID and statement version when targeting an existing Spine object>
 - Objects and definitions:
 - Hypotheses and quantifiers:
 - Exceptional and boundary cases:
@@ -38,7 +38,9 @@ the language selected during setup. Treat this log as unpublished research. -->
 Do not continue past an ambiguity that would change the mathematical
 statement. Do not leave SPEC until `Exact target`, `Success criterion`, and
 `Refutation criterion` are explicit. Record every later contract change and
-why it was made.
+why it was made. This contract is authoritative only inside this run; the
+project Research State Spine remains canonical, and any divergence is proposed
+until Human Promotion.
 
 ## Run manifest
 

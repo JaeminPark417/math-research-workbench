@@ -59,6 +59,11 @@ not leave SPEC until `Exact target`, `Success criterion`, and `Refutation
 criterion` are explicit. Ask the researcher when an ambiguity would change the
 theorem; do not silently choose a stronger or weaker statement.
 
+Treat the Problem Contract as a run-local execution snapshot, not the canonical
+project state. When it targets an existing Research State Spine object, record
+the stable ID and statement version. Keep every divergence from the Spine as a
+proposed change until HUMAN PROMOTION.
+
 ### 2. ROUTE
 
 Select one or more routes and record why:
@@ -82,9 +87,10 @@ scope`.
 
 Decompose the target into exact, testable obligations. Record dependencies,
 what would establish each obligation, what would refute it, and known edge
-cases. Keep run-local obligation IDs in the log. Promote an object to the
+cases. Keep run-local obligation IDs in the log. Record an object in the
 Research State Spine only when it has become stable and paper- or
-decision-relevant.
+decision-relevant. Adding a row is editorial integration, not promotion of its
+mathematical state.
 
 ### 4. PROVE / DISPROVE
 
