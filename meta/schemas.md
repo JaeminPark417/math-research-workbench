@@ -165,7 +165,7 @@ The three state axes in the claim ledger are independent of the project YAML `st
 - Integration state: `isolated`, `integrated`, `review-stale`, or `retired`.
 - Gap state: `open`, `resolved`, or `retired`. Keep resolved and retired gap IDs for provenance.
 
-`supported` means that the linked evidence currently supports the claim within its recorded scope; it is not a certificate issued by an AI. Only the researcher may set `closed-by-researcher`. If an upstream definition or statement changes, mark affected downstream claims `review-stale` in the integration axis until their dependencies are rechecked; do not automatically mark them refuted.
+`supported` means that the linked evidence currently supports the claim within its recorded scope; it is not a certificate issued by an AI. Set `closed-by-researcher` only after the researcher supplies a dated, scoped decision, a user-consented identifier or role, and linked evidence. This records provenance but does not authenticate the person's identity. If an upstream definition or statement changes, mark affected downstream claims `review-stale` in the integration axis until their dependencies are rechecked; do not automatically mark them refuted.
 
 ## `session`
 
@@ -213,6 +213,31 @@ related_logs: []
 Required fields: `type`, `title`, `date`, `updated`, `language`, `project`,
 `kind`, `status`, and `review_status`.
 
+The optional research-run fields keep substantial multi-attempt work
+inspectable without creating another note type:
+
+- `run_id` identifies the bounded run log using `Run-YYYYMMDD-NNN`. Its date
+  segment equals the note's `date`, which is the run start date, and the full ID
+  is unique within the project. Ordinary research logs omit all three
+  research-run fields. The ID identifies a research activity; it is not a
+  claim ID or truth status.
+- `adapter` records the primary route or scoped aid as `natural-proof`,
+  `formalization`, `constructive-search`, `literature-audit`, or `mixed`. Leave
+  it empty when no adapter is selected.
+- `adapter_scope` states the exact obligation, encoded statement, search
+  question, or computational target covered by that adapter. For `mixed`, use
+  semicolon-separated per-adapter entries in the form `adapter-name: exact
+  scope; adapter-name: exact scope`, and mirror them as separate rows in the
+  body Route table. Leave it empty when `adapter` is empty.
+
+Use `meta/templates/research-run.md` when any objective entry condition is met:
+a second serious attempt begins, work resumes in another session, the target
+needs multiple obligations or adapters, or a claim is load-bearing for a paper
+or major research decision. When uncertain, keep an ordinary research log
+without research-run fields until the threshold is crossed. Simple questions,
+explanations, exposition edits, and routine one-step calculations do not need
+a research-run log.
+
 Allowed `kind` values:
 
 - `general`
@@ -229,7 +254,8 @@ that a theorem has been proved.
 Allowed `review_status` values:
 
 - `unchecked`: working material only;
-- `human-reviewed`: a named human reviewed the stated scope;
+- `human-reviewed`: a human, recorded by a user-consented identifier or role,
+  reviewed the stated scope on the recorded date;
 - `formal-tool-checked`: a formal checker accepted the encoded statement;
 - `human-and-formal`: both reviews occurred and are documented.
 
@@ -237,3 +263,22 @@ A formal check validates the encoded statement under its recorded assumptions.
 It does not establish that the encoding matches the intended theorem. Only a
 human reviewer may assert that correspondence, and the note must name the
 scope and date of that review.
+
+Research-run evidence descriptors such as `computationally-checked`,
+`formal-encoding-checked`, `statement-matched`,
+`literature-audited-within-scope`, and `expert-reviewed` are scoped,
+non-cumulative provenance recorded in the note body. They are not additional
+`review_status` values and never establish mathematical truth. Use
+`statement-matched` only after explicit dated human confirmation of the exact
+correspondence and scope. Record human provenance using only an identifier or
+role the user has consented to include; do not collect unnecessary personal
+information. Set a project claim to `closed-by-researcher` only with dated,
+scoped human provenance and linked evidence. Automation may check that these
+fields exist, but it cannot prove a human's identity or that the decision is
+genuine.
+
+Research-run logs are unpublished research. Before any commit, sync, or push,
+verify an exactly private research destination and obtain approval for the
+exact files. Uploads and external reviews follow the workspace's separate
+per-transmission disclosure and consent rules. The public Math Research
+Workbench distribution remote is never an acceptable destination for run logs.

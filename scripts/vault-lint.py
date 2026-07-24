@@ -103,6 +103,65 @@ REVIEW_PROVENANCE_PREFIXES = (
     "formal-tool-checked",
     "human-and-formal",
 )
+STABLE_RESEARCH_ID_IN_TEXT = re.compile(
+    r"(?<![A-Za-z0-9-])(?:Def|Lem|Prop|Thm|Cor|Gap)-\d{3}(?![A-Za-z0-9-])"
+)
+RESEARCH_RUN_FIELDS = {"run_id", "adapter", "adapter_scope"}
+RESEARCH_RUN_ID = re.compile(r"Run-(\d{4})(\d{2})(\d{2})-\d{3}")
+RESEARCH_RUN_ADAPTERS = {
+    "natural-proof",
+    "formalization",
+    "constructive-search",
+    "literature-audit",
+    "mixed",
+}
+RESEARCH_RUN_HEADINGS = (
+    "# Research run",
+    "## Problem Contract",
+    "## Run manifest",
+    "## Obligations",
+    "## Attempt ledger",
+    "## Scoped synthesis",
+    "## Human promotion",
+)
+RESEARCH_RUN_CONTRACT_FIELDS = (
+    "Exact target",
+    "Success criterion",
+    "Refutation criterion",
+)
+RESEARCH_RUN_CONFIRMATION_FIELDS = {
+    "statement-match": (
+        "Statement-match confirmation",
+        "Statement-match scope",
+        "Statement-match confirmed by (consented identifier or role)",
+        "Statement-match confirmation date",
+    ),
+    "closed-by-researcher": (
+        "Closed-by-researcher confirmation",
+        "Closed-by-researcher scope",
+        "Closed-by-researcher confirmed by (consented identifier or role)",
+        "Closed-by-researcher confirmation date",
+    ),
+}
+RESEARCH_RUN_DECISION_FIELD = "Researcher decision and qualifications"
+PLACEHOLDER_VALUES = {
+    "",
+    "-",
+    "—",
+    "...",
+    "all",
+    "everything",
+    "general",
+    "n/a",
+    "na",
+    "none",
+    "not specified",
+    "placeholder",
+    "tbd",
+    "todo",
+    "unbounded",
+    "yyyy-mm-dd",
+}
 
 
 def portable_kebab_filename(name: str) -> bool:
@@ -218,6 +277,39 @@ def normalized_table_id(value: str) -> str:
     return value.strip().strip("`*_ ")
 
 
+def substantive_value(value: str) -> bool:
+    """Return whether a compact Markdown field is more than a placeholder."""
+    normalized = normalized_table_id(value).strip().strip('"\'').casefold()
+    return normalized not in PLACEHOLDER_VALUES and not re.fullmatch(
+        r"[<{\[].*?[>}\]]", normalized
+    )
+
+
+def markdown_bullet_value(section: str, label: str) -> str | None:
+    """Return one exact list-field value, accepting an indented continuation."""
+    match = re.search(
+        rf"^[ \t]*-[ \t]+{re.escape(label)}:[ \t]*(.*?)[ \t]*$",
+        section,
+        re.MULTILINE,
+    )
+    if match is None:
+        return None
+    inline = match.group(1).strip()
+    if inline:
+        return inline
+    continuation: list[str] = []
+    for line in section[match.end() :].splitlines():
+        if re.match(r"^\s*-\s+[^:]+:", line) or re.match(r"^#{2,3}\s+", line):
+            break
+        if line.strip():
+            continuation.append(line.strip())
+    return " ".join(continuation)
+
+
+def valid_date_in_text(value: str) -> bool:
+    return any(valid_iso_date(item) for item in re.findall(r"\d{4}-\d{2}-\d{2}", value))
+
+
 def review_provenance_valid(value: str) -> bool:
     return any(
         value == prefix
@@ -227,6 +319,193 @@ def review_provenance_valid(value: str) -> bool:
         )
         for prefix in REVIEW_PROVENANCE_PREFIXES
     )
+
+
+def validate_research_run(
+    path: Path,
+    text: str,
+    data: dict[str, str] | None,
+    errors: list[str],
+    warnings: list[str],
+) -> None:
+    """Validate the optional research-run extension of a research log."""
+    if data is None or not (RESEARCH_RUN_FIELDS & data.keys()):
+        return
+    relative = path.relative_to(ROOT)
+    if data.get("type") != "research-log":
+        errors.append(f"research-run metadata requires type research-log: {relative}")
+
+    run_id = data.get("run_id", "")
+    if not run_id:
+        errors.append(
+            f"research run_id is required when run metadata is present: {relative}"
+        )
+    else:
+        match = RESEARCH_RUN_ID.fullmatch(run_id)
+        if match is None:
+            errors.append(f"invalid research run_id {run_id!r}: {relative}")
+        else:
+            run_date = f"{match.group(1)}-{match.group(2)}-{match.group(3)}"
+            try:
+                date(int(match.group(1)), int(match.group(2)), int(match.group(3)))
+            except ValueError:
+                errors.append(f"invalid calendar date in research run_id {run_id!r}: {relative}")
+            else:
+                frontmatter_date = data.get("date", "")
+                if frontmatter_date and frontmatter_date != run_date:
+                    errors.append(
+                        f"research run_id date {run_date} does not match frontmatter date {frontmatter_date}: {relative}"
+                    )
+                filename_date = re.match(r"^(\d{4}-\d{2}-\d{2})-", path.name)
+                if filename_date is not None and filename_date.group(1) != run_date:
+                    errors.append(
+                        f"research run_id date {run_date} does not match dated filename prefix {filename_date.group(1)}: {relative}"
+                    )
+
+    adapter = data.get("adapter", "")
+    if adapter and adapter not in RESEARCH_RUN_ADAPTERS:
+        errors.append(f"invalid research-run adapter {adapter!r}: {relative}")
+    adapter_scope = data.get("adapter_scope", "")
+    if adapter and not adapter_scope:
+        errors.append(
+            f"research-run adapter_scope is required when adapter is set: {relative}"
+        )
+    if adapter_scope and not adapter:
+        errors.append(
+            f"research-run adapter is required when adapter_scope is set: {relative}"
+        )
+    if adapter == "mixed" and adapter_scope:
+        scopes = [scope.strip() for scope in adapter_scope.split(";")]
+        if len(scopes) < 2 or any(not substantive_value(scope) for scope in scopes):
+            errors.append(
+                f"mixed research-run adapter_scope requires at least two semicolon-separated bounded scopes: {relative}"
+            )
+
+    for heading in RESEARCH_RUN_HEADINGS:
+        if re.search(rf"^{re.escape(heading)}\s*$", text, re.MULTILINE) is None:
+            errors.append(
+                f"research run missing {heading!r}: {relative}; restore the research-run template or remove all run metadata"
+            )
+
+    contract_section = markdown_subsection(text, "## Problem Contract")
+    if contract_section:
+        for field in RESEARCH_RUN_CONTRACT_FIELDS:
+            value = markdown_bullet_value(contract_section, field)
+            if value is None or not substantive_value(value):
+                errors.append(
+                    f"research run Problem Contract {field!r} requires a non-placeholder value: {relative}"
+                )
+
+    obligation_section = markdown_subsection(text, "## Obligations")
+    substantive_obligation = False
+    for line in obligation_section.splitlines():
+        cells = split_markdown_table_row(line)
+        if len(cells) >= 2 and re.fullmatch(
+            r"Obligation-\d{3}", normalized_table_id(cells[0])
+        ):
+            substantive_obligation = substantive_obligation or substantive_value(cells[1])
+    if obligation_section and not substantive_obligation:
+        warnings.append(
+            f"research run has no substantive Obligation-NNN row yet; acceptable only while the run remains at early SPEC: {relative}"
+        )
+
+    promotion_section = markdown_subsection(text, "## Human promotion")
+    confirmation_records: dict[str, tuple[bool, bool]] = {}
+    if promotion_section:
+        if markdown_bullet_value(promotion_section, RESEARCH_RUN_DECISION_FIELD) is None:
+            errors.append(
+                f"research run Human promotion missing exact field {RESEARCH_RUN_DECISION_FIELD!r}: {relative}; restore the research-run template or remove all run metadata"
+            )
+        for gate, labels in RESEARCH_RUN_CONFIRMATION_FIELDS.items():
+            status_label, scope_label, actor_label, date_label = labels
+            values = {
+                label: markdown_bullet_value(promotion_section, label) for label in labels
+            }
+            missing_labels = [label for label, value in values.items() if value is None]
+            if missing_labels:
+                errors.append(
+                    f"research run Human promotion missing exact field(s) {', '.join(repr(item) for item in missing_labels)}: {relative}; restore the research-run template or remove all run metadata"
+                )
+                confirmation_records[gate] = (False, False)
+                continue
+            status = (values[status_label] or "").strip().casefold()
+            if status not in {"not confirmed", "confirmed"}:
+                errors.append(
+                    f"research run {status_label!r} must be 'not confirmed' or 'confirmed': {relative}"
+                )
+            details_valid = all(
+                substantive_value(values[label] or "") for label in (scope_label, actor_label)
+            ) and valid_iso_date((values[date_label] or "").strip())
+            if status == "confirmed" and not details_valid:
+                errors.append(
+                    f"research run {gate} confirmation requires non-placeholder scope and consented identifier or role plus a real ISO date; lint checks structure and date only, not human identity: {relative}"
+                )
+            if status != "not confirmed" and not valid_iso_date(
+                (values[date_label] or "").strip()
+            ):
+                errors.append(
+                    f"research run {gate} confirmation requires a real ISO date when not 'not confirmed'; lint checks date syntax only and does not verify human identity: {relative}"
+                )
+            confirmation_records[gate] = (status == "confirmed", details_valid)
+
+    evidence_section = markdown_subsection(text, "## Adapter and evidence records")
+    for line in evidence_section.splitlines():
+        cells = split_markdown_table_row(line)
+        if not cells:
+            continue
+        descriptor = normalized_table_id(cells[0]).casefold()
+        if descriptor == "statement-matched" and confirmation_records.get(
+            "statement-match"
+        ) != (True, True):
+            errors.append(
+                f"statement-matched evidence requires a non-default human statement-match confirmation with scope, consented identifier or role, and real ISO date; lint does not verify human identity: {relative}"
+            )
+
+
+def parsed_dependencies(value: str) -> tuple[list[str], bool]:
+    """Return stable IDs and whether a dependency cell contains free-form text."""
+    normalized = normalized_table_id(value)
+    if normalized.casefold() in {"", "-", "—", "none", "n/a", "na"}:
+        return [], False
+    dependencies = STABLE_RESEARCH_ID_IN_TEXT.findall(normalized)
+    remainder = STABLE_RESEARCH_ID_IN_TEXT.sub("", normalized)
+    remainder = re.sub(r"(?i)<br\s*/?>|\band\b", "", remainder)
+    remainder = re.sub(r"[\s,;+/&]+", "", remainder)
+    return dependencies, bool(remainder)
+
+
+def dependency_cycles(graph: dict[str, list[str]]) -> list[list[str]]:
+    """Return deterministic claim-dependency cycles, with each cycle reported once."""
+    state: dict[str, int] = {}
+    stack: list[str] = []
+    stack_index: dict[str, int] = {}
+    cycles: dict[tuple[str, ...], list[str]] = {}
+
+    def canonical(nodes: list[str]) -> tuple[str, ...]:
+        rotations = [tuple(nodes[index:] + nodes[:index]) for index in range(len(nodes))]
+        return min(rotations)
+
+    def visit(node: str) -> None:
+        state[node] = 1
+        stack_index[node] = len(stack)
+        stack.append(node)
+        for dependency in sorted(graph.get(node, [])):
+            if dependency not in graph:
+                continue
+            if state.get(dependency, 0) == 0:
+                visit(dependency)
+            elif state.get(dependency) == 1:
+                cycle = stack[stack_index[dependency] :]
+                key = canonical(cycle)
+                cycles.setdefault(key, list(key))
+        stack.pop()
+        stack_index.pop(node, None)
+        state[node] = 2
+
+    for node in sorted(graph):
+        if state.get(node, 0) == 0:
+            visit(node)
+    return [cycles[key] for key in sorted(cycles)]
 
 
 def validate_research_state_spine(
@@ -270,6 +549,7 @@ def validate_research_state_spine(
     )
 
     stable_ids: list[str] = []
+    claim_rows: dict[str, tuple[str, str, str]] = {}
     table_specs = (
         ("### Definition registry", re.compile(r"Def-\d{3}"), 4),
         ("### Claim ledger", re.compile(r"(?:Lem|Prop|Thm|Cor)-\d{3}"), 8),
@@ -300,6 +580,8 @@ def validate_research_state_spine(
                 continue
             if heading == "### Claim ledger":
                 mathematical_state = cells[2]
+                depends_on = cells[3]
+                evidence_or_source = cells[4]
                 review_provenance = cells[5]
                 integration_state = cells[6]
                 if mathematical_state not in MATHEMATICAL_STATES:
@@ -314,6 +596,20 @@ def validate_research_state_spine(
                     errors.append(
                         f"invalid integration state {integration_state!r} for {first_cell}: {relative}"
                     )
+                if mathematical_state == "closed-by-researcher":
+                    dated_human_review = (
+                        review_provenance.startswith("human-reviewed")
+                        or review_provenance.startswith("human-and-formal")
+                    ) and valid_date_in_text(review_provenance)
+                    if not substantive_value(evidence_or_source) or not dated_human_review:
+                        errors.append(
+                            f"closed-by-researcher {first_cell} requires nonempty evidence or source and dated human-reviewed or human-and-formal provenance; lint checks structure and date only, not reviewer identity: {relative}"
+                        )
+                claim_rows[first_cell] = (
+                    mathematical_state,
+                    integration_state,
+                    depends_on,
+                )
 
     duplicates = sorted({item for item in stable_ids if stable_ids.count(item) > 1})
     if duplicates:
@@ -321,6 +617,60 @@ def validate_research_state_spine(
             f"duplicate stable research IDs {', '.join(duplicates)}: {relative}"
         )
 
+    known_ids = set(stable_ids)
+    dependency_graph: dict[str, list[str]] = {}
+    for claim_id, (_, _, dependency_text) in claim_rows.items():
+        dependencies, has_freeform = parsed_dependencies(dependency_text)
+        dependency_graph[claim_id] = dependencies
+        if has_freeform:
+            warnings.append(
+                f"legacy or free-form dependency for {claim_id}; use stable research IDs: {relative}"
+            )
+        for dependency in sorted(set(dependencies)):
+            if dependency not in known_ids:
+                errors.append(
+                    f"unknown dependency {dependency!r} for {claim_id}: {relative}"
+                )
+            if dependency == claim_id:
+                errors.append(f"self dependency for {claim_id}: {relative}")
+
+    for claim_id in sorted(claim_rows):
+        _, downstream_integration_state, _ = claim_rows[claim_id]
+        if downstream_integration_state != "integrated":
+            continue
+        pending = [([dependency], dependency) for dependency in dependency_graph[claim_id]]
+        visited: set[str] = set()
+        while pending:
+            path_to_upstream, upstream_id = pending.pop(0)
+            if upstream_id in visited or upstream_id not in claim_rows:
+                continue
+            visited.add(upstream_id)
+            upstream_math_state, upstream_integration_state, _ = claim_rows[upstream_id]
+            if (
+                upstream_integration_state in {"review-stale", "retired"}
+                or upstream_math_state in {"gap-found", "refuted"}
+            ):
+                if len(path_to_upstream) == 1:
+                    warnings.append(
+                        f"integrated {claim_id} depends on stale, retired, gap-found, or refuted {upstream_id}: {relative}"
+                    )
+                else:
+                    warnings.append(
+                        f"integrated {claim_id} transitively depends on stale, retired, gap-found, or refuted {upstream_id} via {' -> '.join(path_to_upstream)}: {relative}"
+                    )
+            pending.extend(
+                (path_to_upstream + [dependency], dependency)
+                for dependency in dependency_graph.get(upstream_id, [])
+                if dependency not in visited
+            )
+
+    for cycle in dependency_cycles(dependency_graph):
+        if len(cycle) == 1:
+            # The more precise self-dependency diagnostic was already emitted.
+            continue
+        errors.append(
+            f"cyclic claim dependencies {' -> '.join(cycle + [cycle[0]])}: {relative}"
+        )
 
 
 def scan_content() -> tuple[list[Path], list[Path], list[Path], list[Path], list[Path]]:
@@ -376,6 +726,7 @@ def main() -> int:
     warnings: list[str] = []
     files, binaries, links, missing, unreadable = scan_content()
     stem_index: dict[str, list[Path]] = {}
+    project_run_ids: dict[tuple[str, str], list[Path]] = {}
     for path in files:
         stem_index.setdefault(path.stem.lower(), []).append(path)
 
@@ -425,7 +776,12 @@ def main() -> int:
                 value = data[field]
                 if not valid_iso_date(value):
                     errors.append(f"invalid ISO date in {field}: {relative}")
+            run_id = data.get("run_id", "").strip()
+            if run_id:
+                project_key = data.get("project", "").strip().casefold()
+                project_run_ids.setdefault((project_key, run_id), []).append(path)
 
+        validate_research_run(path, text, data, errors, warnings)
         validate_research_state_spine(path, text, data, errors, warnings)
 
         for raw_link in WIKILINK.findall(text):
@@ -442,6 +798,16 @@ def main() -> int:
             if Path(target).name.lower() in stem_index:
                 continue
             warnings.append(f"unresolved wikilink [[{target}]] in {relative}")
+
+    for (project_key, run_id), run_paths in sorted(project_run_ids.items()):
+        if len(run_paths) < 2:
+            continue
+        locations = ", ".join(
+            path.relative_to(ROOT).as_posix() for path in sorted(run_paths)
+        )
+        errors.append(
+            f"duplicate research run_id {run_id!r} within project {project_key or '<unspecified>'!r}: {locations}"
+        )
 
     for item in warnings:
         print(f"WARN: {item}")

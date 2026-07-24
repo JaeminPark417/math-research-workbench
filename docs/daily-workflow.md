@@ -81,6 +81,44 @@ The spine uses `Def-NNN`, `Lem-NNN`, `Prop-NNN`, `Thm-NNN`, `Cor-NNN`, and `Gap-
 Keep working with me in the usual conversational way. Update the project Research State Spine only with stable definitions, lemmas, propositions, theorems, corollaries, and unresolved gaps that matter to the paper or a research decision. Keep scratch work in the logs or drafts, and tell me what you promoted.
 ```
 
+### Continue a difficult problem with a bounded research run
+
+You can still speak naturally. Codex quietly uses `$math-research-run` when a
+project reaches a second serious attempt, resumes in a later session, needs
+multiple obligations or scoped tools, or develops a claim that the paper
+depends on. It keeps the exact target, prove and disprove attempts, failed
+routes, and next resume point together. If the threshold is uncertain, Codex
+keeps an ordinary research log. A simple question, explanation, exposition
+edit, or routine calculation does not need this extra record.
+
+```text
+Keep researching this project. Use a bounded research run in the background,
+preserve failed approaches, and interrupt me only for a mathematical or safety
+decision that needs my judgment.
+```
+
+The loop is:
+
+`SPEC → ROUTE → OBLIGATIONS → PROVE / DISPROVE → optional adapters → SYNTHESIZE → HUMAN PROMOTION`
+
+Here an adapter is only a scoped aid such as a computation, formal checker, or
+literature search. Each result records exactly what it checked and what it did
+not check. A second pass counts as fresh only if it did not receive the first
+pass's reasoning; otherwise Codex records it as a same-context audit.
+
+Codex may propose a stable claim or gap update after synthesis, but it does not
+promote AI agreement into truth. Only you can set `closed-by-researcher` or
+confirm that a checked statement matches the mathematics you intended. Record
+the date and scope with a reviewer identifier or role you consent to include;
+no unnecessary personal details are needed, and automation cannot verify a
+person's identity.
+
+The run log is unpublished research. Before sync or push, Codex must show the
+exact files, obtain approval, and verify that the research destination is
+exactly private. Uploads and external reviews have their own one-time disclosure
+and consent step. The public Math Research Workbench distribution repository
+is never a research destination.
+
 ### Prepare a manuscript
 
 ```text

@@ -69,7 +69,76 @@ The project `README.md` is the Research State Spine: the clean current map of th
 
 Only promote stable objects that affect a paper or a major research decision into the Spine. Keep exploratory calculations, mixed notes, and failed routes in `logs/` or `drafts`, with links from the Spine when they become relevant.
 
-## 6. Develop an argument
+## 6. Use a bounded research run for sustained work
+
+Invoke `$math-research-run` implicitly when the work reaches a second serious
+attempt, resumes in a later session, needs multiple obligations or scoped
+adapters, or concerns a load-bearing paper claim. Let the researcher continue
+in ordinary conversation while Codex maintains a dated `research-log` from
+`meta/templates/research-run.md`. If the threshold is uncertain, use an
+ordinary research log until one of these conditions is met. Do not create a run
+for a simple question, routine explanation, lightweight exposition, or
+one-step calculation.
+
+Use this control loop:
+
+`SPEC → ROUTE → OBLIGATIONS → PROVE / DISPROVE → optional adapters → SYNTHESIZE → HUMAN PROMOTION`
+
+1. **SPEC:** fix a versioned Problem Contract with the exact target, objects,
+   hypotheses, quantifiers, boundary cases, success and refutation criteria,
+   allowed sources or tools, and exclusions. Ask the researcher about any
+   ambiguity that would change the statement. Preserve the template's English
+   headings and field labels, and do not leave SPEC until `Exact target`,
+   `Success criterion`, and `Refutation criterion` are explicit.
+2. **ROUTE:** choose natural proof development, formal encoding, constructive
+   or computational evaluation, literature-sensitive comparison, or a scoped
+   combination. The route selects methods, not truth. Record one row per
+   adapter in the body Route table. For `mixed`, use semicolon-separated
+   per-adapter scopes in `adapter_scope`.
+3. **OBLIGATIONS:** split the target into exact subclaims or tests, recording
+   dependencies and both establishment and refutation criteria.
+4. **PROVE / DISPROVE:** preserve constructive attempts and adversarial failure
+   searches. Call a pass fresh only when the worker is genuinely isolated from
+   the originating reasoning and receives only the Problem Contract, exact
+   obligation, and permitted artifacts. Otherwise record `same-context audit`
+   or `fresh pass not run`.
+5. **Optional adapters:** use computation, a formal checker, or literature
+   search only for a named obligation. Record exact input or encoded statement,
+   version, source or artifact, result, assumptions, and limitations. Follow
+   the workspace's approval and privacy rules for every external action.
+6. **SYNTHESIZE:** reconcile attempts and contradictions obligation by
+   obligation. State what is supported or refuted within scope, what remains
+   open, and what is not claimed.
+7. **HUMAN PROMOTION:** propose stable Research State Spine changes, but never
+   promote AI agreement or a tool result into truth. Leave the template's
+   stable confirmation fields at `not confirmed` until a human makes a dated,
+   scoped decision. Record `statement-matched` only after explicit dated human
+   confirmation that the checked statement matches the intended mathematics.
+   Set `closed-by-researcher` only with dated, scoped researcher provenance and
+   linked evidence. Use only a user-consented reviewer identifier or role and
+   avoid unnecessary personal information. Automation records these fields; it
+   cannot authenticate a person's identity.
+
+Evidence descriptors such as `computationally-checked`,
+`formal-encoding-checked`, `statement-matched`,
+`literature-audited-within-scope`, and `expert-reviewed` are scoped,
+non-cumulative provenance. One does not imply another, and none is a
+mathematical state. A completed research run means only that the logged
+activity ended. Put only one evidence descriptor in each table row.
+
+Do not require a generic swarm, daemon, model API, or specialized solver. Use
+available agents and tools only when they help a bounded obligation. Keep
+ordinary stage transitions quiet; interrupt when the Problem Contract is
+ambiguous, an external action requires approval, attempts conflict, statement
+matching is uncertain, or human promotion is ready.
+
+Treat the run log as unpublished research. Before any commit, sync, or push,
+obtain approval for the exact files and verify that the research destination is
+exactly private. Uploads and external reviews follow the separate
+per-transmission disclosure and consent rules. Never send a run log to the
+public Math Research Workbench distribution remote.
+
+## 7. Develop an argument
 
 Record substantial derivations and searches as dated `research-log` notes.
 Each log should include the exact question, assumptions, work performed,
@@ -89,7 +158,7 @@ map if it is likely to recur.
 
 When a log changes a stable definition, lemma, proposition, theorem, corollary, or gap, update the corresponding `Def-NNN`, `Lem-NNN`, `Prop-NNN`, `Thm-NNN`, `Cor-NNN`, or `Gap-NNN` entry in the project README. Record dependencies rather than repeating detailed proofs in the table. If an upstream statement changes, mark downstream integration states `review-stale` until they are rechecked.
 
-## 7. Audit a proof
+## 8. Audit a proof
 
 Use `meta/templates/proof-audit.md` for any important proof or suspected gap.
 The audit should decompose the argument into claims and justifications, identify
@@ -100,7 +169,7 @@ itself. A gap is closed only when the researcher accepts a complete argument or
 when a correctly scoped formal check and human interpretation are both
 documented.
 
-## 8. Use formal tools when useful
+## 9. Use formal tools when useful
 
 Formalization is optional and should target a clearly stated lemma or finite
 subproblem. Record:
@@ -116,7 +185,7 @@ A successful checker result applies only to the encoding. It does not validate
 the choice of definitions, the translation of the informal theorem, or the
 relevance of the assumptions.
 
-## 9. End a session cleanly
+## 10. End a session cleanly
 
 Create a `session` note that records:
 
@@ -129,7 +198,7 @@ Create a `session` note that records:
 
 Then reconcile the project `README.md` with the new logs: add or update stable IDs, dependencies, mathematical state, review provenance, integration state, open gaps, and the next action. Do not renumber existing IDs or infer that a claim became true because an AI review found no problem. Archive source material; do not permanently delete it.
 
-## 10. Promote durable knowledge
+## 11. Promote durable knowledge
 
 When a definition, lemma, example, or explanation becomes reusable across
 projects, synthesize it in `notes/`. A concept note may be plain Markdown and

@@ -30,6 +30,8 @@ REQUIRED = {
     ".agents/skills/first-run/references/tex.md",
     ".agents/skills/claude-review/SKILL.md",
     ".agents/skills/claude-review/agents/openai.yaml",
+    ".agents/skills/math-research-run/SKILL.md",
+    ".agents/skills/math-research-run/agents/openai.yaml",
     ".agents/skills/pro-context-bundle/SKILL.md",
     ".agents/skills/pro-context-bundle/agents/openai.yaml",
     ".agents/skills/pro-context-bundle/scripts/build_pro_bundle.py",
@@ -75,6 +77,7 @@ REQUIRED = {
     "meta/templates/paper.md",
     "meta/templates/project.md",
     "meta/templates/proof-audit.md",
+    "meta/templates/research-run.md",
     "meta/templates/research-log.md",
     "meta/templates/session.md",
     "notes/README.md",
@@ -1418,6 +1421,7 @@ def execute_vault_lint(
     note_text: str | None = None,
     binary_name: str | None = None,
     note_relative: str = "notes/fixture.md",
+    note_texts: dict[str, str] | None = None,
 ) -> subprocess.CompletedProcess[str]:
     with tempfile.TemporaryDirectory(prefix="workbench-lint-") as temp_name:
         fixture_root = Path(temp_name) / "workbench"
@@ -1430,6 +1434,10 @@ def execute_vault_lint(
             note_path = fixture_root / note_relative
             note_path.parent.mkdir(parents=True, exist_ok=True)
             note_path.write_text(note_text, encoding="utf-8")
+        for relative, text in (note_texts or {}).items():
+            note_path = fixture_root / relative
+            note_path.parent.mkdir(parents=True, exist_ok=True)
+            note_path.write_text(text, encoding="utf-8")
         if binary_name is not None:
             (fixture_root / "notes" / binary_name).write_bytes(b"fixture")
         return subprocess.run(
@@ -1470,6 +1478,127 @@ def validate_vault_lint_fixtures(errors: list[str]) -> None:
         "review_status: unchecked",
         "review_status: unchecked\nreview_status: human-reviewed",
     )
+    valid_run = valid.replace("2026-07-19", "2026-07-24").replace(
+        "review_status: unchecked\n---\nSafe fixture.",
+        textwrap.dedent(
+            """\
+            review_status: unchecked
+            run_id: Run-20260724-001
+            adapter: natural-proof
+            adapter_scope: "Direct proof and obstruction search"
+            ---
+            # Research run
+            ## Problem Contract
+            - Exact target: Prove the fixture theorem under its stated hypotheses.
+            - Success criterion: Supply a complete proof with every dependency identified.
+            - Refutation criterion: Supply a counterexample satisfying the hypotheses.
+            ## Run manifest
+            Fixture.
+            ## Obligations
+            | Obligation | Exact subclaim or test | Depends on | What would establish it | What would refute it | State |
+            |---|---|---|---|---|---|
+            | Obligation-001 | Establish the fixture estimate | | A complete derivation | A valid counterexample | open |
+            ## Attempt ledger
+            Fixture.
+            ## Adapter and evidence records
+            | Descriptor | Exact scope | Input, artifact, or source | Result | Assumptions and limitations | Human or tool provenance |
+            |---|---|---|---|---|---|
+            | | | | | | |
+            ## Scoped synthesis
+            Fixture.
+            ## Human promotion
+            - Statement-match confirmation: not confirmed
+            - Statement-match scope:
+            - Statement-match confirmed by (consented identifier or role):
+            - Statement-match confirmation date:
+            - Closed-by-researcher confirmation: not confirmed
+            - Closed-by-researcher scope:
+            - Closed-by-researcher confirmed by (consented identifier or role):
+            - Closed-by-researcher confirmation date:
+            - Researcher decision and qualifications:
+            """
+        ).rstrip(),
+    )
+    invalid_calendar_run = valid_run.replace(
+        "run_id: Run-20260724-001", "run_id: Run-20260230-001"
+    )
+    invalid_adapter_run = valid_run.replace(
+        "adapter: natural-proof", "adapter: generic-agent"
+    )
+    missing_run_id = valid_run.replace("run_id: Run-20260724-001", 'run_id: ""')
+    missing_adapter_scope = valid_run.replace(
+        'adapter_scope: "Direct proof and obstruction search"',
+        'adapter_scope: ""',
+    )
+    missing_adapter = valid_run.replace("adapter: natural-proof", 'adapter: ""')
+    valid_mixed_adapter = valid_run.replace("adapter: natural-proof", "adapter: mixed").replace(
+        'adapter_scope: "Direct proof and obstruction search"',
+        'adapter_scope: "Natural proof of Obligation-001; literature audit for the named theorem"',
+    )
+    invalid_mixed_adapter = valid_run.replace("adapter: natural-proof", "adapter: mixed")
+    run_frontmatter_date_mismatch = valid_run.replace(
+        "date: 2026-07-24", "date: 2026-07-23", 1
+    )
+    placeholder_contract = valid_run.replace(
+        "- Exact target: Prove the fixture theorem under its stated hypotheses.",
+        "- Exact target: TODO",
+    )
+    empty_obligation = valid_run.replace(
+        "| Obligation-001 | Establish the fixture estimate | | A complete derivation | A valid counterexample | open |",
+        "| Obligation-001 | | | | | open |",
+    )
+    statement_matched_row = valid_run.replace(
+        "| | | | | | |",
+        "| statement-matched | Fixture theorem | proof.txt | matched | exact fixture statement | human |",
+    )
+    confirmed_statement_match = (
+        statement_matched_row.replace(
+            "- Statement-match confirmation: not confirmed",
+            "- Statement-match confirmation: confirmed",
+        )
+        .replace(
+            "- Statement-match scope:",
+            "- Statement-match scope: Fixture theorem with the recorded hypotheses",
+        )
+        .replace(
+            "- Statement-match confirmed by (consented identifier or role):",
+            "- Statement-match confirmed by (consented identifier or role): project researcher",
+        )
+        .replace(
+            "- Statement-match confirmation date:",
+            "- Statement-match confirmation date: 2026-07-24",
+        )
+    )
+    invalid_statement_match_date = confirmed_statement_match.replace(
+        "- Statement-match confirmation date: 2026-07-24",
+        "- Statement-match confirmation date: 2026-02-30",
+    )
+    valid_closed_confirmation = (
+        valid_run.replace(
+            "- Closed-by-researcher confirmation: not confirmed",
+            "- Closed-by-researcher confirmation: confirmed",
+        )
+        .replace(
+            "- Closed-by-researcher scope:",
+            "- Closed-by-researcher scope: Fixture theorem only",
+        )
+        .replace(
+            "- Closed-by-researcher confirmed by (consented identifier or role):",
+            "- Closed-by-researcher confirmed by (consented identifier or role): project researcher",
+        )
+        .replace(
+            "- Closed-by-researcher confirmation date:",
+            "- Closed-by-researcher confirmation date: 2026-07-24",
+        )
+    )
+    invalid_closed_confirmation = valid_closed_confirmation.replace(
+        "- Closed-by-researcher scope: Fixture theorem only",
+        "- Closed-by-researcher scope:",
+    )
+    missing_confirmation_field = valid_run.replace(
+        "- Statement-match confirmation date:\n", ""
+    )
+    missing_run_heading = valid_run.replace("## Attempt ledger\nFixture.\n", "")
     project_spine = textwrap.dedent(
         """\
         ---
@@ -1511,6 +1640,53 @@ def validate_vault_lint_fixtures(errors: list[str]) -> None:
         "| ID | Claim | Mathematical state | Depends on | Evidence or source | Review provenance | Integration state | Next action |",
         "| ID | Claim | State | Evidence or gap | Source log |",
     )
+    base_claim_row = (
+        "| Lem-001 | Fixture \\( |x| \\) | conjectural | Def-001 | | unchecked | isolated | |"
+    )
+    acyclic_project = project_spine.replace(
+        base_claim_row,
+        base_claim_row
+        + "\n| Prop-001 | Downstream fixture | supported | Lem-001 | | human-reviewed (fixture) | integrated | |",
+    )
+    dangling_dependency = project_spine.replace(
+        "| conjectural | Def-001 | | unchecked | isolated |",
+        "| conjectural | Lem-999 | | unchecked | isolated |",
+    )
+    self_dependency = project_spine.replace(
+        "| conjectural | Def-001 | | unchecked | isolated |",
+        "| conjectural | Lem-001 | | unchecked | isolated |",
+    )
+    cyclic_dependencies = project_spine.replace(
+        base_claim_row,
+        "| Lem-001 | First fixture | conjectural | Prop-001 | | unchecked | isolated | |\n"
+        "| Prop-001 | Second fixture | conjectural | Lem-001 | | unchecked | isolated | |",
+    )
+    stale_dependency = project_spine.replace(
+        base_claim_row,
+        "| Lem-001 | Upstream fixture | supported | Def-001 | | human-reviewed (fixture) | review-stale | |\n"
+        "| Prop-001 | Downstream fixture | supported | Lem-001 | | human-reviewed (fixture) | integrated | |",
+    )
+    transitive_stale_dependency = project_spine.replace(
+        base_claim_row,
+        "| Lem-001 | Upstream fixture | supported | Def-001 | source | human-reviewed (fixture, 2026-07-24) | review-stale | |\n"
+        "| Prop-001 | Middle fixture | supported | Lem-001 | source | human-reviewed (fixture, 2026-07-24) | integrated | |\n"
+        "| Thm-001 | Downstream fixture | supported | Prop-001 | source | human-reviewed (fixture, 2026-07-24) | integrated | |",
+    )
+    valid_closed_claim = project_spine.replace(
+        base_claim_row,
+        "| Lem-001 | Fixture claim | closed-by-researcher | Def-001 | proof-log.md | human-reviewed (project researcher, 2026-07-24) | integrated | |",
+    )
+    closed_claim_missing_evidence = valid_closed_claim.replace(
+        "| proof-log.md | human-reviewed", "| | human-reviewed"
+    )
+    closed_claim_undated_review = valid_closed_claim.replace(
+        "human-reviewed (project researcher, 2026-07-24)",
+        "human-reviewed (project researcher)",
+    )
+    freeform_dependency = project_spine.replace(
+        "| conjectural | Def-001 | | unchecked | isolated |",
+        "| conjectural | a classical lemma | | unchecked | isolated |",
+    )
     legacy_project = project_spine.replace(
         "## Research State Spine\n### Definition registry\n| ID | Definition or notation | Exact formulation or source | Notes |\n|---|---|---|---|\n| Def-001 | Fixture | | |\n### Claim ledger\n| ID | Claim | Mathematical state | Depends on | Evidence or source | Review provenance | Integration state | Next action |\n|---|---|---|---|---|---|---|---|\n| Lem-001 | Fixture \\( |x| \\) | conjectural | Def-001 | | unchecked | isolated | |\n### Open gaps\n| ID | Affects | Precise missing justification or issue | Severity | State | Next action |\n|---|---|---|---|---|---|\n| Gap-001 | Lem-001 | Fixture | local | open | |",
         "## Claim ledger\n| ID | Claim | State | Evidence or gap | Source log |\n|---|---|---|---|---|\n| C1 | Fixture | conjectural | | |",
@@ -1519,8 +1695,114 @@ def validate_vault_lint_fixtures(errors: list[str]) -> None:
         note_text=legacy_project,
         note_relative="projects/fixture/README.md",
     )
+    valid_run_result = execute_vault_lint(note_text=valid_run)
+    invalid_calendar_run_result = execute_vault_lint(note_text=invalid_calendar_run)
+    invalid_adapter_run_result = execute_vault_lint(note_text=invalid_adapter_run)
+    missing_run_id_result = execute_vault_lint(note_text=missing_run_id)
+    missing_adapter_scope_result = execute_vault_lint(note_text=missing_adapter_scope)
+    missing_adapter_result = execute_vault_lint(note_text=missing_adapter)
+    invalid_mixed_adapter_result = execute_vault_lint(note_text=invalid_mixed_adapter)
+    run_frontmatter_date_mismatch_result = execute_vault_lint(
+        note_text=run_frontmatter_date_mismatch
+    )
+    run_filename_date_mismatch_result = execute_vault_lint(
+        note_text=valid_run,
+        note_relative="notes/2026-07-23-fixture.md",
+    )
+    placeholder_contract_result = execute_vault_lint(note_text=placeholder_contract)
+    empty_obligation_result = execute_vault_lint(note_text=empty_obligation)
+    unconfirmed_statement_match_result = execute_vault_lint(
+        note_text=statement_matched_row
+    )
+    invalid_statement_match_date_result = execute_vault_lint(
+        note_text=invalid_statement_match_date
+    )
+    invalid_closed_confirmation_result = execute_vault_lint(
+        note_text=invalid_closed_confirmation
+    )
+    missing_confirmation_field_result = execute_vault_lint(
+        note_text=missing_confirmation_field
+    )
+    missing_run_heading_result = execute_vault_lint(note_text=missing_run_heading)
+    duplicate_project_run_id_result = execute_vault_lint(
+        note_texts={
+            "projects/fixture/logs/run-a.md": valid_run.replace(
+                'project: ""', 'project: "[[projects/fixture/README]]"'
+            ),
+            "projects/fixture/logs/run-b.md": valid_run.replace(
+                'project: ""', 'project: "[[projects/fixture/README]]"'
+            ),
+        }
+    )
+    cross_project_run_id_result = execute_vault_lint(
+        note_texts={
+            "projects/first/logs/run-a.md": valid_run.replace(
+                'project: ""', 'project: "[[projects/first/README]]"'
+            ),
+            "projects/second/logs/run-b.md": valid_run.replace(
+                'project: ""', 'project: "[[projects/second/README]]"'
+            ),
+        }
+    )
+    dangling_dependency_result = execute_vault_lint(
+        note_text=dangling_dependency,
+        note_relative="projects/fixture/README.md",
+    )
+    self_dependency_result = execute_vault_lint(
+        note_text=self_dependency,
+        note_relative="projects/fixture/README.md",
+    )
+    cyclic_dependencies_result = execute_vault_lint(
+        note_text=cyclic_dependencies,
+        note_relative="projects/fixture/README.md",
+    )
+    stale_dependency_result = execute_vault_lint(
+        note_text=stale_dependency,
+        note_relative="projects/fixture/README.md",
+    )
+    transitive_stale_dependency_result = execute_vault_lint(
+        note_text=transitive_stale_dependency,
+        note_relative="projects/fixture/README.md",
+    )
+    closed_claim_missing_evidence_result = execute_vault_lint(
+        note_text=closed_claim_missing_evidence,
+        note_relative="projects/fixture/README.md",
+    )
+    closed_claim_undated_review_result = execute_vault_lint(
+        note_text=closed_claim_undated_review,
+        note_relative="projects/fixture/README.md",
+    )
+    freeform_dependency_result = execute_vault_lint(
+        note_text=freeform_dependency,
+        note_relative="projects/fixture/README.md",
+    )
     cases = (
         ("valid research log", execute_vault_lint(note_text=valid), 0),
+        ("valid research run", valid_run_result, 0),
+        ("invalid research-run calendar date", invalid_calendar_run_result, 1),
+        ("invalid research-run adapter", invalid_adapter_run_result, 1),
+        ("research run missing run ID", missing_run_id_result, 1),
+        ("research run missing adapter scope", missing_adapter_scope_result, 1),
+        ("research run missing adapter", missing_adapter_result, 1),
+        ("valid mixed research-run adapter", execute_vault_lint(note_text=valid_mixed_adapter), 0),
+        ("invalid mixed research-run adapter", invalid_mixed_adapter_result, 1),
+        ("research-run frontmatter date mismatch", run_frontmatter_date_mismatch_result, 1),
+        ("research-run filename date mismatch", run_filename_date_mismatch_result, 1),
+        ("research-run placeholder contract", placeholder_contract_result, 1),
+        ("research-run early SPEC empty obligation", empty_obligation_result, 0),
+        ("valid statement-match confirmation", execute_vault_lint(note_text=confirmed_statement_match), 0),
+        ("unconfirmed statement-matched evidence", unconfirmed_statement_match_result, 1),
+        ("invalid statement-match date", invalid_statement_match_date_result, 1),
+        ("valid closed confirmation", execute_vault_lint(note_text=valid_closed_confirmation), 0),
+        ("invalid closed confirmation", invalid_closed_confirmation_result, 1),
+        ("missing exact confirmation field", missing_confirmation_field_result, 1),
+        ("duplicate project-local research-run ID", duplicate_project_run_id_result, 1),
+        ("same research-run ID across projects", cross_project_run_id_result, 0),
+        (
+            "research run missing required heading",
+            missing_run_heading_result,
+            1,
+        ),
         ("invalid research-log enums", execute_vault_lint(note_text=invalid_enums), 1),
         ("impossible research date", execute_vault_lint(note_text=invalid_date), 1),
         ("duplicate frontmatter key", execute_vault_lint(note_text=duplicate_review), 1),
@@ -1532,6 +1814,42 @@ def validate_vault_lint_fixtures(errors: list[str]) -> None:
             ),
             0,
         ),
+        (
+            "acyclic claim dependencies",
+            execute_vault_lint(
+                note_text=acyclic_project,
+                note_relative="projects/fixture/README.md",
+            ),
+            0,
+        ),
+        (
+            "dangling claim dependency",
+            dangling_dependency_result,
+            1,
+        ),
+        (
+            "self claim dependency",
+            self_dependency_result,
+            1,
+        ),
+        (
+            "two-node claim dependency cycle",
+            cyclic_dependencies_result,
+            1,
+        ),
+        ("stale dependency propagation", stale_dependency_result, 0),
+        ("transitive stale dependency propagation", transitive_stale_dependency_result, 0),
+        (
+            "valid closed-by-researcher claim",
+            execute_vault_lint(
+                note_text=valid_closed_claim,
+                note_relative="projects/fixture/README.md",
+            ),
+            0,
+        ),
+        ("closed claim missing evidence", closed_claim_missing_evidence_result, 1),
+        ("closed claim undated review", closed_claim_undated_review_result, 1),
+        ("free-form dependency warning", freeform_dependency_result, 0),
         (
             "duplicate stable project ID",
             execute_vault_lint(
@@ -1598,6 +1916,71 @@ def validate_vault_lint_fixtures(errors: list[str]) -> None:
             errors.append(f"vault-lint {label} fixture failed without the expected diagnostic")
     if "WARN: legacy project claim ledger" not in legacy_project_result.stdout:
         errors.append("vault-lint legacy project fixture did not offer optional migration")
+    if "ERROR: invalid calendar date in research run_id 'Run-20260230-001'" not in invalid_calendar_run_result.stdout:
+        errors.append("vault-lint did not exercise the invalid calendar date branch")
+    if "ERROR: invalid research-run adapter" not in invalid_adapter_run_result.stdout:
+        errors.append("vault-lint did not reject an invalid research-run adapter")
+    if "ERROR: research run_id is required" not in missing_run_id_result.stdout:
+        errors.append("vault-lint did not require a research-run ID")
+    if (
+        "ERROR: research-run adapter_scope is required"
+        not in missing_adapter_scope_result.stdout
+    ):
+        errors.append("vault-lint did not require a scope for a selected adapter")
+    if "ERROR: research-run adapter is required" not in missing_adapter_result.stdout:
+        errors.append("vault-lint did not require an adapter for a supplied scope")
+    if "ERROR: mixed research-run adapter_scope requires at least two semicolon-separated bounded scopes" not in invalid_mixed_adapter_result.stdout:
+        errors.append("vault-lint did not enforce bounded mixed-adapter scopes")
+    if "does not match frontmatter date" not in run_frontmatter_date_mismatch_result.stdout:
+        errors.append("vault-lint did not match the run ID date to frontmatter")
+    if "does not match dated filename prefix" not in run_filename_date_mismatch_result.stdout:
+        errors.append("vault-lint did not match the run ID date to a dated filename")
+    if "Problem Contract 'Exact target' requires a non-placeholder value" not in placeholder_contract_result.stdout:
+        errors.append("vault-lint did not require a meaningful Problem Contract")
+    if "WARN: research run has no substantive Obligation-NNN row yet" not in empty_obligation_result.stdout:
+        errors.append("vault-lint did not flag an empty early-SPEC obligation ledger")
+    if "ERROR: statement-matched evidence requires a non-default human statement-match confirmation" not in unconfirmed_statement_match_result.stdout:
+        errors.append("vault-lint allowed statement-matched evidence without human confirmation")
+    if "requires a real ISO date" not in invalid_statement_match_date_result.stdout:
+        errors.append("vault-lint did not reject an impossible statement-match date")
+    if "ERROR: research run closed-by-researcher confirmation requires non-placeholder scope" not in invalid_closed_confirmation_result.stdout:
+        errors.append("vault-lint did not require complete closed-by-researcher confirmation")
+    if "Human promotion missing exact field(s) 'Statement-match confirmation date'" not in missing_confirmation_field_result.stdout:
+        errors.append("vault-lint did not require the exact Human promotion fields")
+    if "ERROR: duplicate research run_id 'Run-20260724-001' within project" not in duplicate_project_run_id_result.stdout:
+        errors.append("vault-lint did not reject a project-local duplicate run ID")
+    if (
+        "ERROR: research run missing '## Attempt ledger'" not in missing_run_heading_result.stdout
+        or "restore the research-run template or remove all run metadata"
+        not in missing_run_heading_result.stdout
+    ):
+        errors.append("vault-lint did not reject a missing research-run heading")
+    if "ERROR: unknown dependency 'Lem-999' for Lem-001" not in dangling_dependency_result.stdout:
+        errors.append("vault-lint did not reject a dangling claim dependency")
+    if "ERROR: self dependency for Lem-001" not in self_dependency_result.stdout:
+        errors.append("vault-lint did not reject a self claim dependency")
+    if "ERROR: cyclic claim dependencies Lem-001 -> Prop-001 -> Lem-001" not in cyclic_dependencies_result.stdout:
+        errors.append("vault-lint did not reject a two-node claim dependency cycle")
+    if (
+        "WARN: integrated Prop-001 depends on stale, retired, gap-found, or refuted Lem-001"
+        not in stale_dependency_result.stdout
+    ):
+        errors.append("vault-lint did not warn about a stale integrated dependency")
+    if (
+        "WARN: integrated Thm-001 transitively depends on stale, retired, gap-found, or refuted Lem-001 via Prop-001 -> Lem-001"
+        not in transitive_stale_dependency_result.stdout
+    ):
+        errors.append("vault-lint did not propagate a stale dependency transitively")
+    for result in (closed_claim_missing_evidence_result, closed_claim_undated_review_result):
+        if (
+            "ERROR: closed-by-researcher Lem-001 requires nonempty evidence or source and dated human-reviewed or human-and-formal provenance"
+            not in result.stdout
+            or "not reviewer identity" not in result.stdout
+        ):
+            errors.append("vault-lint did not enforce the structural closed-by-researcher gate")
+            break
+    if "WARN: legacy or free-form dependency for Lem-001" not in freeform_dependency_result.stdout:
+        errors.append("vault-lint did not warn about a free-form dependency")
 
 
 def validate_math_project_harness(errors: list[str]) -> None:
@@ -1652,6 +2035,51 @@ def validate_math_project_harness(errors: list[str]) -> None:
         errors.append("proof-audit template is not aligned with stable research IDs")
     if re.search(r"^\|\s*G1\s*\|", proof_audit, re.MULTILINE):
         errors.append("proof-audit template still contains the legacy G1 identifier")
+
+    research_run = read_text(ROOT / "meta/templates/research-run.md") or ""
+    required_run_markers = (
+        "type: research-log",
+        'run_id: ""',
+        'adapter: ""',
+        'adapter_scope: ""',
+        "# Research run",
+        "## Problem Contract",
+        "## Run manifest",
+        "## Obligations",
+        "## Attempt ledger",
+        "## Scoped synthesis",
+        "## Human promotion",
+        "SPEC → ROUTE → OBLIGATIONS → PROVE / DISPROVE → optional adapters → SYNTHESIZE → HUMAN PROMOTION",
+    )
+    if any(marker not in research_run for marker in required_run_markers):
+        errors.append("research-run template is missing its bounded control-plane contract")
+
+    research_run_skill = read_text(
+        ROOT / ".agents/skills/math-research-run/SKILL.md"
+    ) or ""
+    required_run_skill_markers = (
+        "Problem Contract",
+        "Attempt ledger",
+        "Human promotion",
+    )
+    if any(
+        re.search(re.escape(marker), research_run_skill, re.IGNORECASE) is None
+        for marker in required_run_skill_markers
+    ):
+        errors.append("math-research-run skill is missing its core run boundaries")
+
+    schemas = read_text(ROOT / "meta/schemas.md") or ""
+    required_run_schema_markers = (
+        "run_id",
+        "Run-YYYYMMDD-NNN",
+        "natural-proof",
+        "formalization",
+        "constructive-search",
+        "literature-audit",
+        "mixed",
+    )
+    if any(marker not in schemas for marker in required_run_schema_markers):
+        errors.append("research-run schema is missing an optional metadata contract")
 
     documentation_contracts = {
         "AGENTS.md": ("Research State Spine", "Def-NNN", "Cor-NNN", "Gap-NNN", "review-stale"),
@@ -1759,7 +2187,12 @@ def main() -> int:
                 if not resolved.exists():
                     errors.append(f"broken local link in {relative}: {target}")
 
-    for skill_name in ("first-run", "claude-review", "pro-context-bundle"):
+    for skill_name in (
+        "first-run",
+        "claude-review",
+        "math-research-run",
+        "pro-context-bundle",
+    ):
         skill = ROOT / f".agents/skills/{skill_name}/SKILL.md"
         if skill.exists():
             skill_text = skill.read_text(encoding="utf-8")
@@ -1797,6 +2230,12 @@ def main() -> int:
         ui_text = claude_review_ui.read_text(encoding="utf-8")
         if "allow_implicit_invocation: false" not in ui_text:
             errors.append("Claude review skill must disable implicit invocation")
+
+    math_run_ui = ROOT / ".agents/skills/math-research-run/agents/openai.yaml"
+    if math_run_ui.exists():
+        ui_text = math_run_ui.read_text(encoding="utf-8")
+        if "policy:\n  allow_implicit_invocation: true" not in ui_text:
+            errors.append("math research-run skill must allow implicit invocation")
 
     pro_skill = ROOT / ".agents/skills/pro-context-bundle/SKILL.md"
     if pro_skill.exists():

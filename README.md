@@ -87,6 +87,32 @@ Keep researching this problem with me as usual. Update the project Research Stat
 The files remain readable without Codex or Obsidian. Obsidian is an optional
 visual editor for the same Markdown files.
 
+### Longer research runs stay inspectable
+
+Codex quietly starts a bounded research-run log when a project reaches a second
+serious attempt, resumes in a later session, needs multiple obligations or
+tools, or develops a claim that a paper depends on. You do not need a new
+interface or command. The log fixes the exact problem statement, separates
+obligations, preserves prove and disprove attempts, records the limited scope
+of tools or sources, and leaves a clear resume point. If it is unclear whether
+the threshold has been reached, Codex keeps an ordinary log for now.
+
+Codex does not create this extra record for a simple question, routine
+explanation, lightweight exposition, or one-step calculation. It pauses only
+when the mathematical statement is ambiguous, an external action needs
+approval, independent attempts conflict, or a claim is ready for your explicit
+judgment. AI agreement and tool results are evidence with recorded limits, not
+automatic proof. Only the researcher can mark a claim `closed-by-researcher`
+or confirm that a checked statement matches the intended mathematics. Each
+decision records its date, scope, and a reviewer identifier or role that the
+user agrees to include; no email address or other unnecessary personal details
+are needed, and an automated check cannot verify someone's identity.
+
+Research-run logs contain unpublished research. Before syncing or pushing,
+Codex must show what would leave the workspace, obtain approval, and verify
+that the research destination is exactly private. Never put a run log in the
+public Math Research Workbench distribution repository.
+
 ## Useful first requests
 
 You can write naturally. For example:
@@ -108,11 +134,19 @@ Do not call it verified based only on your own review.
 Create a new project for this problem and explain every folder you create.
 ```
 
+```text
+Keep researching this project with the bounded research-run loop. Preserve
+failed approaches and ask me only when a mathematical decision needs me.
+```
+
 See [the daily workflow](docs/daily-workflow.md) for more examples.
 
 ## Important safety defaults
 
 - Unpublished research repositories are **private by default**.
+- Research-run logs must never be committed or pushed to the public Math
+  Research Workbench distribution repository. Verify a separate destination
+  as exactly private before syncing unpublished research.
 - GitHub is not an automatic backup. Only changes that have been committed and
   pushed appear there; ask Codex to explain and confirm each synchronization.
 - The workbench repository should not live inside a cloud-sync folder. Use an

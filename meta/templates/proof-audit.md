@@ -63,6 +63,16 @@ Delete checklist items that are irrelevant only after noting why.
 
 Absence of a found counterexample is not proof.
 
+## Context-independence record
+
+| Pass | Material supplied | Originating reasoning withheld? | Honest context label | Findings and limits |
+|---|---|---|---|---|
+| 1 |  | yes / no | fresh-isolated / same-context-audit / human |  |
+
+Use `fresh-isolated` only when the reviewer or worker did not receive the
+originating reasoning. If genuine isolation was unavailable, write
+`same-context-audit` or `fresh pass not run`; do not call the review independent.
+
 ## Gap register
 
 | Gap ID | Location | Issue | What would resolve it | State |
@@ -77,6 +87,18 @@ Absence of a found counterexample is not proof.
 
 A successful checker result applies to the encoding only. Leave `review_status` unchanged until the corresponding review is documented and a human has assessed whether the encoding matches the intended statement.
 
+### Statement-match confirmation
+
+| Date | Consented reviewer identifier or role | Intended statement version | Checked encoding or reviewed statement | Scope matched | Qualifications |
+|---|---|---|---|---|---|
+| YYYY-MM-DD |  |  |  | not confirmed |  |
+
+Record `statement-matched` only after a human explicitly confirms the
+correspondence and scope on the recorded date. Use only an identifier or role
+the user has consented to record; omit unnecessary personal information. A
+passing checker result does not supply this confirmation, and an automated
+check cannot authenticate the reviewer.
+
 ## AI-assisted review record
 
 | Date | System or model | Material provided | Review scope | Findings retained | Unresolved cautions |
@@ -87,7 +109,7 @@ AI-assisted review is provenance, not proof certification, and does not by itsel
 
 ## Human review record
 
-| Date | Reviewer | Version reviewed | Scope | Outcome | Remaining qualifications |
+| Date | Consented reviewer identifier or role | Version reviewed | Scope | Outcome | Remaining qualifications |
 |---|---|---|---|---|---|
 | YYYY-MM-DD |  |  |  |  |  |
 

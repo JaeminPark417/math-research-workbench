@@ -1,0 +1,6 @@
+interface:
+  display_name: "Math research run"
+  short_description: "Run sustained mathematics research with safe checkpoints"
+  default_prompt: "Use $math-research-run to continue this sustained mathematics project with an inspectable research loop."
+policy:
+  allow_implicit_invocation: true
