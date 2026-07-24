@@ -2207,6 +2207,8 @@ def main() -> int:
     if claude_review_skill.exists():
         review_text = claude_review_skill.read_text(encoding="utf-8")
         required_review_boundaries = (
+            "--model opus",
+            "--effort xhigh",
             "--safe-mode",
             '--settings \'{"disableAllHooks":true}\'',
             '--tools ""',
@@ -2216,6 +2218,8 @@ def main() -> int:
             "--no-chrome",
             "--strict-mcp-config",
             "--no-session-persistence",
+            "Do not pass `--max-turns`",
+            "without a fixed time limit",
             "BEGIN APPROVED REVIEW PACKET",
             "END APPROVED REVIEW PACKET",
         )
