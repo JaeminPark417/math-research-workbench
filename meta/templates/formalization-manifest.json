@@ -1,0 +1,127 @@
+{
+  "schema_version": 1,
+  "manifest_id": "Formalization-NNN",
+  "run_id": "Run-YYYYMMDD-NNN",
+  "obligation_id": "Obligation-NNN",
+  "created": "YYYY-MM-DD",
+  "updated": "YYYY-MM-DD",
+  "source_snapshot": {
+    "repository_commit": null,
+    "working_tree": "clean"
+  },
+  "spine_target": {
+    "id": "Thm-NNN",
+    "project_readme": "projects/project-slug/README.md"
+  },
+  "problem_contract": {
+    "version": "<contract version; validator checks recorded evidence only and never executes Lean, Lake, Git, or checkers; trusted_challenge.files must exhaustively list every regular file below its root>",
+    "artifact": "projects/project-slug/logs/research-run.md",
+    "artifact_sha256": "sha256:<64 lowercase hex>",
+    "exact_target_sha256": "sha256:<64 lowercase hex>"
+  },
+  "natural_statement": {
+    "artifact": "projects/project-slug/formalization/natural-statement.md",
+    "sha256": "sha256:<64 lowercase hex>"
+  },
+  "formal_target": {
+    "language": "Lean 4",
+    "declaration": "Namespace.declaration",
+    "expected_type_artifact": "projects/project-slug/formalization/trusted/expected-type.txt",
+    "expected_type_sha256": "sha256:<64 lowercase hex>"
+  },
+  "toolchain": {
+    "lean_version": "<record the exact Lean version; this is not execution-attested by the manifest validator>",
+    "lake_version": "<record the exact Lake version; this is not execution-attested by the manifest validator>",
+    "dependency_lock_artifact": "projects/project-slug/formalization/trusted/lake-manifest.json",
+    "dependency_lock_sha256": "sha256:<64 lowercase hex>"
+  },
+  "trusted_challenge": {
+    "root": "projects/project-slug/formalization/trusted",
+    "tree_digest_algorithm": "sha256-v1",
+    "baseline_tree_sha256": "sha256:<64 lowercase hex>",
+    "after_tree_sha256": "sha256:<64 lowercase hex>",
+    "files": [
+      {
+        "path": "projects/project-slug/formalization/trusted/Challenge.lean",
+        "sha256": "sha256:<64 lowercase hex>"
+      },
+      {
+        "path": "projects/project-slug/formalization/trusted/expected-type.txt",
+        "sha256": "sha256:<64 lowercase hex>"
+      },
+      {
+        "path": "projects/project-slug/formalization/trusted/lake-manifest.json",
+        "sha256": "sha256:<64 lowercase hex>"
+      }
+    ],
+    "allowed_axioms": []
+  },
+  "untrusted_submission": {
+    "root": "projects/project-slug/formalization/submission",
+    "files": [
+      {
+        "path": "projects/project-slug/formalization/submission/Solution.lean",
+        "sha256": "sha256:<64 lowercase hex>"
+      }
+    ],
+    "produced_by_branch": "Branch-NNN",
+    "solver_write_scope": "solution-only"
+  },
+  "checks": {
+    "challenge_integrity": {
+      "result": "not-run"
+    },
+    "source_policy": {
+      "result": "not-run",
+      "artifact": null,
+      "sha256": null
+    },
+    "build": {
+      "argv": [],
+      "result": "not-run",
+      "exit_code": null,
+      "log_artifact": null,
+      "log_sha256": null
+    },
+    "declaration_type": {
+      "comparator": null,
+      "comparator_version": null,
+      "result": "not-run",
+      "artifact": null,
+      "sha256": null
+    },
+    "axioms": {
+      "observed": [],
+      "result": "not-run",
+      "artifact": null,
+      "sha256": null
+    },
+    "primary_kernel": {
+      "version": null,
+      "result": "not-run",
+      "log_artifact": null,
+      "log_sha256": null
+    },
+    "secondary_recheck": {
+      "relation": "not-run",
+      "checker": null,
+      "version": null,
+      "result": "not-run",
+      "log_artifact": null,
+      "log_sha256": null
+    }
+  },
+  "statement_match": {
+    "status": "not-confirmed",
+    "exact_scope": null,
+    "confirmed_by": null,
+    "date": null,
+    "evidence_artifact": null,
+    "evidence_sha256": null
+  },
+  "final_record": {
+    "trust_boundary": "unchecked",
+    "formal_encoding": "<unchecked | recorded-pass | recorded-fail | conflict; recorded status only, not execution-attested>",
+    "statement_correspondence": "not-confirmed"
+  }
+}

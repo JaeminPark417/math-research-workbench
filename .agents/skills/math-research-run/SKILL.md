@@ -127,6 +127,60 @@ Record every prove, disprove, and check attempt in the Attempt ledger,
 including the context, method, result, artifact, limitations, or failure
 reason.
 
+#### Optional bounded branch harness
+
+Use a bounded branch loop only when a named obligation benefits from multiple
+independent attempts, adversarial pressure, repair, or formalization. It is an
+execution method inside PROVE / DISPROVE, not a new stage, a mandatory swarm,
+or a source of truth.
+
+Before dispatch:
+
+1. freeze the exact Problem Contract version and obligation;
+2. create the permitted input bundle and record every artifact SHA-256;
+3. record forbidden inputs and the allowed write scope;
+4. precommit maximum branch, depth, repair, token, tool, and time budgets;
+5. precommit the no-new-information threshold and stop policy; and
+6. assign a `Branch-NNN` and connect the execution to an `Attempt-NNN`.
+
+Preserve every output before a repair. A repair is a new child branch and
+never overwrites its parent. Record provider/model/version, prompt artifact
+hash, rendered prompt hash, input hashes, context policy, seed and sampling or
+`not exposed`, planned budget, observed use, stop reason, output artifact, and
+output hash in the template's execution records. Record `Originating reasoning
+supplied` and `Parent or sibling reasoning supplied` separately for every
+execution.
+
+Parentage alone does not determine freshness. Use `fresh-isolated` only when
+both reasoning-supplied fields are `no` and the actual input bundle contains no
+originating, parent, or sibling reasoning. A repairer that receives a critique
+is `same-context-audit`. Never infer a fresh pass from a new persona, model
+name, session, or branch ID.
+
+Every role prompt must repeat the exact contract and obligation, allowed and
+forbidden inputs, write scope, one role objective, required output schema,
+budget, stop conditions, and the rule that AI agreement and tool results do
+not perform proof or promotion. Copy
+`meta/templates/research-branch-prompt.md` into the run artifact root, freeze
+and hash it, then separately hash the final rendered provider prompt. Use only
+these role contracts:
+
+| Role | Required output | Prohibited claim or action |
+|---|---|---|
+| `idea-generator` | distinct routes, assumptions, first obligations, and kill-tests | proof or closure |
+| `solver` | one exact proof/disproof candidate with dependencies and gaps | target changes or hidden assumptions |
+| `adversary` | counterexample pressure, missing assumptions, invalid steps, scoped verdict | correctness from a failed attack |
+| `repairer` | smallest delta for one named defect and remaining risks | parent overwrite or independence |
+| `formalizer` | untrusted Lean candidate and mapping report | trusted challenge, test, or lockfile changes |
+| `statement-matcher` | discrepancy and uncertainty report | setting `statement-matched` or authenticating a human |
+| `synthesizer` | obligation-level reconciliation with attempt citations | hidden new proof steps, closure, or state promotion |
+
+If synthesis needs a new truth-bearing mathematical step, create a separate
+`UNVERIFIED` attempt instead of hiding it in the synthesis. Treat
+`candidate-green`, `branch-convergence`, `model-convergence`,
+`two-of-three-agreement`, `adversary-conceded`, and `no-error-found` as
+search-routing or stop signals with closure effect `none`.
+
 ### 5. Use optional scoped adapters
 
 Use a computation, formal checker, or literature search only for a named
@@ -139,6 +193,41 @@ external action.
 A passing computation covers only tested cases. A formal checker covers only
 the encoding. A literature search covers only the recorded sources and search
 scope.
+
+For a Lean adapter, copy `meta/templates/formalization-manifest.json` into a
+repository-relative artifact path before solver execution. Freeze the trusted
+challenge and put the solver's files under a disjoint untrusted submission
+root. The solver write scope is `solution-only`; any challenge, comparator,
+dependency-lock, or axiom-policy change invalidates the attempt. The
+`trusted_challenge.files` list is an exhaustive inventory: list every regular
+file under `trusted_challenge.root` exactly once. Any unlisted regular file in
+that root invalidates the recorded boundary.
+
+Record the natural statement and expected Lean type hashes, exact toolchain and
+repository commit, challenge before/after hashes, source-policy result,
+build argv/exit/log, declaration comparator, allowed and observed axioms,
+primary-kernel log, and any secondary recheck. Do not describe a same-kernel
+clean rebuild as an independent checker. The manifest validator checks
+structure, recorded consistency, path separation, and artifact hashes; it does
+not execute Lean, `build.argv`, Git checks, or any other recorded command; it
+does not enforce an OS sandbox, authenticate a human, establish statement
+correspondence, or prove mathematical truth.
+
+Use only `unchecked`, `recorded-pass`, `recorded-fail`, or `conflict` for
+`final_record.formal_encoding`. `recorded-pass` is self-recorded provenance,
+not an execution attestation. Use `recorded-fail` for a failed mandatory check
+or same-kernel clean rebuild, and reserve `conflict` for opposite pass/fail
+results from the primary kernel and a genuinely independent checker. Set
+`recorded-pass` only after the mandatory Lean, build,
+source-policy, repository-state, declaration, axiom, and kernel commands have
+been separately executed and their results and logs observed. Then run
+`python3 scripts/formalization_manifest.py MANIFEST --root . --verify-files`
+to validate the manifest structure and current artifact hashes. A passing
+validator result alone never establishes `formal-tool-checked` or
+`formal-encoding-checked`; record either formal evidence only after the actual
+commands were executed and observed, and link both their durable logs and the
+validated manifest. This still does not permit `statement-matched`, closure,
+or Human Promotion without the existing dated, scoped human confirmation.
 
 ### 6. SYNTHESIZE
 
@@ -182,6 +271,10 @@ Keep `review_status` within the values in `meta/schemas.md`. AI work remains
 `unchecked` unless a permitted human or formal review is actually documented.
 Setting the run log's `status` to `complete` means only that the recorded
 activity ended, not that the theorem was proved.
+
+Automation signals are not evidence descriptors. Keep their closure effect at
+`none`; do not convert green labels, model votes, adversary concession, or a
+passing formal build into a mathematical-state change.
 
 ## Stay quiet at ordinary transitions
 

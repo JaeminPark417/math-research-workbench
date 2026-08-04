@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import re
@@ -77,7 +78,9 @@ REQUIRED = {
     "meta/templates/paper.md",
     "meta/templates/project.md",
     "meta/templates/proof-audit.md",
+    "meta/templates/formalization-manifest.json",
     "meta/templates/research-run.md",
+    "meta/templates/research-branch-prompt.md",
     "meta/templates/research-log.md",
     "meta/templates/session.md",
     "notes/README.md",
@@ -92,6 +95,7 @@ REQUIRED = {
     "scripts/claude-readiness.py",
     "scripts/doctor.ps1",
     "scripts/doctor.sh",
+    "scripts/formalization_manifest.py",
     "scripts/install-bundled-obsidian-plugin.py",
     "scripts/migrate-setup-v1.py",
     "scripts/remote-state.py",
@@ -1422,12 +1426,17 @@ def execute_vault_lint(
     binary_name: str | None = None,
     note_relative: str = "notes/fixture.md",
     note_texts: dict[str, str] | None = None,
+    extra_files: dict[str, str] | None = None,
 ) -> subprocess.CompletedProcess[str]:
     with tempfile.TemporaryDirectory(prefix="workbench-lint-") as temp_name:
         fixture_root = Path(temp_name) / "workbench"
         scripts_dir = fixture_root / "scripts"
         scripts_dir.mkdir(parents=True)
         shutil.copy2(ROOT / "scripts/vault-lint.py", scripts_dir / "vault-lint.py")
+        shutil.copy2(
+            ROOT / "scripts/formalization_manifest.py",
+            scripts_dir / "formalization_manifest.py",
+        )
         for name in ("inbox", "ideas", "papers", "notes", "projects"):
             (fixture_root / name).mkdir()
         if note_text is not None:
@@ -1438,6 +1447,10 @@ def execute_vault_lint(
             note_path = fixture_root / relative
             note_path.parent.mkdir(parents=True, exist_ok=True)
             note_path.write_text(text, encoding="utf-8")
+        for relative, text in (extra_files or {}).items():
+            extra_path = fixture_root / relative
+            extra_path.parent.mkdir(parents=True, exist_ok=True)
+            extra_path.write_text(text, encoding="utf-8")
         if binary_name is not None:
             (fixture_root / "notes" / binary_name).write_bytes(b"fixture")
         return subprocess.run(
@@ -1449,6 +1462,440 @@ def execute_vault_lint(
             capture_output=True,
             check=False,
         )
+
+
+def fixture_sha256(text: str) -> str:
+    return "sha256:" + hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def valid_formalization_fixture() -> tuple[dict[str, object], dict[str, str]]:
+    """Return a recorded-pass manifest and the repository artifacts it pins."""
+    files = {
+        "projects/fixture/README.md": "# Fixture project\n",
+        "projects/fixture/logs/research-run.md": "Exact target: fixture theorem\n",
+        "projects/fixture/formalization/natural-statement.md": "Fixture theorem.\n",
+        "projects/fixture/formalization/trusted/expected-type.txt": "Fixture.theorem : True\n",
+        "projects/fixture/formalization/trusted/lake-manifest.json": "{}\n",
+        "projects/fixture/formalization/trusted/Challenge.lean": "import Fixture.Solution\nexample : True := Fixture.theorem\n",
+        "projects/fixture/formalization/submission/Solution.lean": "namespace Fixture\ntheorem theorem : True := by trivial\nend Fixture\n",
+        "projects/fixture/formalization/checks/source-policy.txt": "no sorry or admit found\n",
+        "projects/fixture/formalization/checks/build.log": "build passed\n",
+        "projects/fixture/formalization/checks/declaration-type.txt": "type matched\n",
+        "projects/fixture/formalization/checks/axioms.txt": "[]\n",
+        "projects/fixture/formalization/checks/kernel.log": "kernel accepted\n",
+    }
+    hashes = {path: fixture_sha256(text) for path, text in files.items()}
+    challenge_paths = sorted(
+        path
+        for path in files
+        if path.startswith("projects/fixture/formalization/trusted/")
+    )
+    challenge_records = b"".join(
+        path.encode("utf-8")
+        + b"\0"
+        + hashes[path].encode("ascii")
+        + b"\n"
+        for path in challenge_paths
+    )
+    challenge_tree = "sha256:" + hashlib.sha256(challenge_records).hexdigest()
+    manifest: dict[str, object] = {
+        "schema_version": 1,
+        "manifest_id": "Formalization-001",
+        "run_id": "Run-20260724-001",
+        "obligation_id": "Obligation-001",
+        "created": "2026-07-24",
+        "updated": "2026-07-24",
+        "source_snapshot": {
+            "repository_commit": "1" * 40,
+            "working_tree": "clean",
+        },
+        "spine_target": {
+            "id": "Lem-001",
+            "project_readme": "projects/fixture/README.md",
+        },
+        "problem_contract": {
+            "version": "v1",
+            "artifact": "projects/fixture/logs/research-run.md",
+            "artifact_sha256": hashes["projects/fixture/logs/research-run.md"],
+            "exact_target_sha256": hashes[
+                "projects/fixture/formalization/natural-statement.md"
+            ],
+        },
+        "natural_statement": {
+            "artifact": "projects/fixture/formalization/natural-statement.md",
+            "sha256": hashes[
+                "projects/fixture/formalization/natural-statement.md"
+            ],
+        },
+        "formal_target": {
+            "language": "Lean 4",
+            "declaration": "Fixture.theorem",
+            "expected_type_artifact": "projects/fixture/formalization/trusted/expected-type.txt",
+            "expected_type_sha256": hashes[
+                "projects/fixture/formalization/trusted/expected-type.txt"
+            ],
+        },
+        "toolchain": {
+            "lean_version": "4.19.0",
+            "lake_version": "5.0.0",
+            "dependency_lock_artifact": "projects/fixture/formalization/trusted/lake-manifest.json",
+            "dependency_lock_sha256": hashes[
+                "projects/fixture/formalization/trusted/lake-manifest.json"
+            ],
+        },
+        "trusted_challenge": {
+            "root": "projects/fixture/formalization/trusted",
+            "tree_digest_algorithm": "sha256-v1",
+            "baseline_tree_sha256": challenge_tree,
+            "after_tree_sha256": challenge_tree,
+            "files": [
+                {"path": path, "sha256": hashes[path]} for path in challenge_paths
+            ],
+            "allowed_axioms": [],
+        },
+        "untrusted_submission": {
+            "root": "projects/fixture/formalization/submission",
+            "files": [
+                {
+                    "path": "projects/fixture/formalization/submission/Solution.lean",
+                    "sha256": hashes[
+                        "projects/fixture/formalization/submission/Solution.lean"
+                    ],
+                }
+            ],
+            "produced_by_branch": "Branch-001",
+            "solver_write_scope": "solution-only",
+        },
+        "checks": {
+            "challenge_integrity": {"result": "pass"},
+            "source_policy": {
+                "result": "pass",
+                "artifact": "projects/fixture/formalization/checks/source-policy.txt",
+                "sha256": hashes[
+                    "projects/fixture/formalization/checks/source-policy.txt"
+                ],
+            },
+            "build": {
+                "argv": ["lake", "env", "lean", "Challenge.lean"],
+                "result": "pass",
+                "exit_code": 0,
+                "log_artifact": "projects/fixture/formalization/checks/build.log",
+                "log_sha256": hashes[
+                    "projects/fixture/formalization/checks/build.log"
+                ],
+            },
+            "declaration_type": {
+                "comparator": "Lean elaborated typecheck",
+                "comparator_version": "1",
+                "result": "pass",
+                "artifact": "projects/fixture/formalization/checks/declaration-type.txt",
+                "sha256": hashes[
+                    "projects/fixture/formalization/checks/declaration-type.txt"
+                ],
+            },
+            "axioms": {
+                "observed": [],
+                "result": "pass",
+                "artifact": "projects/fixture/formalization/checks/axioms.txt",
+                "sha256": hashes[
+                    "projects/fixture/formalization/checks/axioms.txt"
+                ],
+            },
+            "primary_kernel": {
+                "version": "Lean 4.19.0",
+                "result": "pass",
+                "log_artifact": "projects/fixture/formalization/checks/kernel.log",
+                "log_sha256": hashes[
+                    "projects/fixture/formalization/checks/kernel.log"
+                ],
+            },
+            "secondary_recheck": {
+                "relation": "not-run",
+                "checker": None,
+                "version": None,
+                "result": "not-run",
+                "log_artifact": None,
+                "log_sha256": None,
+            },
+        },
+        "statement_match": {
+            "status": "not-confirmed",
+            "exact_scope": None,
+            "confirmed_by": None,
+            "date": None,
+            "evidence_artifact": None,
+            "evidence_sha256": None,
+        },
+        "final_record": {
+            "trust_boundary": "intact",
+            "formal_encoding": "recorded-pass",
+            "statement_correspondence": "not-confirmed",
+        },
+    }
+    return manifest, files
+
+
+def execute_formalization_manifest(
+    manifest: dict[str, object] | None = None,
+    files: dict[str, str] | None = None,
+    *,
+    raw_manifest: str | None = None,
+    verify_files: bool = True,
+) -> subprocess.CompletedProcess[str]:
+    with tempfile.TemporaryDirectory(prefix="workbench-formalization-") as temp_name:
+        fixture_root = Path(temp_name) / "workbench"
+        scripts_dir = fixture_root / "scripts"
+        scripts_dir.mkdir(parents=True)
+        shutil.copy2(
+            ROOT / "scripts/formalization_manifest.py",
+            scripts_dir / "formalization_manifest.py",
+        )
+        for relative, text in (files or {}).items():
+            artifact = fixture_root / relative
+            artifact.parent.mkdir(parents=True, exist_ok=True)
+            artifact.write_text(text, encoding="utf-8")
+        manifest_path = fixture_root / "formalization-manifest.json"
+        manifest_path.write_text(
+            raw_manifest
+            if raw_manifest is not None
+            else json.dumps(manifest or {}, indent=2),
+            encoding="utf-8",
+        )
+        command = [
+            sys.executable,
+            str(scripts_dir / "formalization_manifest.py"),
+            str(manifest_path),
+            "--root",
+            str(fixture_root),
+        ]
+        if verify_files:
+            command.append("--verify-files")
+        return subprocess.run(
+            command,
+            cwd=fixture_root,
+            text=True,
+            encoding="utf-8",
+            errors="strict",
+            capture_output=True,
+            check=False,
+        )
+
+
+def validate_formalization_manifest_fixtures(errors: list[str]) -> None:
+    manifest, files = valid_formalization_fixture()
+
+    def clone() -> dict[str, object]:
+        return json.loads(json.dumps(manifest))
+
+    valid_result = execute_formalization_manifest(manifest, files)
+    overlap = clone()
+    overlap["untrusted_submission"]["root"] = overlap["trusted_challenge"]["root"]  # type: ignore[index]
+    overlap_result = execute_formalization_manifest(overlap, files)
+    changed_challenge = clone()
+    changed_challenge["trusted_challenge"]["after_tree_sha256"] = "sha256:" + "f" * 64  # type: ignore[index]
+    changed_challenge_result = execute_formalization_manifest(changed_challenge, files)
+    unexpected_axiom = clone()
+    unexpected_axiom["checks"]["axioms"]["observed"] = ["Classical.choice"]  # type: ignore[index]
+    unexpected_axiom_result = execute_formalization_manifest(unexpected_axiom, files)
+    target_hash_mismatch = clone()
+    target_hash_mismatch["problem_contract"]["exact_target_sha256"] = "sha256:" + "e" * 64  # type: ignore[index]
+    target_hash_mismatch_result = execute_formalization_manifest(
+        target_hash_mismatch, files
+    )
+    unsafe_path = clone()
+    unsafe_path["natural_statement"]["artifact"] = "/tmp/statement.md"  # type: ignore[index]
+    unsafe_path_result = execute_formalization_manifest(unsafe_path, files)
+    invalid_scope = clone()
+    invalid_scope["untrusted_submission"]["solver_write_scope"] = "whole-repository"  # type: ignore[index]
+    invalid_scope_result = execute_formalization_manifest(invalid_scope, files)
+    placeholder_toolchain = clone()
+    placeholder_toolchain["toolchain"][  # type: ignore[index]
+        "lean_version"
+    ] = "<record the exact Lean version; replace this placeholder>"
+    placeholder_toolchain_result = execute_formalization_manifest(
+        placeholder_toolchain, files
+    )
+    incomplete_match = clone()
+    incomplete_match["statement_match"].update(  # type: ignore[union-attr]
+        {
+            "status": "confirmed",
+            "exact_scope": "fixture theorem",
+            "confirmed_by": None,
+            "date": "2026-07-24",
+            "evidence_artifact": "projects/fixture/formalization/natural-statement.md",
+            "evidence_sha256": files
+            and fixture_sha256(files["projects/fixture/formalization/natural-statement.md"]),
+        }
+    )
+    incomplete_match["final_record"]["statement_correspondence"] = "confirmed"  # type: ignore[index]
+    incomplete_match_result = execute_formalization_manifest(incomplete_match, files)
+    missing_build_log = clone()
+    missing_build_log["checks"]["build"]["log_artifact"] = None  # type: ignore[index]
+    missing_build_log["checks"]["build"]["log_sha256"] = None  # type: ignore[index]
+    missing_build_log_result = execute_formalization_manifest(missing_build_log, files)
+    duplicate_json = json.dumps(manifest).replace(
+        '"run_id": "Run-20260724-001",',
+        '"run_id": "Run-20260724-001", "run_id": "Run-20260724-002",',
+        1,
+    )
+    duplicate_key_result = execute_formalization_manifest(
+        files=files, raw_manifest=duplicate_json
+    )
+    tampered_files = dict(files)
+    tampered_files[
+        "projects/fixture/formalization/submission/Solution.lean"
+    ] += "-- tampered\n"
+    tampered_artifact_result = execute_formalization_manifest(manifest, tampered_files)
+    unlisted_trusted_files = dict(files)
+    unlisted_trusted_files[
+        "projects/fixture/formalization/trusted/Unlisted.lean"
+    ] = "axiom hidden : False\n"
+    unlisted_trusted_file_result = execute_formalization_manifest(
+        manifest, unlisted_trusted_files
+    )
+    secondary_files = dict(files)
+    secondary_log = "projects/fixture/formalization/checks/secondary.log"
+    secondary_files[secondary_log] = "independent checker rejected the submission\n"
+    failed_secondary = clone()
+    failed_secondary["checks"]["secondary_recheck"].update(  # type: ignore[index,union-attr]
+        {
+            "relation": "independent-checker",
+            "checker": "fixture-independent-checker",
+            "version": "1",
+            "result": "fail",
+            "log_artifact": secondary_log,
+            "log_sha256": fixture_sha256(secondary_files[secondary_log]),
+        }
+    )
+    failed_secondary_result = execute_formalization_manifest(
+        failed_secondary, secondary_files
+    )
+    recorded_conflict = json.loads(json.dumps(failed_secondary))
+    recorded_conflict["final_record"]["formal_encoding"] = "conflict"  # type: ignore[index]
+    recorded_conflict_result = execute_formalization_manifest(
+        recorded_conflict, secondary_files
+    )
+    same_kernel_failure = json.loads(json.dumps(failed_secondary))
+    same_kernel_failure["checks"]["secondary_recheck"][  # type: ignore[index]
+        "relation"
+    ] = "same-kernel-clean-rebuild"
+    same_kernel_failure["final_record"]["formal_encoding"] = "conflict"  # type: ignore[index]
+    same_kernel_conflict_result = execute_formalization_manifest(
+        same_kernel_failure, secondary_files
+    )
+    same_kernel_recorded_fail = json.loads(json.dumps(same_kernel_failure))
+    same_kernel_recorded_fail["final_record"][  # type: ignore[index]
+        "formal_encoding"
+    ] = "recorded-fail"
+    same_kernel_recorded_fail_result = execute_formalization_manifest(
+        same_kernel_recorded_fail, secondary_files
+    )
+    mandatory_failure_conflict = clone()
+    mandatory_failure_conflict["checks"]["build"]["result"] = "fail"  # type: ignore[index]
+    mandatory_failure_conflict["checks"]["build"]["exit_code"] = 1  # type: ignore[index]
+    mandatory_failure_conflict["final_record"]["formal_encoding"] = "conflict"  # type: ignore[index]
+    mandatory_failure_conflict_result = execute_formalization_manifest(
+        mandatory_failure_conflict, files
+    )
+    secondary_pass_files = dict(files)
+    secondary_pass_files[secondary_log] = "independent checker accepted the submission\n"
+    primary_fail_secondary_pass = clone()
+    primary_fail_secondary_pass["checks"]["primary_kernel"]["result"] = "fail"  # type: ignore[index]
+    primary_fail_secondary_pass["checks"]["secondary_recheck"].update(  # type: ignore[index,union-attr]
+        {
+            "relation": "independent-checker",
+            "checker": "fixture-independent-checker",
+            "version": "1",
+            "result": "pass",
+            "log_artifact": secondary_log,
+            "log_sha256": fixture_sha256(secondary_pass_files[secondary_log]),
+        }
+    )
+    primary_fail_secondary_pass["final_record"][  # type: ignore[index]
+        "formal_encoding"
+    ] = "recorded-fail"
+    primary_fail_recorded_fail_result = execute_formalization_manifest(
+        primary_fail_secondary_pass, secondary_pass_files
+    )
+    primary_fail_conflict = json.loads(json.dumps(primary_fail_secondary_pass))
+    primary_fail_conflict["final_record"]["formal_encoding"] = "conflict"  # type: ignore[index]
+    primary_fail_conflict_result = execute_formalization_manifest(
+        primary_fail_conflict, secondary_pass_files
+    )
+
+    cases = (
+        ("valid recorded-pass manifest", valid_result, 0),
+        ("overlapping trust roots", overlap_result, 1),
+        ("changed trusted challenge", changed_challenge_result, 1),
+        ("unexpected axiom", unexpected_axiom_result, 1),
+        ("target hash mismatch", target_hash_mismatch_result, 1),
+        ("unsafe artifact path", unsafe_path_result, 1),
+        ("invalid solver write scope", invalid_scope_result, 1),
+        ("placeholder toolchain version", placeholder_toolchain_result, 1),
+        ("incomplete statement match", incomplete_match_result, 1),
+        ("missing mandatory build log", missing_build_log_result, 1),
+        ("duplicate JSON key", duplicate_key_result, 1),
+        ("tampered artifact", tampered_artifact_result, 1),
+        ("unlisted trusted challenge file", unlisted_trusted_file_result, 1),
+        ("failed independent secondary recheck", failed_secondary_result, 1),
+        ("recorded independent-checker conflict", recorded_conflict_result, 0),
+        ("same-kernel failure mislabeled conflict", same_kernel_conflict_result, 1),
+        ("same-kernel failure recorded fail", same_kernel_recorded_fail_result, 0),
+        ("mandatory failure mislabeled conflict", mandatory_failure_conflict_result, 1),
+        (
+            "primary failure and independent pass mislabeled recorded fail",
+            primary_fail_recorded_fail_result,
+            1,
+        ),
+        (
+            "primary failure and independent pass recorded conflict",
+            primary_fail_conflict_result,
+            0,
+        ),
+    )
+    for label, result, expected in cases:
+        if result.returncode != expected:
+            errors.append(
+                f"formalization manifest {label} fixture expected exit {expected}"
+            )
+        output = result.stdout + result.stderr
+        if "Traceback" in output or "Formalization manifest validation" not in result.stdout:
+            errors.append(f"formalization manifest {label} fixture crashed or omitted its summary")
+    diagnostics = (
+        (overlap_result, "roots must not overlap"),
+        (changed_challenge_result, "equal before/after challenge hashes"),
+        (unexpected_axiom_result, "outside the allowlist"),
+        (
+            target_hash_mismatch_result,
+            "must match natural_statement.sha256",
+        ),
+        (unsafe_path_result, "must stay inside the repository"),
+        (invalid_scope_result, "solver_write_scope must equal solution-only"),
+        (placeholder_toolchain_result, "toolchain.lean_version must not be a template placeholder"),
+        (incomplete_match_result, "statement_match.confirmed_by"),
+        (missing_build_log_result, "durable artifacts for every mandatory check"),
+        (duplicate_key_result, "duplicate JSON key"),
+        (tampered_artifact_result, "artifact hash mismatch"),
+        (unlisted_trusted_file_result, "trusted_challenge.files"),
+        (failed_secondary_result, "failed secondary recheck"),
+        (
+            same_kernel_conflict_result,
+            "conflict requires opposite primary-kernel and independent-checker results",
+        ),
+        (
+            mandatory_failure_conflict_result,
+            "a recorded mandatory or same-kernel failure requires formal_encoding recorded-fail",
+        ),
+        (
+            primary_fail_recorded_fail_result,
+            "opposite primary-kernel and independent-checker results require formal_encoding conflict",
+        ),
+    )
+    for result, marker in diagnostics:
+        if marker not in result.stdout:
+            errors.append(
+                f"formalization manifest fixture did not emit diagnostic {marker!r}"
+            )
 
 
 def validate_vault_lint_fixtures(errors: list[str]) -> None:
@@ -1494,16 +1941,37 @@ def validate_vault_lint_fixtures(errors: list[str]) -> None:
             - Refutation criterion: Supply a counterexample satisfying the hypotheses.
             ## Run manifest
             Fixture.
+            ## Bounded branch plan
+            Fixture.
+            ## Branch ledger
+            | Branch | Parent | Obligation | Role | Attempt | State |
+            |---|---|---|---|---|---|
+            | Branch-001 | root | Obligation-001 | solver | Attempt-001 | candidate-produced |
+            ## Execution records
+            | Attempt | Branch | Provider, model, and version | Prompt artifact and SHA-256 | Rendered prompt SHA-256 | Context and input bundle with SHA-256 | Originating reasoning supplied | Parent or sibling reasoning supplied | Seed and sampling | Budget and usage | Stop reason | Output artifact and SHA-256 |
+            |---|---|---|---|---|---|---|---|---|---|---|---|
+            | Attempt-001 | Branch-001 | fixture-provider / fixture-model / 1 | prompts/solver.md SHA256_FIXTURE | SHA256_FIXTURE | fresh-isolated; inputs/fixture.md SHA256_FIXTURE | no | no | not exposed | max 100 tokens / used 50 | candidate-produced | outputs/candidate.md SHA256_FIXTURE |
+            ## Automation signals
+            | Signal | Exact branch or artifact version | Basis | Closure effect |
+            |---|---|---|---|
+            | candidate-green | Branch-001 / SHA256_FIXTURE | fixture candidate | none |
             ## Obligations
             | Obligation | Exact subclaim or test | Depends on | What would establish it | What would refute it | State |
             |---|---|---|---|---|---|
             | Obligation-001 | Establish the fixture estimate | | A complete derivation | A valid counterexample | open |
             ## Attempt ledger
-            Fixture.
+            | Attempt | Date | Obligation | Direction | Branch | Context | Method or adapter | Result | Artifact, limits, or failure reason |
+            |---|---|---|---|---|---|---|---|---|
+            | Attempt-001 | 2026-07-24 | Obligation-001 | prove | Branch-001 | fresh-isolated | direct proof | candidate | outputs/candidate.md; encoding unchecked |
             ## Adapter and evidence records
             | Descriptor | Exact scope | Input, artifact, or source | Result | Assumptions and limitations | Human or tool provenance |
             |---|---|---|---|---|---|
             | | | | | | |
+            ## Formalization boundary
+            - Formalization manifest: not used
+            - Trusted challenge root: not used
+            - Untrusted submission root: not used
+            - Trust-boundary result: unchecked
             ## Scoped synthesis
             Fixture.
             ## Human promotion
@@ -1517,7 +1985,7 @@ def validate_vault_lint_fixtures(errors: list[str]) -> None:
             - Closed-by-researcher confirmation date:
             - Researcher decision and qualifications:
             """
-        ).rstrip(),
+        ).rstrip().replace("SHA256_FIXTURE", "sha256:" + "a" * 64),
     )
     invalid_calendar_run = valid_run.replace(
         "run_id: Run-20260724-001", "run_id: Run-20260230-001"
@@ -1598,7 +2066,72 @@ def validate_vault_lint_fixtures(errors: list[str]) -> None:
     missing_confirmation_field = valid_run.replace(
         "- Statement-match confirmation date:\n", ""
     )
-    missing_run_heading = valid_run.replace("## Attempt ledger\nFixture.\n", "")
+    missing_run_heading = valid_run.replace(
+        "## Attempt ledger\n"
+        "| Attempt | Date | Obligation | Direction | Branch | Context | Method or adapter | Result | Artifact, limits, or failure reason |\n"
+        "|---|---|---|---|---|---|---|---|---|\n"
+        "| Attempt-001 | 2026-07-24 | Obligation-001 | prove | Branch-001 | fresh-isolated | direct proof | candidate | outputs/candidate.md; encoding unchecked |\n",
+        "",
+    )
+    invalid_branch_role = valid_run.replace(
+        "| Branch-001 | root | Obligation-001 | solver | Attempt-001 | candidate-produced |",
+        "| Branch-001 | root | Obligation-001 | closer | Attempt-001 | candidate-produced |",
+    )
+    invalid_fresh_originating_reasoning = valid_run.replace(
+        "| no | no | not exposed | max 100 tokens / used 50 |",
+        "| yes | no | not exposed | max 100 tokens / used 50 |",
+    )
+    invalid_fresh_related_reasoning = valid_run.replace(
+        "| no | no | not exposed | max 100 tokens / used 50 |",
+        "| no | yes | not exposed | max 100 tokens / used 50 |",
+    )
+    invalid_automation_closure = valid_run.replace(
+        "| candidate-green | Branch-001 / " + "sha256:" + "a" * 64 + " | fixture candidate | none |",
+        "| candidate-green | Branch-001 / " + "sha256:" + "a" * 64 + " | fixture candidate | proof |",
+    )
+    valid_model_convergence = valid_run.replace(
+        "| candidate-green | Branch-001 / " + "sha256:" + "a" * 64 + " | fixture candidate | none |",
+        "| model-convergence | Branch-001 / " + "sha256:" + "a" * 64 + " | scoped fixture agreement | none |",
+    )
+    valid_two_of_three_agreement = valid_run.replace(
+        "| candidate-green | Branch-001 / " + "sha256:" + "a" * 64 + " | fixture candidate | none |",
+        "| two-of-three-agreement | Branch-001 / " + "sha256:" + "a" * 64 + " | scoped fixture agreement | none |",
+    )
+    formal_evidence_without_manifest = valid_run.replace(
+        "| | | | | | |",
+        "| formal-encoding-checked | Fixture Lean target | missing.json | pass | encoding only | tool |",
+    )
+    cyclic_branch_genealogy = valid_run.replace(
+        "| Branch-001 | root | Obligation-001 | solver | Attempt-001 | candidate-produced |",
+        "| Branch-001 | Branch-002 | Obligation-001 | solver | Attempt-001 | candidate-produced |\n"
+        "| Branch-002 | Branch-001 | Obligation-001 | adversary | Attempt-002 | failed |",
+    )
+    cross_ledger_unknown_attempt = valid_run.replace(
+        "| Branch-001 | root | Obligation-001 | solver | Attempt-001 | candidate-produced |",
+        "| Branch-001 | root | Obligation-001 | solver | Attempt-002 | candidate-produced |",
+    )
+    cross_ledger_unknown_obligation = valid_run.replace(
+        "| Branch-001 | root | Obligation-001 | solver | Attempt-001 | candidate-produced |",
+        "| Branch-001 | root | Obligation-002 | solver | Attempt-001 | candidate-produced |",
+    )
+    cross_ledger_context_mismatch = valid_run.replace(
+        "| Attempt-001 | 2026-07-24 | Obligation-001 | prove | Branch-001 | fresh-isolated | direct proof | candidate | outputs/candidate.md; encoding unchecked |",
+        "| Attempt-001 | 2026-07-24 | Obligation-001 | prove | Branch-001 | same-context-audit | direct proof | candidate | outputs/candidate.md; encoding unchecked |",
+    )
+    invalid_rendered_prompt_hash = valid_run.replace(
+        " | " + "sha256:" + "a" * 64 + " | fresh-isolated;",
+        " | sha256:ABC | fresh-isolated;",
+        1,
+    )
+    formal_manifest, formal_files = valid_formalization_fixture()
+    formal_manifest_relative = (
+        "projects/fixture/formalization/formalization-manifest.json"
+    )
+    formal_files[formal_manifest_relative] = json.dumps(formal_manifest, indent=2)
+    valid_formal_evidence = formal_evidence_without_manifest.replace(
+        "- Formalization manifest: not used",
+        f"- Formalization manifest: {formal_manifest_relative}",
+    )
     project_spine = textwrap.dedent(
         """\
         ---
@@ -1724,6 +2257,44 @@ def validate_vault_lint_fixtures(errors: list[str]) -> None:
         note_text=missing_confirmation_field
     )
     missing_run_heading_result = execute_vault_lint(note_text=missing_run_heading)
+    invalid_branch_role_result = execute_vault_lint(note_text=invalid_branch_role)
+    invalid_fresh_originating_reasoning_result = execute_vault_lint(
+        note_text=invalid_fresh_originating_reasoning
+    )
+    invalid_fresh_related_reasoning_result = execute_vault_lint(
+        note_text=invalid_fresh_related_reasoning
+    )
+    invalid_automation_closure_result = execute_vault_lint(
+        note_text=invalid_automation_closure
+    )
+    valid_model_convergence_result = execute_vault_lint(
+        note_text=valid_model_convergence
+    )
+    valid_two_of_three_agreement_result = execute_vault_lint(
+        note_text=valid_two_of_three_agreement
+    )
+    formal_evidence_without_manifest_result = execute_vault_lint(
+        note_text=formal_evidence_without_manifest
+    )
+    cyclic_branch_genealogy_result = execute_vault_lint(
+        note_text=cyclic_branch_genealogy
+    )
+    cross_ledger_unknown_attempt_result = execute_vault_lint(
+        note_text=cross_ledger_unknown_attempt
+    )
+    cross_ledger_unknown_obligation_result = execute_vault_lint(
+        note_text=cross_ledger_unknown_obligation
+    )
+    cross_ledger_context_mismatch_result = execute_vault_lint(
+        note_text=cross_ledger_context_mismatch
+    )
+    invalid_rendered_prompt_hash_result = execute_vault_lint(
+        note_text=invalid_rendered_prompt_hash
+    )
+    valid_formal_evidence_result = execute_vault_lint(
+        note_text=valid_formal_evidence,
+        extra_files=formal_files,
+    )
     duplicate_project_run_id_result = execute_vault_lint(
         note_texts={
             "projects/fixture/logs/run-a.md": valid_run.replace(
@@ -1803,6 +2374,47 @@ def validate_vault_lint_fixtures(errors: list[str]) -> None:
             missing_run_heading_result,
             1,
         ),
+        ("research-run invalid branch role", invalid_branch_role_result, 1),
+        (
+            "research-run originating reasoning in fresh context",
+            invalid_fresh_originating_reasoning_result,
+            1,
+        ),
+        (
+            "research-run related reasoning in fresh context",
+            invalid_fresh_related_reasoning_result,
+            1,
+        ),
+        (
+            "research-run automation closure",
+            invalid_automation_closure_result,
+            1,
+        ),
+        ("research-run model convergence signal", valid_model_convergence_result, 0),
+        (
+            "research-run two-of-three signal",
+            valid_two_of_three_agreement_result,
+            0,
+        ),
+        (
+            "formal evidence without manifest",
+            formal_evidence_without_manifest_result,
+            1,
+        ),
+        ("cyclic branch genealogy", cyclic_branch_genealogy_result, 1),
+        ("branch references unknown attempt", cross_ledger_unknown_attempt_result, 1),
+        (
+            "branch references unknown obligation",
+            cross_ledger_unknown_obligation_result,
+            1,
+        ),
+        ("attempt/execution context mismatch", cross_ledger_context_mismatch_result, 1),
+        (
+            "invalid rendered prompt hash",
+            invalid_rendered_prompt_hash_result,
+            1,
+        ),
+        ("valid formal evidence manifest", valid_formal_evidence_result, 0),
         ("invalid research-log enums", execute_vault_lint(note_text=invalid_enums), 1),
         ("impossible research date", execute_vault_lint(note_text=invalid_date), 1),
         ("duplicate frontmatter key", execute_vault_lint(note_text=duplicate_review), 1),
@@ -1955,6 +2567,26 @@ def validate_vault_lint_fixtures(errors: list[str]) -> None:
         not in missing_run_heading_result.stdout
     ):
         errors.append("vault-lint did not reject a missing research-run heading")
+    if "has invalid role 'closer'" not in invalid_branch_role_result.stdout:
+        errors.append("vault-lint did not reject an unknown branch role")
+    if "must not receive originating reasoning" not in invalid_fresh_originating_reasoning_result.stdout:
+        errors.append("vault-lint did not enforce fresh-context originating-reasoning isolation")
+    if "must not receive parent or sibling reasoning" not in invalid_fresh_related_reasoning_result.stdout:
+        errors.append("vault-lint did not enforce fresh-context related-reasoning isolation")
+    if "must have Closure effect 'none'" not in invalid_automation_closure_result.stdout:
+        errors.append("vault-lint allowed an automation signal to close mathematics")
+    if "formal review or evidence requires a validated formalization manifest" not in formal_evidence_without_manifest_result.stdout:
+        errors.append("vault-lint allowed formal evidence without a manifest")
+    if "cyclic research-run branch genealogy" not in cyclic_branch_genealogy_result.stdout:
+        errors.append("vault-lint did not reject a cyclic branch genealogy")
+    if "references unknown attempt 'Attempt-002'" not in cross_ledger_unknown_attempt_result.stdout:
+        errors.append("vault-lint did not enforce branch-to-attempt ledger integrity")
+    if "references unknown obligation 'Obligation-002'" not in cross_ledger_unknown_obligation_result.stdout:
+        errors.append("vault-lint did not enforce branch-to-obligation ledger integrity")
+    if "does not match Attempt ledger context" not in cross_ledger_context_mismatch_result.stdout:
+        errors.append("vault-lint did not enforce attempt-to-execution context integrity")
+    if "requires an exact rendered prompt SHA-256" not in invalid_rendered_prompt_hash_result.stdout:
+        errors.append("vault-lint did not reject an invalid rendered prompt hash")
     if "ERROR: unknown dependency 'Lem-999' for Lem-001" not in dangling_dependency_result.stdout:
         errors.append("vault-lint did not reject a dangling claim dependency")
     if "ERROR: self dependency for Lem-001" not in self_dependency_result.stdout:
@@ -2052,10 +2684,16 @@ def validate_math_project_harness(errors: list[str]) -> None:
         "merely proposed upstream change",
         "exact artifact version",
         "## Run manifest",
+        "## Bounded branch plan",
+        "## Branch ledger",
+        "## Execution records",
+        "## Automation signals",
         "## Obligations",
         "## Attempt ledger",
+        "## Formalization boundary",
         "## Scoped synthesis",
         "## Human promotion",
+        "meta/templates/research-branch-prompt.md",
         "SPEC → ROUTE → OBLIGATIONS → PROVE / DISPROVE → optional adapters → SYNTHESIZE → HUMAN PROMOTION",
     )
     if any(marker not in research_run for marker in required_run_markers):
@@ -2075,6 +2713,13 @@ def validate_math_project_harness(errors: list[str]) -> None:
         "proposed upstream change",
         "exact artifact version",
         "Attempt ledger",
+        "Branch-NNN",
+        "idea-generator",
+        "statement-matcher",
+        "synthesizer",
+        "solution-only",
+        "formalization_manifest.py",
+        "research-branch-prompt.md",
         "Human promotion",
     )
     if any(
@@ -2082,6 +2727,32 @@ def validate_math_project_harness(errors: list[str]) -> None:
         for marker in required_run_skill_markers
     ):
         errors.append("math-research-run skill is missing its core run boundaries")
+
+    branch_prompt = read_text(
+        ROOT / "meta/templates/research-branch-prompt.md"
+    ) or ""
+    required_prompt_markers = (
+        "## Execution identity",
+        "## Allowed input bundle",
+        "## Context declaration",
+        "## Budget and stop policy",
+        "## Role contract",
+        "## Required return",
+        "idea-generator",
+        "solver",
+        "adversary",
+        "repairer",
+        "formalizer",
+        "statement-matcher",
+        "synthesizer",
+        "Rendered",
+        "Human Promotion",
+    )
+    if any(
+        re.search(re.escape(marker), branch_prompt, re.IGNORECASE) is None
+        for marker in required_prompt_markers
+    ):
+        errors.append("research branch prompt template is missing its bounded role contract")
 
     schemas = read_text(ROOT / "meta/schemas.md") or ""
     required_run_schema_markers = (
@@ -2100,6 +2771,10 @@ def validate_math_project_harness(errors: list[str]) -> None:
         "AI-authored formulation",
         "merely proposed upstream change",
         "exact artifact version",
+        "bounded-branch-loop",
+        "candidate-produced",
+        "closure effect",
+        "formalization-manifest.json",
     )
     if any(marker not in schemas for marker in required_run_schema_markers):
         errors.append("research-run schema is missing an optional metadata contract")
@@ -2114,9 +2789,63 @@ def validate_math_project_harness(errors: list[str]) -> None:
         "new AI-authored formulation",
         "merely proposed upstream change",
         "exact artifact version",
+        "bounded proof-search harness",
+        "Branch-NNN",
+        "candidate-green",
+        "trusted challenge",
+        "untrusted submission",
+        "formalization_manifest.py",
     )
     if any(marker not in math_workflow for marker in required_run_workflow_markers):
         errors.append("math workflow is missing the research-run authority contract")
+
+    formalization_template_path = ROOT / "meta/templates/formalization-manifest.json"
+    try:
+        formalization_template = json.loads(
+            formalization_template_path.read_text(encoding="utf-8")
+        )
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        formalization_template = {}
+        errors.append("formalization manifest template is not valid JSON")
+    required_manifest_keys = {
+        "schema_version",
+        "manifest_id",
+        "run_id",
+        "obligation_id",
+        "problem_contract",
+        "natural_statement",
+        "formal_target",
+        "toolchain",
+        "trusted_challenge",
+        "untrusted_submission",
+        "checks",
+        "statement_match",
+        "final_record",
+    }
+    if (
+        not isinstance(formalization_template, dict)
+        or formalization_template.get("schema_version") != 1
+        or not required_manifest_keys <= formalization_template.keys()
+        or formalization_template.get("untrusted_submission", {}).get(
+            "solver_write_scope"
+        )
+        != "solution-only"
+    ):
+        errors.append("formalization manifest template is missing its trust-boundary contract")
+
+    formalization_validator = read_text(
+        ROOT / "scripts/formalization_manifest.py"
+    ) or ""
+    required_validator_markers = (
+        "duplicate JSON key",
+        "trusted challenge and untrusted submission roots must not overlap",
+        "observed axiom(s) are outside the allowlist",
+        "formal_encoding recorded-pass requires",
+        "artifact hash mismatch",
+        "does not execute or attest recorded commands",
+    )
+    if any(marker not in formalization_validator for marker in required_validator_markers):
+        errors.append("formalization manifest validator is missing a required trust-boundary check")
 
     legacy_statement_version = re.compile(
         r"\b(?:record|include|cite|provide|require)\b[^.\n]{0,160}"
@@ -2378,6 +3107,7 @@ def main() -> int:
     validate_claude_readiness_fixtures(errors)
     validate_remote_state_fixtures(errors)
     validate_bundled_obsidian_plugin(errors)
+    validate_formalization_manifest_fixtures(errors)
     validate_vault_lint_fixtures(errors)
     validate_math_project_harness(errors)
 

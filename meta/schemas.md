@@ -254,6 +254,66 @@ inspectable without creating another note type:
   scope; adapter-name: exact scope`, and mirror them as separate rows in the
   body Route table. Leave it empty when `adapter` is empty.
 
+New research runs use the optional execution-body contract in
+`meta/templates/research-run.md`; no additional frontmatter field is required.
+Older run logs remain valid and are not rewritten automatically. When a run is
+created or substantively edited, use these stable values:
+
+- Execution mode: `single-attempt`, `bounded-branch-loop`, or `not used`.
+- Role: `idea-generator`, `solver`, `adversary`, `repairer`, `formalizer`,
+  `statement-matcher`, or `synthesizer`.
+- Context: `fresh-isolated`, `same-context-audit`, `human`, or `tool`.
+- Execution records keep `Originating reasoning supplied` and `Parent or
+  sibling reasoning supplied` as separate `yes` or `no` fields.
+  `fresh-isolated` is valid only when both fields are `no` and the recorded
+  input bundle contains no originating, parent, or sibling reasoning.
+- Branch state: `planned`, `running`, `candidate-produced`, `failed`, or
+  `stopped`.
+- Stop reason: `candidate-produced`, `counterexample-produced`,
+  `budget-exhausted`, `contract-ambiguity`, `repeated-failure`, `tool-error`,
+  `safety-or-consent-boundary`, or `human-stop`.
+- Artifact paths are repository-relative POSIX paths without `..`. A recorded
+  digest uses `sha256:` followed by 64 lowercase hexadecimal digits.
+
+Create each durable dispatch prompt from
+`meta/templates/research-branch-prompt.md`. Hash the filled, frozen prompt
+artifact and the final provider-rendered prompt separately; this distinguishes
+the reusable contract from the exact bytes a model received.
+
+`proof-found`, `verified`, `solved`, model votes, `green`, convergence, and
+adversary concession are not execution states or truth statuses. Allowed
+automation signal values are `candidate-green`, `branch-convergence`,
+`model-convergence`, `two-of-three-agreement`, `adversary-conceded`, and
+`no-error-found`; they may be logged only with closure effect `none`.
+
+For Lean work, copy `meta/templates/formalization-manifest.json` and keep the
+trusted challenge and untrusted submission in disjoint repository-relative
+roots. Export the Problem Contract's exact target verbatim as the
+`natural_statement` artifact; its SHA-256 must equal `exact_target_sha256`. A
+`recorded-pass` formal record requires an unchanged challenge, a pinned clean
+source snapshot, a `solution-only` solver write scope, passing source-policy,
+build, declaration-type, allowed-axiom, and primary-kernel checks, and durable
+artifact hashes. Use only `unchecked`, `recorded-pass`, `recorded-fail`, or
+`conflict` for `final_record.formal_encoding`. These are self-recorded
+provenance states, not execution attestations. A failed mandatory check or
+same-kernel clean rebuild requires `recorded-fail`; only opposite pass/fail
+results from the primary kernel and a genuinely independent checker use
+`conflict`.
+
+In schema v1, `trusted_challenge.files` is an exhaustive inventory of every
+regular file under `trusted_challenge.root`. `sha256-v1` is the SHA-256 of the
+sorted UTF-8 records `path`, NUL, `sha256:<digest>`, and LF for every file in
+that exhaustive inventory. Validate it with
+`scripts/formalization_manifest.py`. The validator checks structure and
+recorded artifacts only; it does not execute Lean, the build, Git checks, or
+any other recorded command, authenticate a human, establish semantic
+correspondence, or certify mathematical truth. Execute and observe the actual
+mandatory commands separately before setting `recorded-pass`. A passing
+validator result alone does not establish the `formal-tool-checked` review
+status or `formal-encoding-checked` evidence descriptor; record those only
+after actual command execution has been observed and durable logs plus the
+validated manifest are linked.
+
 Use `meta/templates/research-run.md` when any objective entry condition is met:
 a second serious attempt begins, work resumes in another session, the target
 needs multiple obligations or adapters, or a claim is load-bearing for a paper

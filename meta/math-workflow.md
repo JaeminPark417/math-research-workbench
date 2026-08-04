@@ -145,6 +145,53 @@ ordinary stage transitions quiet; interrupt when the Problem Contract is
 ambiguous, an external action requires approval, attempts conflict, statement
 matching is uncertain, or human promotion is ready.
 
+### Optional bounded proof-search harness
+
+A bounded proof-search harness is an optional execution method inside PROVE /
+DISPROVE, not a new truth-producing stage. Use it only for a named obligation
+that benefits from multiple independent attempts, adversarial pressure,
+repair, or formalization. Before dispatch, freeze the exact obligation,
+permitted input bundle and hashes, write scope, maximum branches and repair
+depth, token/tool/time budgets, no-new-information threshold, and stop policy.
+Never expand the search budget silently.
+
+Give every branch a `Branch-NNN` ID and connect every execution to an existing
+`Attempt-NNN`. A retry or repair creates a child branch and preserves its
+parent output. Record branch parentage, provider/model/version, prompt artifact
+and rendered-prompt hashes, input artifacts and hashes, context policy, seed
+and sampling controls or `not exposed`, planned budget and observed use, stop
+reason, and output artifact and hash. Record `Originating reasoning supplied`
+and `Parent or sibling reasoning supplied` as separate `yes` or `no` fields.
+
+Parentage records genealogy, not context exposure. Use `fresh-isolated` only
+when both reasoning-supplied fields are `no`, the actual input bundle excludes
+the originating, parent, and sibling reasoning, and the bundle contains only
+the Problem Contract, exact obligation, and explicitly permitted artifacts. A
+repair that receives a critique is a same-context audit. A root branch is not
+automatically fresh, and a child is not automatically non-fresh.
+
+Every execution prompt uses a common envelope: the exact contract and
+obligation, allowed and forbidden inputs, write scope, one role objective,
+required return shape, budget and stop conditions, and the boundary that AI
+agreement or a tool pass is not proof or promotion. Copy
+`meta/templates/research-branch-prompt.md` for the durable prompt artifact and
+use these role contracts:
+
+| Role | Required work | Must not do |
+|---|---|---|
+| `idea-generator` | propose distinct routes, assumptions, first obligations, and kill-tests | claim proof or closure |
+| `solver` | attempt one exact obligation and expose dependencies and gaps | change the target or hide assumptions |
+| `adversary` | seek counterexamples, missing assumptions, and invalid inferences | infer correctness merely because the attack failed |
+| `repairer` | make the smallest tracked repair to a named defect | overwrite the parent or claim independence |
+| `formalizer` | produce an untrusted Lean candidate for the frozen target | modify the trusted challenge, evaluator, or lockfile |
+| `statement-matcher` | report differences and uncertainties between informal and formal statements | set `statement-matched` or authenticate a reviewer |
+| `synthesizer` | reconcile attempts and preserve conflicts and gaps | add hidden proof steps or promote mathematical state |
+
+Signals such as `candidate-green`, `branch-convergence`, `model-convergence`,
+`two-of-three-agreement`, `adversary-conceded`, and `no-error-found` may stop
+or redirect the search. They are branch-scoped routing signals, not evidence
+descriptors, proof, statement matching, gap closure, or Human Promotion.
+
 Treat the run log as unpublished research. Before any commit, sync, or push,
 obtain approval for the exact files and verify that the research destination is
 exactly private. Uploads and external reviews follow the separate
@@ -197,6 +244,49 @@ subproblem. Record:
 A successful checker result applies only to the encoding. It does not validate
 the choice of definitions, the translation of the informal theorem, or the
 relevance of the assumptions.
+
+### Formalization trust boundary
+
+Freeze a trusted challenge before solver execution. Here, trusted means
+verifier-side immutable input; it does not mean that the statement is
+mathematically true. The challenge pins the natural statement and hash,
+definitions and assumptions, expected Lean declaration or elaborated type,
+allowed imports and axioms, toolchain and dependency lock, build/test argv,
+and challenge file/tree hashes.
+
+The schema-v1 challenge tree uses `sha256-v1`: sort each listed trusted file by
+repository-relative path, encode `path`, NUL, `sha256:<digest>`, and LF as
+UTF-8 records, concatenate them, and hash the resulting bytes with SHA-256.
+The `trusted_challenge.files` array is the exhaustive inventory of every
+regular file under `trusted_challenge.root`, including the expected-type and
+dependency-lock artifacts when they are stored there. An unlisted regular file
+under that root invalidates the recorded trust boundary.
+
+Treat every solver-produced Lean file as an untrusted submission in a separate
+write root. It must not modify the challenge, comparator, dependency lock, or
+allowed-axiom policy. Preserve a machine-readable manifest copied from
+`meta/templates/formalization-manifest.json`. Use only `unchecked`,
+`recorded-pass`, `recorded-fail`, or `conflict` for
+`final_record.formal_encoding`. A `recorded-pass` entry requires recorded
+unchanged challenge hashes, disjoint trusted and untrusted paths, a clean
+pinned repository snapshot, passing source-policy, build, declaration-type,
+allowed-axiom, and primary-kernel checks, plus durable logs and hashes. It is
+self-recorded provenance, not an execution attestation. Record `#print axioms`
+output. A same-kernel clean rebuild is useful but is not an independent
+checker. Use `recorded-fail` for a failed mandatory check or same-kernel clean
+rebuild. Reserve `conflict` for opposite pass/fail results from the primary
+kernel and a genuinely independent checker.
+
+Run `python3 scripts/formalization_manifest.py MANIFEST --root . --verify-files`
+from the repository root to check the recorded boundary and artifact hashes.
+The validator never executes Lean, `build.argv`, Git checks, or any other
+recorded command. Execute and observe the mandatory commands separately before
+setting `recorded-pass` or recording formal evidence. A passing validator alone
+does not establish `formal-tool-checked` or `formal-encoding-checked`; those may
+be recorded only after the actual tool commands have run, their results have
+been observed, and durable logs and the validated manifest are linked. The
+intended-statement correspondence still needs the existing dated, scoped human
+confirmation.
 
 ## 10. End a session cleanly
 
