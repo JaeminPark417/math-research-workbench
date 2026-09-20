@@ -6,6 +6,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from ticket_test_support import symlink_or_skip
 
 sys.dont_write_bytecode = True
 APP = Path(__file__).resolve().parents[1]
@@ -194,7 +195,7 @@ class HarnessTests(unittest.TestCase):
     def test_config_symlink_and_path_mismatch_are_rejected(self):
         self.enroll()
         config = self.root / 'project.json'; saved = self.root / 'saved.json'
-        config.rename(saved); config.symlink_to(saved)
+        config.rename(saved); symlink_or_skip(self, config, saved)
         self.reject('UNSAFE_PATH', load_project, self.project)
         config.unlink(); saved.rename(config)
         data = json.loads(config.read_text(encoding='utf-8')); data['project_id'] = 'another'

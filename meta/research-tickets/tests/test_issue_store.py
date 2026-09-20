@@ -8,6 +8,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from ticket_test_support import symlink_or_skip
 from unittest.mock import patch
 
 sys.dont_write_bytecode = True
@@ -453,7 +454,7 @@ IssueStore(sys.argv[2]).apply(json.load(sys.stdin))
             with self.subTest(directory=directory):
                 link = self.root / 'data' / directory
                 packet = self.packet(self.create())
-                link.symlink_to(outside, target_is_directory=True)
+                symlink_or_skip(self, link, outside, target_is_directory=True)
                 if directory == 'runs':
                     self.error('UNSAFE_PATH', self.begin)
                 else:

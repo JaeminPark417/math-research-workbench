@@ -9,6 +9,7 @@ import sys
 import tempfile
 import time
 import unittest
+from ticket_test_support import symlink_or_skip
 from unittest.mock import patch
 
 sys.dont_write_bytecode = True
@@ -433,7 +434,7 @@ class IndexTests(unittest.TestCase):
             self.assertEqual(13, other_index.last_stats['issue_files_read'])
             self.assertEqual(ix.digest(str(second.resolve())), json.loads((second / '.cache/issues-index.json').read_text(encoding='utf-8'))['root'])
             (self.root / 'data/issues').rename(self.root / 'saved-issues')
-            (self.root / 'data/issues').symlink_to(second / 'data/issues', target_is_directory=True)
+            symlink_or_skip(self, self.root / 'data/issues', second / 'data/issues', target_is_directory=True)
             self.error('UNSAFE_PATH', ix.IssueIndex, self.root)
 
     def test_single_result_over_budget_is_explicit(self):
@@ -502,7 +503,7 @@ class IndexTests(unittest.TestCase):
                 path = self.root / relative
                 saved = path.read_bytes()
                 path.unlink()
-                path.symlink_to(outside)
+                symlink_or_skip(self, path, outside)
                 with self.subTest(relative=relative), self.assertRaises((ix.IndexErrorDetail, OSError)):
                     self.index.refresh()
                 self.assertEqual('keep unchanged', outside.read_text(encoding='utf-8'))
@@ -515,7 +516,7 @@ class IndexTests(unittest.TestCase):
                 fifo.unlink()
             cache_dir = self.root / '.cache'
             cache_dir.rename(self.root / 'saved-cache')
-            cache_dir.symlink_to(external, target_is_directory=True)
+            symlink_or_skip(self, cache_dir, external, target_is_directory=True)
             self.error('UNSAFE_PATH', self.index.refresh)
             self.assertEqual(['target'], os.listdir(external))
 

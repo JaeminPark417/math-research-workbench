@@ -165,6 +165,9 @@ def main(argv=None):
     except IndexErrorDetail as e:
         print(json.dumps({'ok': False, 'error': {'code': e.code, 'message': str(e), 'details': e.details}}, ensure_ascii=False))
         return 2
+    except UnicodeError:
+        print(json.dumps({'ok': False, 'error': {'code': 'INVALID_DATA', 'message': 'Stored data must use UTF-8; preserve the original and restore or reconcile it.'}}))
+        return 2
     except OSError as e:
         print(json.dumps({'ok': False, 'error': {'code': 'FILESYSTEM_ERROR', 'message': 'Cannot access project data/cache.', 'errno': e.errno}}))
         return 2

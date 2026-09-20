@@ -105,6 +105,7 @@ REQUIRED = {
     "scripts/vault-lint.py",
 }
 REQUIRED |= {
+    'meta/research-tickets/tests/ticket_test_support.py',
     'meta/research-tickets/tests/test_workbench_integration.py',
     '.agents/skills/research-issues/SKILL.md',
     '.agents/skills/research-issues/agents/openai.yaml',

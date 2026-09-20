@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from ticket_test_support import symlink_or_skip
 from unittest.mock import patch
 
 sys.dont_write_bytecode = True
@@ -186,26 +187,26 @@ class SourceTests(unittest.TestCase):
 
     def test_registered_symlink_root_rejected(self):
         linked = self.base / 'alias'
-        linked.symlink_to(self.repo, target_is_directory=True)
+        symlink_or_skip(self, linked, self.repo, target_is_directory=True)
         self.config['repositories']['research']['path'] = str(linked)
         self.write_config()
         self.error('SOURCE_POLICY', self.ref)
 
     def test_registered_symlink_ancestor_rejected(self):
         linked = self.base / 'parent-alias'
-        linked.symlink_to(self.base, target_is_directory=True)
+        symlink_or_skip(self, linked, self.base, target_is_directory=True)
         self.config['repositories']['research']['path'] = str(linked / 'repo')
         self.write_config()
         self.error('SOURCE_POLICY', self.ref)
 
     def test_working_symlink_file_and_directory_are_rejected(self):
-        (self.repo / 'linked.md').symlink_to(self.file)
-        (self.repo / 'linked-notes').symlink_to(self.repo / 'notes', target_is_directory=True)
+        symlink_or_skip(self, self.repo / 'linked.md', self.file)
+        symlink_or_skip(self, self.repo / 'linked-notes', self.repo / 'notes', target_is_directory=True)
         for path in ('linked.md', 'linked-notes/proof.md'):
             self.error('SOURCE_UNAVAILABLE', source.snapshot, self.root, 'research', path)
 
     def test_committed_symlink_and_submodule_rejected(self):
-        (self.repo / 'linked.md').symlink_to('notes/proof.md')
+        symlink_or_skip(self, self.repo / 'linked.md', 'notes/proof.md')
         self.git('update-index', '--add', '--cacheinfo', '160000,' + self.commit + ',submodule.md')
         self.git('add', 'linked.md')
         self.git('commit', '-qm', 'Unsafe source modes')
@@ -292,7 +293,7 @@ class SourceTests(unittest.TestCase):
         config_file.unlink()
         target = self.base / 'external-config.json'
         target.write_text(json.dumps(self.config), encoding='utf-8')
-        config_file.symlink_to(target)
+        symlink_or_skip(self, config_file, target)
         self.error('SOURCE_UNAVAILABLE', self.ref)
         config_file.unlink()
         for path in ('relative/repo', 'bad\x00root', None):

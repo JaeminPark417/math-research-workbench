@@ -42,9 +42,11 @@ def verified_source_refs(root, value):
 
 
 def render(raw, changes, body=None, notes=None):
-    """Keep every untouched frontmatter line and body byte-for-byte."""
-    end = raw.index('\n---\n', 4)
-    lines = raw[4:end].split('\n')
+    """Keep untouched frontmatter/body bytes, including Windows line endings."""
+    eol = '\r\n' if raw.startswith('---\r\n') else '\n'
+    boundary = eol + '---' + eol
+    end = raw.index(boundary, 3 + len(eol))
+    lines = raw[3 + len(eol):end].split(eol)
     present = set()
     out = []
     for line in lines:
@@ -52,8 +54,13 @@ def render(raw, changes, body=None, notes=None):
         present.add(name)
         out.append(name + ': ' + ix.canonical(changes[name]) if name in changes else line)
     out.extend(name + ': ' + ix.canonical(value) for name, value in changes.items() if name not in present)
-    old_body, old_notes = raw[end + 5:].split(ix.MARKER)
-    return '---\n' + '\n'.join(out) + '\n---\n' + (old_body if body is None else body) + ix.MARKER + (old_notes if notes is None else notes)
+    marker = ix.MARKER.replace('\n', eol)
+    old_body, old_notes = raw[end + len(boundary):].split(marker)
+    def updated(value):
+        return value.replace('\r\n', '\n').replace('\n', eol)
+    return ('---' + eol + eol.join(out) + boundary
+            + (old_body if body is None else updated(body)) + marker
+            + (old_notes if notes is None else updated(notes)))
 
 
 def web_issue(raw, identifier):
@@ -219,6 +226,8 @@ class IssueStore:
                 require(isinstance(expected_journal, str), 'Inspect recovery status and supply expected_journal.')
                 result = tx.finish(self.index, expected_journal)
             elif mode == 'keep-current':
+                require(isinstance(expected_journal, str) and isinstance(expected_files, dict),
+                        'Inspect recovery status and supply expected_journal and expected_files.')
                 def validate():
                     self._validate_harness(self.index._refresh_locked(fd, force=True)['records'])
                 result = tx.keep_current(self.index, expected_journal, expected_files, validate)

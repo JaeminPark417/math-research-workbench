@@ -1,5 +1,7 @@
 """Synthetic checks for Workbench routing, publication and portable I/O."""
 import errno
+import contextlib
+import io
 import importlib.util
 import json
 import os
@@ -125,6 +127,65 @@ class WorkbenchTests(unittest.TestCase):
         self.assertEqual(ix.digest(content), result['source_hash'])
         self.assertEqual(content, path.read_bytes())
         self.assertIn('Find a gap.', store.index.get_section('RES-1', section='Statement and scope')['content'])
+
+    def test_crlf_update_keeps_unknown_fields_and_untouched_body_bytes(self):
+        initialize(self.project)
+        store = IssueStore(self.project / 'tickets')
+        self.create_activity(store)
+        path = self.project / 'tickets/data/issues/res-1.md'
+        raw = path.read_bytes().replace(b'desk_schema: 2', b'desk_schema: 2\ncustom_field: {"keep":true}')
+        raw = raw.replace(b'\n', b'\r\n')
+        path.write_bytes(raw)
+        snapshot = store.index.refresh()
+        store.apply(dict(operation_id='crlf-update', expected_generation=snapshot['generation'],
+                         operations=[dict(op='update', id='RES-1', expected_version=ix.digest(raw), changes={'title':'Updated audit'})]))
+        result = path.read_bytes()
+        self.assertIn(b'custom_field: {"keep":true}\r\n', result)
+        self.assertEqual(raw.split(b'\r\n---\r\n', 1)[1], result.split(b'\r\n---\r\n', 1)[1])
+
+    def test_dotted_paper_support_cannot_borrow_another_stores_validation(self):
+        self.workspace()
+        note = self.root / 'papers/example.md'
+        note.write_text('---\ntype: paper\ntitle: "Synthetic paper"\nauthors: []\nyear: 2026\n'
+                        'status: queued\ncitation_status: unverified\nadded: 2026-01-01\nlanguage: en\n---\n', encoding='utf-8')
+        initialize_paper(note)
+        forged = self.root / 'papers/example.v2/tickets/data/issues/res-1.md'
+        forged.parent.mkdir(parents=True)
+        forged.write_text('---\ntype: invented\n---\n', encoding='utf-8')
+        result = self.lint()
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn('ticket store does not match', result.stdout)
+        self.assertIn('unsupported type', result.stdout)
+
+    def test_missing_canonical_file_has_explicit_restore_error(self):
+        initialize(self.project)
+        store = IssueStore(self.project / 'tickets')
+        (self.project / 'tickets/data/relations.json').unlink()
+        with self.assertRaises(ix.IndexErrorDetail) as error:
+            store.index.refresh()
+        self.assertEqual('MISSING_SOURCE', error.exception.code)
+        self.assertEqual('data/relations.json', error.exception.details['path'])
+
+    def test_unicode_race_stays_inside_cli_json_envelope(self):
+        import issues
+        initialize(self.project)
+        output = io.StringIO()
+        malformed = UnicodeDecodeError('utf-8', b'\xff', 0, 1, 'synthetic race')
+        with patch.object(ix.IssueIndex, 'list_issues', side_effect=malformed), contextlib.redirect_stdout(output):
+            code = issues.main(['--project', str(self.project), 'list'])
+        self.assertEqual(2, code)
+        self.assertEqual('INVALID_DATA', json.loads(output.getvalue())['error']['code'])
+        self.assertNotIn('Traceback', output.getvalue())
+
+    def test_lock_and_recovery_require_explicit_guards(self):
+        initialize(self.project)
+        store = IssueStore(self.project / 'tickets')
+        with self.assertRaises(ix.IndexErrorDetail) as error:
+            store.index._assert_lock_current()
+        self.assertEqual('LOCK_REQUIRED', error.exception.code)
+        with self.assertRaises(ix.IndexErrorDetail) as error:
+            store.recover('keep-current')
+        self.assertEqual('INVALID_ARGUMENT', error.exception.code)
 
     def test_source_paths_reject_windows_drives_and_alternate_streams(self):
         for path in ('C:/private/note.md', 'notes/file.md:alternate.md', 'C:note.md'):

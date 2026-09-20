@@ -81,10 +81,12 @@ def atomic(index, path, text, before):
         fs.sync_dir(dirfd)
     finally:
         try:
-            fs.unlink(temp, dirfd)
-        except FileNotFoundError:
-            pass
-        fs.close_dir(dirfd)
+            try:
+                fs.unlink(temp, dirfd)
+            except FileNotFoundError:
+                pass
+        finally:
+            fs.close_dir(dirfd)
 
 
 def target_path(path):

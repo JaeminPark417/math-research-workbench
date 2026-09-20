@@ -13,6 +13,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from ticket_test_support import symlink_or_skip
 from unittest.mock import patch
 
 sys.dont_write_bytecode = True
@@ -196,10 +197,10 @@ class PaperWorkflowTests(unittest.TestCase):
         self.assertEqual('User content stays in place.\n', retained.read_text(encoding='utf-8'))
         self.assertFalse(self.root.exists())
         linked_note = self.library / '2026-linked-note.md'
-        linked_note.symlink_to(self.note)
+        symlink_or_skip(self, linked_note, self.note)
         self.reject(project.initialize_paper, linked_note)
         other = self.make_note('2026-linked-support')
-        other.with_suffix('').symlink_to(self.support, target_is_directory=True)
+        symlink_or_skip(self, other.with_suffix(''), self.support, target_is_directory=True)
         self.reject(project.initialize_paper, other)
         self.assertFalse(self.root.exists())
 
@@ -370,11 +371,11 @@ class PaperWorkflowTests(unittest.TestCase):
         outside.write_text('# Outside scope\n', encoding='utf-8')
         self.enroll(self.config(extracts=['content/synthetic.md']))
         extract.unlink()
-        extract.symlink_to(outside)
+        symlink_or_skip(self, extract, outside)
         self.reject(source.snapshot, self.root, 'paper', 'content/synthetic.md')
         extract.unlink()
         content.rename(self.base / 'original-content')
-        content.symlink_to(self.base / 'original-content', target_is_directory=True)
+        symlink_or_skip(self, content, self.base / 'original-content', target_is_directory=True)
         (self.base / 'original-content/synthetic.md').write_text('# Relocated\n', encoding='utf-8')
         self.reject(source.snapshot, self.root, 'paper', 'content/synthetic.md')
 

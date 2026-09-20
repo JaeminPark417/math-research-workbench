@@ -1147,7 +1147,7 @@ def validate_ticket_stores(stores: list[Path], errors: list[str]) -> set[Path]:
         from issue_index import IndexErrorDetail, FILE_RE
         from issue_store import IssueStore
         from ticket_project import load_project, load_paper
-    except ImportError:
+    except (ImportError, OSError, SyntaxError):
         errors.append('ticket engine is missing; restore the Workbench helpers')
         return set()
     owned = set()
@@ -1158,13 +1158,16 @@ def validate_ticket_stores(stores: list[Path], errors: list[str]) -> set[Path]:
                 root, config = load_project(store.parent)
             else:
                 root, config = load_paper(store.parent.with_suffix('.md'))
+            if root != store:
+                errors.append(f'ticket store does not match the selected note: {relative}')
+                continue
             engine = IssueStore(root)
             # Validate local data only; lint does not open registered external sources.
             with engine.index._lock() as directory:
                 engine.index._assert_readable()
                 snapshot = engine.index._refresh_locked(directory, force=True)
                 engine._validate_harness(snapshot['records'])
-            owned.update(p for p in (store / 'data/issues').iterdir() if FILE_RE.fullmatch(p.name))
+            owned.update(p for p in (root / 'data/issues').iterdir() if FILE_RE.fullmatch(p.name))
         except IndexErrorDetail as error:
             errors.append(f'invalid research tickets ({error.code}): {relative}')
         except (OSError, ValueError):

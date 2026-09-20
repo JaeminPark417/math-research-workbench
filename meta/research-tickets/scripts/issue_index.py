@@ -502,6 +502,7 @@ class IssueIndex:
         self.lock_timeout = lock_timeout
         self.last_stats = {}
         self._inventory_bytes_read = 0
+        self._held_lock = None
         self._checked('data', directory=True)
         self._checked('data/issues', directory=True)
 
@@ -515,7 +516,7 @@ class IssueIndex:
             cursor = cursor / part
             info = cursor.lstat()
             if fs.is_link(info):
-                fail('UNSAFE_PATH', 'Symbolic links are not accepted.', path=relative)
+                fail('UNSAFE_PATH', 'Symbolic links and Windows reparse points are not accepted; use a regular local file.', path=relative)
         info = path.stat()
         if not (stat.S_ISDIR(info.st_mode) if directory else stat.S_ISREG(info.st_mode)):
             fail('UNSAFE_PATH', 'Unexpected filesystem object.', path=relative)
@@ -539,6 +540,11 @@ class IssueIndex:
     def _inventory(self):
         directory = self._checked('data/issues', directory=True)
         paths = ['data/project.json', 'data/relations.json']
+        for path in paths:
+            try:
+                self._checked(path)
+            except FileNotFoundError:
+                fail('MISSING_SOURCE', 'Restore the missing canonical file from backup; do not reinitialize the store.', path=path)
         if (self.root / 'project.json').exists() or (self.root / 'project.json').is_symlink():
             paths.append('project.json')
         paths += ['data/issues/' + p.name for p in directory.iterdir() if FILE_RE.fullmatch(p.name)]
@@ -596,6 +602,8 @@ class IssueIndex:
             fs.close_dir(rootfd)
 
     def _assert_lock_current(self):
+        if self._held_lock is None:
+            fail('LOCK_REQUIRED', 'This operation requires the held project lock.')
         path_stat = self._checked('.research-desk.lock').stat()
         held_stat = os.fstat(self._held_lock)
         if (path_stat.st_dev, path_stat.st_ino) != (held_stat.st_dev, held_stat.st_ino):
