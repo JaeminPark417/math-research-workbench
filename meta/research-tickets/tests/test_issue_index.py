@@ -283,7 +283,7 @@ class IndexTests(unittest.TestCase):
             return original(path, *args)
         with patch.object(self.index, '_read', side_effect=torn):
             self.assertTrue(self.index.get_section('RES-13', section='Statement and scope')['content'])
-        self.assertEqual(2, count)
+        self.assertEqual(5 if ix.HASH_INVENTORY else 2, count)
 
     def test_section_cursor_from_another_issue_is_invalid(self):
         self.edit(body='first\n\nsecond\n')

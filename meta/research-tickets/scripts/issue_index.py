@@ -174,6 +174,8 @@ def _statement_role(kind, claim_ref):
 
 def parse_note(raw, identifier):
     """Parse the existing desk_schema=1 JSON-valued frontmatter without YAML coercion."""
+    # Parse Windows text edits without changing byte-exact source hashes.
+    raw = raw.replace("\r\n", "\n")
     if not raw.startswith('---\n'):
         fail('INVALID_DATA', 'Missing frontmatter.', id=identifier)
     end = raw.find('\n---\n', 4)

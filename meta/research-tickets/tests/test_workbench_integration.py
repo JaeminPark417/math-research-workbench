@@ -113,6 +113,19 @@ class WorkbenchTests(unittest.TestCase):
             store.index.refresh()
             self.assertTrue(store.index.last_stats['cache_reused'])
 
+    def test_crlf_ticket_parses_without_changing_source_hash_or_bytes(self):
+        initialize(self.project)
+        store = IssueStore(self.project / 'tickets')
+        self.create_activity(store)
+        path = self.project / 'tickets/data/issues/res-1.md'
+        content = path.read_bytes().replace(b'\n', b'\r\n')
+        path.write_bytes(content)
+        result = store.index.refresh()['records']['RES-1']
+        self.assertEqual('Synthetic audit', result['title'])
+        self.assertEqual(ix.digest(content), result['source_hash'])
+        self.assertEqual(content, path.read_bytes())
+        self.assertIn('Find a gap.', store.index.get_section('RES-1', section='Statement and scope')['content'])
+
     def test_source_paths_reject_windows_drives_and_alternate_streams(self):
         for path in ('C:/private/note.md', 'notes/file.md:alternate.md', 'C:note.md'):
             with self.subTest(path=path), self.assertRaises(ix.IndexErrorDetail):
