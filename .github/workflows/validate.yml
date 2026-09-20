@@ -35,6 +35,9 @@ jobs:
           python scripts/remote-state.py
           python scripts/setup-state.py
 
+      - name: Test local research tickets
+        run: python -B -m unittest discover -s meta/research-tickets/tests -q
+
       - name: Lint empty research workspace
         run: python scripts/vault-lint.py
 

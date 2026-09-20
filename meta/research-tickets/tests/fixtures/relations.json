@@ -1,0 +1,403 @@
+[
+  {
+    "key": "synthetic-edge-0",
+    "type": "refutes",
+    "status": "current",
+    "logic": "Synthetic scoped relation",
+    "evidence": "Synthetic test data only",
+    "route": "Fixture route",
+    "from": "RES-15",
+    "to": "RES-15",
+    "from_version": {
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "path": "synthetic/object-15.md",
+      "heading": "Statement and scope"
+    },
+    "to_version": {
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "path": "synthetic/object-15.md",
+      "heading": "Statement and scope"
+    },
+    "to_inline_target": "Only the synthetic stronger statement"
+  },
+  {
+    "key": "synthetic-edge-1",
+    "type": "related",
+    "status": "current",
+    "logic": "Synthetic scoped relation",
+    "evidence": "Synthetic test data only",
+    "route": "Fixture route",
+    "from": "RES-6",
+    "to": "RES-7",
+    "from_version": {
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "path": "synthetic/object-6.md",
+      "heading": "Statement and scope"
+    },
+    "to_version": {
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "path": "synthetic/object-7.md",
+      "heading": "Statement and scope"
+    }
+  },
+  {
+    "key": "synthetic-edge-2",
+    "type": "related",
+    "status": "current",
+    "logic": "Synthetic scoped relation",
+    "evidence": "Synthetic test data only",
+    "route": "Fixture route",
+    "from": "RES-7",
+    "to": "RES-8",
+    "from_version": {
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "path": "synthetic/object-7.md",
+      "heading": "Statement and scope"
+    },
+    "to_version": {
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "path": "synthetic/object-8.md",
+      "heading": "Statement and scope"
+    }
+  },
+  {
+    "key": "synthetic-edge-3",
+    "type": "related",
+    "status": "current",
+    "logic": "Synthetic scoped relation",
+    "evidence": "Synthetic test data only",
+    "route": "Fixture route",
+    "from": "RES-8",
+    "to": "RES-9",
+    "from_version": {
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "path": "synthetic/object-8.md",
+      "heading": "Statement and scope"
+    },
+    "to_version": {
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "path": "synthetic/object-9.md",
+      "heading": "Statement and scope"
+    }
+  },
+  {
+    "key": "synthetic-edge-4",
+    "type": "related",
+    "status": "current",
+    "logic": "Synthetic scoped relation",
+    "evidence": "Synthetic test data only",
+    "route": "Fixture route",
+    "from": "RES-9",
+    "to": "RES-10",
+    "from_version": {
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "path": "synthetic/object-9.md",
+      "heading": "Statement and scope"
+    },
+    "to_version": {
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "path": "synthetic/object-10.md",
+      "heading": "Statement and scope"
+    }
+  },
+  {
+    "key": "synthetic-edge-5",
+    "type": "related",
+    "status": "current",
+    "logic": "Synthetic scoped relation",
+    "evidence": "Synthetic test data only",
+    "route": "Fixture route",
+    "from": "RES-10",
+    "to": "RES-11",
+    "from_version": {
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "path": "synthetic/object-10.md",
+      "heading": "Statement and scope"
+    },
+    "to_version": {
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "path": "synthetic/object-11.md",
+      "heading": "Statement and scope"
+    }
+  },
+  {
+    "key": "synthetic-edge-6",
+    "type": "related",
+    "status": "current",
+    "logic": "Synthetic scoped relation",
+    "evidence": "Synthetic test data only",
+    "route": "Fixture route",
+    "from": "RES-11",
+    "to": "RES-12",
+    "from_version": {
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "path": "synthetic/object-11.md",
+      "heading": "Statement and scope"
+    },
+    "to_version": {
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "path": "synthetic/object-12.md",
+      "heading": "Statement and scope"
+    }
+  },
+  {
+    "key": "synthetic-edge-7",
+    "type": "related",
+    "status": "current",
+    "logic": "Synthetic scoped relation",
+    "evidence": "Synthetic test data only",
+    "route": "Fixture route",
+    "from": "RES-12",
+    "to": "RES-13",
+    "from_version": {
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "path": "synthetic/object-12.md",
+      "heading": "Statement and scope"
+    },
+    "to_version": {
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "path": "synthetic/object-13.md",
+      "heading": "Statement and scope"
+    }
+  },
+  {
+    "key": "synthetic-edge-8",
+    "type": "related",
+    "status": "current",
+    "logic": "Synthetic scoped relation",
+    "evidence": "Synthetic test data only",
+    "route": "Fixture route",
+    "from": "RES-13",
+    "to": "RES-14",
+    "from_version": {
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "path": "synthetic/object-13.md",
+      "heading": "Statement and scope"
+    },
+    "to_version": {
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "path": "synthetic/object-14.md",
+      "heading": "Statement and scope"
+    }
+  },
+  {
+    "key": "synthetic-edge-9",
+    "type": "related",
+    "status": "current",
+    "logic": "Synthetic scoped relation",
+    "evidence": "Synthetic test data only",
+    "route": "Fixture route",
+    "from": "RES-14",
+    "to": "RES-15",
+    "from_version": {
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "path": "synthetic/object-14.md",
+      "heading": "Statement and scope"
+    },
+    "to_version": {
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "path": "synthetic/object-15.md",
+      "heading": "Statement and scope"
+    }
+  },
+  {
+    "key": "synthetic-edge-10",
+    "type": "related",
+    "status": "current",
+    "logic": "Synthetic scoped relation",
+    "evidence": "Synthetic test data only",
+    "route": "Fixture route",
+    "from": "RES-15",
+    "to": "RES-16",
+    "from_version": {
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "path": "synthetic/object-15.md",
+      "heading": "Statement and scope"
+    },
+    "to_version": {
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "path": "synthetic/object-16.md",
+      "heading": "Statement and scope"
+    }
+  },
+  {
+    "key": "synthetic-edge-11",
+    "type": "related",
+    "status": "current",
+    "logic": "Synthetic scoped relation",
+    "evidence": "Synthetic test data only",
+    "route": "Fixture route",
+    "from": "RES-16",
+    "to": "RES-17",
+    "from_version": {
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "path": "synthetic/object-16.md",
+      "heading": "Statement and scope"
+    },
+    "to_version": {
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "path": "synthetic/object-17.md",
+      "heading": "Statement and scope"
+    }
+  },
+  {
+    "key": "synthetic-edge-12",
+    "type": "related",
+    "status": "current",
+    "logic": "Synthetic scoped relation",
+    "evidence": "Synthetic test data only",
+    "route": "Fixture route",
+    "from": "RES-17",
+    "to": "RES-5",
+    "from_version": {
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "path": "synthetic/object-17.md",
+      "heading": "Statement and scope"
+    },
+    "to_version": {
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "path": "synthetic/object-5.md",
+      "heading": "Statement and scope"
+    }
+  },
+  {
+    "key": "synthetic-edge-13",
+    "type": "related",
+    "status": "current",
+    "logic": "Synthetic scoped relation",
+    "evidence": "Synthetic test data only",
+    "route": "Fixture route",
+    "from": "RES-5",
+    "to": "RES-6",
+    "from_version": {
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "path": "synthetic/object-5.md",
+      "heading": "Statement and scope"
+    },
+    "to_version": {
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "path": "synthetic/object-6.md",
+      "heading": "Statement and scope"
+    }
+  },
+  {
+    "key": "synthetic-edge-14",
+    "type": "related",
+    "status": "current",
+    "logic": "Synthetic scoped relation",
+    "evidence": "Synthetic test data only",
+    "route": "Fixture route",
+    "from": "RES-6",
+    "to": "RES-7",
+    "from_version": {
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "path": "synthetic/object-6.md",
+      "heading": "Statement and scope"
+    },
+    "to_version": {
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "path": "synthetic/object-7.md",
+      "heading": "Statement and scope"
+    }
+  },
+  {
+    "key": "synthetic-edge-15",
+    "type": "related",
+    "status": "current",
+    "logic": "Synthetic scoped relation",
+    "evidence": "Synthetic test data only",
+    "route": "Fixture route",
+    "from": "RES-7",
+    "to": "RES-8",
+    "from_version": {
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "path": "synthetic/object-7.md",
+      "heading": "Statement and scope"
+    },
+    "to_version": {
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "path": "synthetic/object-8.md",
+      "heading": "Statement and scope"
+    }
+  },
+  {
+    "key": "synthetic-edge-16",
+    "type": "related",
+    "status": "current",
+    "logic": "Synthetic scoped relation",
+    "evidence": "Synthetic test data only",
+    "route": "Fixture route",
+    "from": "RES-8",
+    "to": "RES-9",
+    "from_version": {
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "path": "synthetic/object-8.md",
+      "heading": "Statement and scope"
+    },
+    "to_version": {
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "path": "synthetic/object-9.md",
+      "heading": "Statement and scope"
+    }
+  },
+  {
+    "key": "synthetic-edge-17",
+    "type": "related",
+    "status": "current",
+    "logic": "Synthetic scoped relation",
+    "evidence": "Synthetic test data only",
+    "route": "Fixture route",
+    "from": "RES-9",
+    "to": "RES-10",
+    "from_version": {
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "path": "synthetic/object-9.md",
+      "heading": "Statement and scope"
+    },
+    "to_version": {
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "path": "synthetic/object-10.md",
+      "heading": "Statement and scope"
+    }
+  },
+  {
+    "key": "synthetic-edge-18",
+    "type": "related",
+    "status": "current",
+    "logic": "Synthetic scoped relation",
+    "evidence": "Synthetic test data only",
+    "route": "Fixture route",
+    "from": "RES-10",
+    "to": "RES-11",
+    "from_version": {
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "path": "synthetic/object-10.md",
+      "heading": "Statement and scope"
+    },
+    "to_version": {
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "path": "synthetic/object-11.md",
+      "heading": "Statement and scope"
+    }
+  },
+  {
+    "key": "synthetic-edge-19",
+    "type": "related",
+    "status": "current",
+    "logic": "Synthetic scoped relation",
+    "evidence": "Synthetic test data only",
+    "route": "Fixture route",
+    "from": "RES-11",
+    "to": "RES-12",
+    "from_version": {
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "path": "synthetic/object-11.md",
+      "heading": "Statement and scope"
+    },
+    "to_version": {
+      "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "path": "synthetic/object-12.md",
+      "heading": "Statement and scope"
+    }
+  }
+]

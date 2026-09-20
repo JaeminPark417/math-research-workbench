@@ -77,3 +77,12 @@ Desktop.ini
 # Conflict copies from sync clients
 * (conflicted copy *)
 *.conflicted-copy.*
+
+# Research ticket runtime/recovery state; canonical data and receipts stay tracked.
+**/tickets/.cache/
+**/tickets/.research-desk.lock
+**/tickets/data/history/
+**/tickets/data/transactions/
+**/.ticket-enrollment.lock
+**/.ticket-init-*/
+**/.ticket-paper-init-*/

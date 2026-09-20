@@ -1,0 +1,6 @@
+{
+  "id": "synthetic-example",
+  "name": "Synthetic regression fixture",
+  "source_url": "https://example.invalid/project",
+  "mode": "local"
+}

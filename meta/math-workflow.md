@@ -316,3 +316,9 @@ Do not remove the underlying provenance.
 - Never assume that the user knows Git, terminals, YAML, or folder conventions.
 - When something fails, state what remains safe, what was not changed, and the
   simplest recovery step.
+
+## Local issues during project and manuscript work
+
+When the researcher requests issue-based management, use [research-ticket-workflow.md](research-ticket-workflow.md) and `$research-issues` to enroll only the selected project or paper. During subsequent requested work, restore the active/last ticket session, inspect partial coverage and choose one relevant activity. Preserve scoped proof inputs, failed attempts, counterexamples, exact evidence and the reason for the next action. Use this from manuscript argument design through writing and revisions, not only for a final review.
+
+Keep the Research State Spine canonical. A short ticket session can reference the same persistent math run across several sessions; neither activity completion nor source checks promote truth. New mathematical statements and changed formulations remain proposals under the existing HUMAN PROMOTION rules. Maintain the usual research and session logs and private-backup approval boundaries. An ordinary status inquiry does not enroll, start research, or send content outside the workspace.

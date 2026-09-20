@@ -10,6 +10,7 @@ import sys
 from datetime import date
 from pathlib import Path
 
+sys.dont_write_bytecode = True
 from formalization_manifest import read_manifest, validate_manifest_path
 
 
@@ -1129,12 +1130,55 @@ def validate_research_state_spine(
         )
 
 
-def scan_content() -> tuple[list[Path], list[Path], list[Path], list[Path], list[Path]]:
+def ticket_location(path: Path) -> bool:
+    parts = path.relative_to(ROOT).parts
+    return path.name == 'tickets' and (
+        len(parts) == 3 and parts[0] == 'projects'
+        or len(parts) >= 3 and parts[0] == 'papers'
+    )
+
+
+def validate_ticket_stores(stores: list[Path], errors: list[str]) -> set[Path]:
+    """Route only canonical issue files; do not exempt arbitrary sidecar notes."""
+    if not stores:
+        return set()
+    sys.path.insert(0, str(ROOT / 'meta/research-tickets/scripts'))
+    try:
+        from issue_index import IndexErrorDetail, FILE_RE
+        from issue_store import IssueStore
+        from ticket_project import load_project, load_paper
+    except ImportError:
+        errors.append('ticket engine is missing; restore the Workbench helpers')
+        return set()
+    owned = set()
+    for store in stores:
+        relative = store.relative_to(ROOT).as_posix()
+        try:
+            if relative.startswith('projects/'):
+                root, config = load_project(store.parent)
+            else:
+                root, config = load_paper(store.parent.with_suffix('.md'))
+            engine = IssueStore(root)
+            # Validate local data only; lint does not open registered external sources.
+            with engine.index._lock() as directory:
+                engine.index._assert_readable()
+                snapshot = engine.index._refresh_locked(directory, force=True)
+                engine._validate_harness(snapshot['records'])
+            owned.update(p for p in (store / 'data/issues').iterdir() if FILE_RE.fullmatch(p.name))
+        except IndexErrorDetail as error:
+            errors.append(f'invalid research tickets ({error.code}): {relative}')
+        except (OSError, ValueError):
+            errors.append(f'research tickets could not be read safely: {relative}')
+    return owned
+
+
+def scan_content() -> tuple[list[Path], list[Path], list[Path], list[Path], list[Path], list[Path]]:
     markdown: list[Path] = []
     binaries: list[Path] = []
     links: list[Path] = []
     missing: list[Path] = []
     unreadable: list[Path] = []
+    stores: list[Path] = []
 
     for content_root in CONTENT_DIRS:
         if is_link_like(content_root):
@@ -1159,6 +1203,8 @@ def scan_content() -> tuple[list[Path], list[Path], list[Path], list[Path], list
                     continue
                 try:
                     if entry.is_dir(follow_symlinks=False):
+                        if ticket_location(path):
+                            stores.append(path)
                         pending.append(path)
                     elif entry.is_file(follow_symlinks=False):
                         if path.suffix.lower() == ".md":
@@ -1174,13 +1220,15 @@ def scan_content() -> tuple[list[Path], list[Path], list[Path], list[Path], list
         sorted(set(links)),
         sorted(set(missing)),
         sorted(set(unreadable)),
+        sorted(set(stores)),
     )
 
 
 def main() -> int:
     errors: list[str] = []
     warnings: list[str] = []
-    files, binaries, links, missing, unreadable = scan_content()
+    files, binaries, links, missing, unreadable, stores = scan_content()
+    ticket_files = validate_ticket_stores(stores, errors)
     stem_index: dict[str, list[Path]] = {}
     project_run_ids: dict[tuple[str, str], list[Path]] = {}
     for path in files:
@@ -1201,6 +1249,8 @@ def main() -> int:
 
     for path in files:
         relative = path.relative_to(ROOT)
+        if path in ticket_files:
+            continue
         try:
             text = path.read_text(encoding="utf-8")
         except (OSError, UnicodeError):

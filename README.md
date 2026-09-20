@@ -50,7 +50,7 @@ Codex then asks one question at a time about:
 - optional ChatGPT sign-in inside the in-app Browser for the bundled
   `$pro-context-bundle` consultation skill, when that Browser is available.
 
-Python 3.9 or newer is used only for safe local setup-state checks; it is not a programming
+Python 3.9 or newer supports safe setup checks and the optional local research issue workflow; it is not a programming
 requirement. Every service and editor integration is optional. Codex shows the
 exact effect and asks for approval before installing software, changing an
 account, creating a remote repository, or writing outside this folder.
@@ -112,6 +112,18 @@ Research-run logs contain unpublished research. Before syncing or pushing,
 Codex must show what would leave the workspace, obtain approval, and verify
 that the research destination is exactly private. Never put a run log in the
 public Math Research Workbench distribution repository.
+
+### Research issues preserve the route and next action
+
+Ask Codex to use issue-based management for a selected project. It records claims, needed lemmas, unresolved proof steps, scoped counterexamples, evidence, priorities and next actions in local Markdown/JSON files. No tracker account or GitHub Issues setup is needed; you keep working in ordinary conversation.
+
+```text
+Apply issue-based management to this project. Reuse its existing claim IDs,
+preserve failed routes and counterexamples, and keep track of the next action
+while we develop the argument and write the manuscript.
+```
+
+Codex enrolls only the requested scope, states what is not indexed yet, and restores the current activity in later sessions. Selected paper reading can use the same approach beside its existing paper note. Activity completion does not prove a theorem or close a gap; the Research State Spine and your explicit mathematical judgment stay authoritative. Ticket records are private research and must not be pushed to this public distribution repository. See [the issue workflow](docs/research-issues.md).
 
 ## Useful first requests
 

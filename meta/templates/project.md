@@ -90,3 +90,5 @@ Keep the three state axes separate:
 ## Session index
 
 - TODO
+
+<!-- If the researcher explicitly requests issue-based management, follow meta/research-ticket-workflow.md and enroll this project with the CLI. Keep the unindexed Next actions visible until coverage is checked; do not create tickets from this template alone. -->

@@ -1,0 +1,6 @@
+interface:
+  display_name: "Research issues"
+  short_description: "Track local research questions, proof inputs, evidence and next steps"
+  default_prompt: "Use $research-issues to inspect or maintain the selected project's local research records. Enroll only if I requested it."
+policy:
+  allow_implicit_invocation: true

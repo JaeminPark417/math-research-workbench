@@ -20,6 +20,10 @@ Record this raw idea in the inbox. Preserve my wording, then propose a more
 precise mathematical formulation separately.
 ```
 
+## Continue issue-based research
+
+For an enrolled project, ask Codex to restore the active/last activity, inspect unindexed next actions, and select the next step aligned with your goal. It maintains proof inputs, negative routes, evidence and next actions during the conversation. A status question only reads; enrollment and research still require your request. For first use, see [research issues](research-issues.md).
+
 ## Common research tasks
 
 ### Develop an idea

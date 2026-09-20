@@ -366,3 +366,9 @@ verify an exactly private research destination and obtain approval for the
 exact files. Uploads and external reviews follow the workspace's separate
 per-transmission disclosure and consent rules. The public Math Research
 Workbench distribution remote is never an acceptable destination for run logs.
+
+## Optional local research tickets
+
+`tickets/project.json` explicitly enrolls one project; it is not a new required project frontmatter field. A selected paper uses its sibling `<slug>/tickets/` registration. The ticket writer owns JSON-valued `desk_*` frontmatter, scoped relations, operational session events and idempotency receipts under [the ticket contract](research-tickets/WRITE-API.md). These records do not use the ordinary note `type` schema and are checked by their own validator. The derived index is never authoritative. No new note type is introduced; books continue to use `type: paper` in this Workbench.
+
+Use project-local `RES-N` alongside existing Spine and run IDs, not as replacements. Proposed ticket formulations do not constitute canonical statements. Activity status, mathematical state, review provenance and integration state remain distinct. Canonical tickets and evidence are private research; caches, locks, full recovery history and pending journals remain local. Exact registration paths and operating rules are in [research-ticket-workflow.md](research-ticket-workflow.md).

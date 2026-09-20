@@ -71,7 +71,7 @@ quarantined; do not copy files through the link.
 
 ## Python 3.9 or newer was not detected
 
-Python 3.9 or newer runs only the local redacted setup and validation helpers; you do not
+Python 3.9 or newer runs the local setup, validation and research issue helpers; you do not
 need to learn Python. First-run checks for an existing command and a bundled
 Codex workspace runtime before asking you to install anything. If neither is
 available, it must not create or read saved setup state with ad hoc text

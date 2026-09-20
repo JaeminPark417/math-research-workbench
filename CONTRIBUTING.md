@@ -57,6 +57,7 @@ Before submitting a pull request, run the available checks from the repository
 root:
 
 ```text
+python3 -B -m unittest discover -s meta/research-tickets/tests -q
 python3 scripts/vault-lint.py
 python3 scripts/validate-release.py --release
 ```

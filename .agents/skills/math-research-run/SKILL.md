@@ -298,3 +298,7 @@ research destination is exactly private. Before an upload or external review,
 follow the workspace's separate per-transmission disclosure and consent rules.
 Never commit or push a run log to the public Math Research Workbench
 distribution remote; its public nature makes it unsuitable for research data.
+
+## Link an enrolled issue workflow
+
+If this project has `tickets/project.json`, also use `$research-issues` and `meta/research-ticket-workflow.md`. Restore the whole store's active/last operational session and partial coverage. Link the current run source and its stable run-local IDs through `math_run` when beginning a relevant ticket activity. Preserve the Problem Contract and branch ledger across short ticket sessions. Checkpoint meaningful findings and end the operational activity at session end; this does not complete or close the persistent mathematical run. Do not initialize a ticket store merely because this skill was invoked. The Spine and human-promotion boundaries above remain authoritative.

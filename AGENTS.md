@@ -128,11 +128,21 @@ invoke `$first-run`.
 - Follow `meta/schemas.md`, `meta/conventions.md`, `meta/math-workflow.md`, and
   `meta/safety.md` when creating or substantially editing research notes.
 
+## Local research issues
+
+- Use `$research-issues` for requested issue-based project or paper management and when resuming an enrolled store. Read `meta/research-ticket-workflow.md`; use `scripts/research-tickets.py` through the configured Python runtime.
+- Enroll only the project/paper scope the user requested. A status inquiry, new project or missing registration never authorizes automatic enrollment, bulk migration or background research. An enrolled project has `tickets/project.json`; reading work uses the sibling support directory described in the guide.
+- Restore active/last operational sessions and partial coverage before selecting work. Keep unindexed README actions visible. Record meaningful claims, proof inputs, counterexamples, evidence, priority rationales and next actions through guarded writes; the user need not manage packets.
+- Keep ticket activities separate from persistent mathematical runs. Reuse existing Spine IDs and run-local obligation/attempt/evidence IDs as source-bound references. `RES-N` is project-local. Activity Done never means a theorem is proved or a gap is closed; existing HUMAN PROMOTION rules remain authoritative.
+- Apply the paper workflow from argument planning through manuscript writing, proof development and revisions. Preserve old review/source versions and shared lemmas. Source checks certify bytes, not proof validity or publication.
+- Ticket stores, operational sessions, source references and receipts are unpublished research. Follow the existing private-backup and per-transmission consent rules; never put real stores or local caches/recovery files in the public distribution checkout. Bundled examples and test fixtures are synthetic.
+
 ## Verification
 
 After changing the harness itself, run:
 
 ```text
+python3 -B -m unittest discover -s meta/research-tickets/tests -q
 python3 scripts/vault-lint.py
 python3 scripts/validate-release.py
 ```
