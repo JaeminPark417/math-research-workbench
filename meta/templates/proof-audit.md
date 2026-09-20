@@ -53,7 +53,7 @@ Reference the same stable IDs used in the project README. Use the project's math
 - [ ] Limit, convergence, measurability, or regularity steps state what they use.
 - [ ] Every external theorem is cited with matching hypotheses.
 
-Delete checklist items that are irrelevant only after noting why.
+Use the checks relevant to this proof; retain any limitation that affects the conclusion.
 
 ## Counterexample search
 
@@ -65,13 +65,18 @@ Absence of a found counterexample is not proof.
 
 ## Context-independence record
 
-| Pass | Material supplied | Originating reasoning withheld? | Honest context label | Findings and limits |
+| Pass | Exact input artifacts and versions | Candidate proof supplied? | Honest context label | Findings and limits |
 |---|---|---|---|---|
-| 1 |  | yes / no | fresh-isolated / same-context-audit / human |  |
+| 1 |  | yes / no | independent-proof-audit / fresh-isolated / same-context-audit / human |  |
 
-Use `fresh-isolated` only when the reviewer or worker did not receive the
-originating reasoning. If genuine isolation was unavailable, write
-`same-context-audit` or `fresh pass not run`; do not call the review independent.
+For `independent-proof-audit`, supply the exact target, complete candidate
+proof and named dependencies in a frozen proof package, isolated from the
+originating conversation, other attempts, critiques and prior reviewer verdicts.
+Record the actual package versions/hashes. A `fresh-isolated` search withholds
+originating, parent and sibling reasoning; it cannot audit a proof it did not
+receive. If isolation is unavailable, use `same-context-audit` and state that
+limitation. Within a research run, link its execution records rather than
+copying them here. No context label certifies mathematical truth.
 
 ## Gap register
 
@@ -89,7 +94,7 @@ A successful checker result applies to the encoding only. Leave `review_status` 
 
 ### Statement-match confirmation
 
-| Date | Consented reviewer identifier or role | Intended statement version | Checked encoding or reviewed statement | Scope matched | Qualifications |
+| Date | Consented reviewer identifier or role | Intended statement artifact and version | Checked encoding or reviewed statement | Scope matched | Qualifications |
 |---|---|---|---|---|---|
 | YYYY-MM-DD |  |  |  | not confirmed |  |
 

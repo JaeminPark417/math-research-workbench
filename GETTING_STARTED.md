@@ -115,6 +115,10 @@ Once that helper is available, closing the app halfway through is safe: reopen
 the same folder and send the same message. Setup records completed answers
 locally and resumes at the first unfinished question.
 
+You may postpone setup and begin ordinary Markdown work immediately. Missing or
+outdated setup state does not block a question or note edit. Configure an
+optional integration only when you want to use it.
+
 ## 5. Answer the setup questions
 
 Codex asks one question at a time. `No` and `later` are always valid answers.

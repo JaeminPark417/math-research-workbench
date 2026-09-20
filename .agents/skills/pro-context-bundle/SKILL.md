@@ -9,7 +9,7 @@ Package selected local files with exact repository-relative paths and a return c
 
 ## Runtime boundary
 
-- In Codex, use `browser:control-in-app-browser` when it is available. Read and follow that skill completely, including tool discovery, browser selection, authentication, documentation, confirmation, and tab-cleanup rules. Do not hardcode a browser-plugin version path or selector not supported by the current page state.
+- In Codex, use the supported browser-control capability exposed by the active runtime. Read its documentation and follow its browser selection, authentication, approval, and cleanup rules. Do not assume a particular skill or tool name, hardcode a plugin version, or invent selectors. If clipboard delivery or response retrieval is unsupported, provide the generated bundle for manual handoff.
 - If no supported ChatGPT Pro browser surface is available, stop after building the bundle and return the generated paths for manual handoff.
 - In Claude Code, do not invoke Claude's `/browser`; it is a KaTeX terminal mirror, not ChatGPT browser control. Use the manual-handoff fallback unless an equivalent approved browser capability is explicitly available.
 
@@ -23,7 +23,7 @@ Treat sending or pasting local content into ChatGPT as an external side effect.
 4. Never infer permission to send secrets, credentials, private identifiers, student records, unpublished confidential material, or unrelated files. Follow the Browser skill's stricter transmission rules whenever they apply.
 5. Verify only that an ordinary ChatGPT composer and Pro access are visibly available. Do not open or inspect account menus, cookies, local storage, profiles, session stores, chat history, or workspace identifiers. If readiness cannot be verified without entering an authentication or account-selection screen, hand control to the user and pause.
 
-Approval covers only the disclosed files, task, and current Pro conversation. It does not authorize later unrelated uploads or local Tier 3 edits.
+Approval covers only the disclosed files, task, and current Pro conversation. It does not authorize later unrelated uploads or local changes outside the requested scope.
 
 ## Build the handoff
 
@@ -99,7 +99,7 @@ Treat the Pro answer as advisory.
 1. Re-read every target file locally.
 2. Compare current file hashes with the hashes captured in the bundle. If a target changed after bundling, do not apply the proposal until the context is rebuilt or the drift is resolved.
 3. Verify claims, paths, functions, citations, measurements, and proposed patches against local sources.
-4. Apply only changes authorized by the active project approval policy. A Pro recommendation never grants permission for a Tier 3 local change.
+4. Apply only changes authorized by the active project approval policy. A Pro recommendation never grants permission for an unrequested local or external action.
 5. Report the Pro conversation link, a concise result summary, validation status, and any local changes. Do not imply that Pro edited local files.
 
 ## Builder options

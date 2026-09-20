@@ -15,8 +15,9 @@ Codex. They deliberately use a small vocabulary.
 - Make each `Run-YYYYMMDD-NNN` unique within its project and make its date
   segment equal the note's `date`, the run start date. Ordinary research logs
   omit `run_id`, `adapter`, and `adapter_scope` rather than leaving them blank.
-- Do not silently rename or move a large set of files. Explain the proposed
-  change first and obtain the user's approval.
+- Explain a broad rename or move before acting. The user's request authorizes
+  scoped reversible work; ask again only for a new material effect or a
+  missing decision, not because of the file count.
 
 ## Dates
 
@@ -62,10 +63,14 @@ Codex. They deliberately use a small vocabulary.
   to inspect; it is not automatically a proof.
 - Preserve failed approaches and counterexamples because they prevent repeated
   work.
-- Describe a review as fresh only when the worker was isolated from the
-  originating reasoning and received only the recorded Problem Contract,
-  obligation, and permitted artifacts. Otherwise write `same-context audit` or
-  `fresh pass not run`.
+- Use `fresh-isolated` for independent search: give a separate worker only the
+  recorded Problem Contract, obligation, and permitted artifacts, withholding
+  the originating reasoning and candidate proof. This is not a proof audit.
+- Use `independent-proof-audit` when a separate reviewer receives the exact
+  target, complete candidate proof, and necessary dependencies, without the
+  originating dialogue or prior verdicts. Record that input scope explicitly.
+  If the reviewer retains the originating context, write `same-context audit`;
+  if no independent pass happened, write `fresh pass not run`.
 
 ## Stable research IDs
 

@@ -16,6 +16,8 @@ from typing import Any
 
 ROUTE_OVERRIDE_ENV = {
     "ANTHROPIC_API_KEY",
+    "ANTHROPIC_MODEL",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL",
     "ANTHROPIC_AUTH_TOKEN",
     "ANTHROPIC_BASE_URL",
     "CLAUDE_CODE_OAUTH_TOKEN",
@@ -49,6 +51,9 @@ REQUIRED_REVIEW_FLAGS = {
     "--permission-mode",
     "--safe-mode",
     "--settings",
+    "--setting-sources",
+    "--mcp-config",
+    "--verbose",
     "--strict-mcp-config",
     "--system-prompt",
     "--tools",

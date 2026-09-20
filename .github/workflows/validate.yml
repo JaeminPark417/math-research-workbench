@@ -35,6 +35,9 @@ jobs:
           python scripts/remote-state.py
           python scripts/setup-state.py
 
+      - name: Test review output boundaries
+        run: python -B -m unittest discover -s scripts/tests -p "test_*.py" -q
+
       - name: Test local research tickets
         run: python -B -m unittest discover -s meta/research-tickets/tests -q
 

@@ -58,6 +58,7 @@ root:
 
 ```text
 python3 -B -m unittest discover -s meta/research-tickets/tests -q
+python3 -B -m unittest discover -s scripts/tests -p "test_*.py" -q
 python3 scripts/vault-lint.py
 python3 scripts/validate-release.py --release
 ```

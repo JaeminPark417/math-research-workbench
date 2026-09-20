@@ -21,6 +21,7 @@ from urllib.parse import unquote
 ROOT = Path(__file__).resolve().parents[1]
 REQUIRED = {
     ".agents/skills/first-run/SKILL.md",
+    ".agents/skills/first-run/references/setup.md",
     ".agents/skills/first-run/agents/openai.yaml",
     ".agents/skills/first-run/references/github.md",
     ".agents/skills/first-run/references/claude-code.md",
@@ -30,6 +31,7 @@ REQUIRED = {
     ".agents/skills/first-run/references/obsidian-plugins.md",
     ".agents/skills/first-run/references/tex.md",
     ".agents/skills/claude-review/SKILL.md",
+    ".agents/skills/claude-review/references/execution.md",
     ".agents/skills/claude-review/agents/openai.yaml",
     ".agents/skills/math-research-run/SKILL.md",
     ".agents/skills/math-research-run/agents/openai.yaml",
@@ -70,6 +72,8 @@ REQUIRED = {
     "inbox/archive/.gitkeep",
     "meta/conventions.md",
     "meta/math-workflow.md",
+    "meta/math-details.md",
+    "meta/templates/research-run-extensions.md",
     "meta/safety.md",
     "meta/schemas.md",
     "meta/templates/article.tex",
@@ -93,6 +97,8 @@ REQUIRED = {
     "scripts/compile-tex.ps1",
     "scripts/compile-tex.sh",
     "scripts/claude-readiness.py",
+    "scripts/review-output.py",
+    "scripts/tests/test_review_output.py",
     "scripts/doctor.ps1",
     "scripts/doctor.sh",
     "scripts/formalization_manifest.py",
@@ -2032,6 +2038,64 @@ def validate_vault_lint_fixtures(errors: list[str]) -> None:
             """
         ).rstrip().replace("SHA256_FIXTURE", "sha256:" + "a" * 64),
     )
+    # Compact runs keep the same core schema without paying for unused
+    # branching/formalization records. These fixtures exercise behavior, not
+    # whether a prose guide repeats a particular phrase.
+    compact_run = valid_run
+    for heading in ("Bounded branch plan", "Branch ledger", "Execution records",
+                    "Automation signals", "Formalization boundary"):
+        compact_run = re.sub(r"^## " + re.escape(heading) + r"\n.*?(?=^## |\Z)",
+                             "", compact_run, flags=re.MULTILINE | re.DOTALL)
+    compact_run = compact_run.replace("| Branch-001 | fresh-isolated |", "| none | same-context-audit |")
+    audit_run = valid_run.replace("fresh-isolated", "independent-proof-audit").replace(
+        "| Obligation-001 | prove |", "| Obligation-001 | check |"
+    ).replace("| no | no | not exposed |", "| yes | no | not exposed |")
+    legacy_compact_run = compact_run.replace(
+        "| Direction | Branch | Context |", "| Direction | Context |"
+    ).replace("|---|---|---|---|---|---|---|---|---|", "|---|---|---|---|---|---|---|---|").replace(
+        "| prove | none | same-context-audit |", "| prove | same-context-audit |"
+    )
+    # Use the distributed appendix unchanged: empty extension tables must not
+    # turn an unsupported isolation claim into a recorded execution.
+    compact_with_empty_extensions = compact_run + "\n\n" + (
+        ROOT / "meta/templates/research-run-extensions.md"
+    ).read_text(encoding="utf-8")
+    compact_statement_match = compact_run.replace(
+        "| | | | | | |",
+        "| statement-matched | Fixture theorem | proof.txt | matched | exact fixture statement | human |",
+    )
+    compact_cases = (
+        ("legacy compact run without branch column", legacy_compact_run, 0),
+        ("legacy compact invalid obligation", legacy_compact_run.replace("| 2026-07-24 | Obligation-001 |", "| 2026-07-24 | Obligation-999 |"), 1),
+        ("compact run", compact_run, 0),
+        ("compact unknown obligation", compact_run.replace("| 2026-07-24 | Obligation-001 |", "| 2026-07-24 | Obligation-999 |"), 1),
+        ("compact invalid context", compact_run.replace("| same-context-audit |", "| ai-verified |"), 1),
+        ("compact unrecorded branch", compact_run.replace("| none |", "| Branch-001 |"), 1),
+        ("compact unrecorded fresh search", compact_run.replace("| same-context-audit |", "| fresh-isolated |"), 1),
+        ("compact unrecorded proof audit", compact_run.replace("| same-context-audit |", "| independent-proof-audit |").replace("| prove |", "| check |"), 1),
+        ("compact unrecorded formal review", compact_run.replace("review_status: unchecked", "review_status: formal-tool-checked"), 1),
+        ("compact unrecorded formal evidence", compact_run.replace("| | | | | | |", "| formal-encoding-checked | fixture | missing.json | pass | encoding only | tool |"), 1),
+        ("compact unrecorded formal adapter", compact_run.replace("adapter: natural-proof", "adapter: formalization"), 1),
+        ("independent exact-proof audit", audit_run, 0),
+        ("proof audit without candidate", audit_run.replace("| yes | no | not exposed |", "| no | no | not exposed |"), 1),
+        ("proof audit wrong direction", audit_run.replace("| Obligation-001 | check |", "| Obligation-001 | prove |"), 1),
+        ("compact run with empty extensions", compact_with_empty_extensions, 0),
+        ("empty extensions without fresh-search execution", compact_with_empty_extensions.replace("| same-context-audit |", "| fresh-isolated |"), 1),
+        ("empty extensions without proof-audit execution", compact_with_empty_extensions.replace("| same-context-audit |", "| independent-proof-audit |").replace("| prove |", "| check |"), 1),
+        ("run heading without run metadata", re.sub(r"^(?:run_id|adapter|adapter_scope):.*\n", "", compact_run, flags=re.MULTILINE), 1),
+        ("run heading without frontmatter", re.sub(r"\A---\n.*?\n---\n", "", compact_run, count=1, flags=re.DOTALL), 1),
+        ("statement match with renamed evidence heading", compact_statement_match.replace("## Adapter and evidence records", "## Evidence"), 1),
+        ("statement match with deleted evidence heading", compact_statement_match.replace("## Adapter and evidence records\n", ""), 1),
+        ("formal pass without manifest", compact_with_empty_extensions.replace("- Formal-encoding record: unchecked", "- Formal-encoding record: recorded-pass"), 1),
+        ("invalid formal-encoding record", compact_with_empty_extensions.replace("- Formal-encoding record: unchecked", "- Formal-encoding record: ai-verified"), 1),
+        ("invalid execution mode", compact_with_empty_extensions.replace("- Execution mode: not used", "- Execution mode: autonomous-proof"), 1),
+        ("proof audit with parent or sibling reasoning", audit_run.replace("| yes | no | not exposed |", "| yes | yes | not exposed |"), 1),
+    )
+    for label, content, expected in compact_cases:
+        result = execute_vault_lint(note_text=content)
+        if result.returncode != expected:
+            errors.append(f"vault lint fixture failed: {label}: expected {expected}, got {result.returncode}: {result.stdout}")
+
     invalid_calendar_run = valid_run.replace(
         "run_id: Run-20260724-001", "run_id: Run-20260230-001"
     )
@@ -2196,7 +2260,7 @@ def validate_vault_lint_fixtures(errors: list[str]) -> None:
         ### Claim ledger
         | ID | Claim | Mathematical state | Depends on | Evidence or source | Review provenance | Integration state | Next action |
         |---|---|---|---|---|---|---|---|
-        | Lem-001 | Fixture \( |x| \) | conjectural | Def-001 | | unchecked | isolated | |
+        | Lem-001 | Fixture \\( |x| \\) | conjectural | Def-001 | | unchecked | isolated | |
         ### Open gaps
         | ID | Affects | Precise missing justification or issue | Severity | State | Next action |
         |---|---|---|---|---|---|
@@ -2606,11 +2670,7 @@ def validate_vault_lint_fixtures(errors: list[str]) -> None:
         errors.append("vault-lint did not require the exact Human promotion fields")
     if "ERROR: duplicate research run_id 'Run-20260724-001' within project" not in duplicate_project_run_id_result.stdout:
         errors.append("vault-lint did not reject a project-local duplicate run ID")
-    if (
-        "ERROR: research run missing '## Attempt ledger'" not in missing_run_heading_result.stdout
-        or "restore the research-run template or remove all run metadata"
-        not in missing_run_heading_result.stdout
-    ):
+    if "ERROR: research run missing '## Attempt ledger'" not in missing_run_heading_result.stdout:
         errors.append("vault-lint did not reject a missing research-run heading")
     if "has invalid role 'closer'" not in invalid_branch_role_result.stdout:
         errors.append("vault-lint did not reject an unknown branch role")
@@ -2714,6 +2774,12 @@ def validate_math_project_harness(errors: list[str]) -> None:
         errors.append("proof-audit template still contains the legacy G1 identifier")
 
     research_run = read_text(ROOT / "meta/templates/research-run.md") or ""
+    research_extensions = read_text(ROOT / "meta/templates/research-run-extensions.md") or ""
+    math_core = read_text(ROOT / "meta/math-workflow.md") or ""
+    math_details = read_text(ROOT / "meta/math-details.md") or ""
+    if "meta/templates/research-run-extensions.md" not in research_run:
+        errors.append("compact run does not route to its optional execution contract")
+    research_run += "\n" + research_extensions
     required_run_markers = (
         "type: research-log",
         'run_id: ""',
@@ -2747,6 +2813,9 @@ def validate_math_project_harness(errors: list[str]) -> None:
     research_run_skill = read_text(
         ROOT / ".agents/skills/math-research-run/SKILL.md"
     ) or ""
+    if "meta/math-workflow.md" not in research_run_skill or "meta/math-details.md" not in research_run_skill:
+        errors.append("math research skill does not route to its core and optional guides")
+    research_run_skill += "\n" + math_core + "\n" + math_details
     required_run_skill_markers = (
         "Problem Contract",
         "Spine target reference",
@@ -2824,7 +2893,7 @@ def validate_math_project_harness(errors: list[str]) -> None:
     if any(marker not in schemas for marker in required_run_schema_markers):
         errors.append("research-run schema is missing an optional metadata contract")
 
-    math_workflow = read_text(ROOT / "meta/math-workflow.md") or ""
+    math_workflow = math_core + "\n" + math_details
     required_run_workflow_markers = (
         "Spine target reference",
         "current `HEAD`",
@@ -3032,6 +3101,7 @@ def main() -> int:
     claude_review_skill = ROOT / ".agents/skills/claude-review/SKILL.md"
     if claude_review_skill.exists():
         review_text = claude_review_skill.read_text(encoding="utf-8")
+        review_text += "\n" + (read_text(ROOT / ".agents/skills/claude-review/references/execution.md") or "")
         required_review_boundaries = (
             "--model opus",
             "--effort xhigh",
@@ -3043,6 +3113,10 @@ def main() -> int:
             "--permission-mode dontAsk",
             "--no-chrome",
             "--strict-mcp-config",
+            "--mcp-config",
+            "--setting-sources",
+            "--output-format stream-json",
+            "scripts/review-output.py",
             "--no-session-persistence",
             "Do not pass `--max-turns`",
             "without a fixed time limit",

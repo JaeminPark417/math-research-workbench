@@ -7,39 +7,22 @@ project: "[[projects/project-slug/README]]"
 duration_minutes: null
 ---
 
-<!-- Use the language selected during setup for prose and headings. -->
+<!-- Use the selected language. Create a session note for substantive work,
+decisions, or a useful handoff; a small edit can rely on its source/history.
+Omit unused sections. This is a dated summary, not a second current task list. -->
 
 # Goal
 
-- TODO
-
-## Starting context
-
-Summarize the state at the beginning of the session and link relevant notes.
+State the session's purpose and link the relevant project, activity, or run.
 
 ## Work completed
 
-- TODO
+Record the meaningful result and link its evidence. Do not copy entire ticket or run histories.
 
-## Decisions
+## Decisions and unresolved questions
 
-- Decision:
-  - Reason:
+Record decisions with reasons, remaining gaps, and any mathematical change still proposed for human judgment. Mention stable Spine IDs only when affected.
 
-## Research State Spine updates
+## Resume point
 
-- Stable IDs added or changed:
-- Dependencies or states changed:
-- Project README reconciled: no
-
-## Unresolved questions
-
-- TODO
-
-## Next action
-
-- [ ] TODO
-
-## Notes created or updated
-
-- TODO
+Link the authoritative current ticket action within enrolled coverage, or the Spine action for unindexed work. Record the next step **as of this session** if it helps explain the handoff; do not maintain a live checklist here.

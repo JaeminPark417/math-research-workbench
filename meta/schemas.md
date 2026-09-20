@@ -11,7 +11,7 @@ that help you find it and understand its status later.
   `session`, and `research-log`.
 - Do not invent a new `type` for a one-off purpose. A reusable concept note in
   `notes/` may be plain Markdown without frontmatter.
-- `language` is `en` or `ko`, chosen during setup. Codex should write headings
+- `language` is `en` or `ko`, from the conversation or saved setup preference. Codex should write headings
   and prose in that language while keeping field names and status values in
   English.
 - Full dates use ISO format: `YYYY-MM-DD`.
@@ -254,15 +254,27 @@ inspectable without creating another note type:
   scope; adapter-name: exact scope`, and mirror them as separate rows in the
   body Route table. Leave it empty when `adapter` is empty.
 
-New research runs use the optional execution-body contract in
-`meta/templates/research-run.md`; no additional frontmatter field is required.
+The default run omits branch and formalization sections. Add all sections from
+`meta/templates/research-run-extensions.md` only for branching, a recorded
+independent context, or formalization. Existing full run notes remain valid;
+never bulk-migrate historical notes. Compact runs still require valid obligation
+and attempt references. `independent-proof-audit` uses direction `check`, the
+exact candidate proof and dependencies, and Originating reasoning supplied
+`yes` and Parent or sibling reasoning supplied `no`; its reviewer is isolated
+from prior conversation/verdicts and other attempts beyond the frozen proof
+package (candidate plus named dependencies). It is distinct
+from blind `fresh-isolated` solution search. Both contexts require execution
+records; neither authenticates isolation or mathematical truth.
+
+The optional execution-body contract lives in
+`meta/templates/research-run-extensions.md`; no additional frontmatter field is required.
 Older run logs remain valid and are not rewritten automatically. When a run is
 created or substantively edited, use these stable values:
 
 - Execution mode: `single-attempt`, `bounded-branch-loop`, or `not used`.
 - Role: `idea-generator`, `solver`, `adversary`, `repairer`, `formalizer`,
   `statement-matcher`, or `synthesizer`.
-- Context: `fresh-isolated`, `same-context-audit`, `human`, or `tool`.
+- Context: `fresh-isolated`, `independent-proof-audit`, `same-context-audit`, `human`, or `tool`.
 - Execution records keep `Originating reasoning supplied` and `Parent or
   sibling reasoning supplied` as separate `yes` or `no` fields.
   `fresh-isolated` is valid only when both fields are `no` and the recorded

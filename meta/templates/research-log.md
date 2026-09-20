@@ -13,7 +13,8 @@ related_logs: []
 ---
 
 <!-- Choose a kind listed in meta/schemas.md. Use the language selected during
-setup for prose and headings. -->
+setup for prose and headings. Keep only the sections useful for this work; an
+ordinary log needs no research-run fields or external review. -->
 
 # Exact question
 
@@ -22,7 +23,7 @@ State what this log attempts to establish, refute, calculate, or clarify.
 ## Research State Spine links
 
 - Stable claim or gap IDs touched: none yet
-- Expected project README update: none yet
+- Link the project or current ticket only when relevant; do not create stable IDs for scratch work.
 
 ## Assumptions and dependencies
 
@@ -42,16 +43,12 @@ Record enough intermediate reasoning that another mathematician can inspect it.
 
 ## Scoped conclusion
 
-State only what the work supports. `status: complete` means this activity ended; it does not mean that a theorem is proved. If the result changes a paper-relevant claim, dependency, or gap, update the linked project's Research State Spine.
+State only what the work supports. `status: complete` means this activity ended; it does not mean that a theorem is proved. If the result affects a paper-relevant claim, dependency, or gap, link the proposed change and apply the project's human-promotion rules. Recording an activity result does not authorize mathematical promotion.
 
-## Review record
+## Review record (when a review occurred)
 
-- Human reviewer:
-- Date and scope:
-- Formal tool, version, and source reference:
-- Checker result:
-- Does the encoding match the intended statement? Human assessment required.
+Link the actual review/check and record its scope, result and limitations. Keep `review_status: unchecked` for AI-only feedback. Record only user-consented human identifiers; statement matching needs human confirmation. Omit this section if no review occurred.
 
-## Next action
+## Resume point
 
-- [ ] TODO
+Link the authoritative current action: a ticket within enrolled coverage, otherwise the project's Spine. Any proposed next step here is a dated observation, not a second live task queue.

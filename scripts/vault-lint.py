@@ -124,6 +124,7 @@ RESEARCH_RUN_HEADINGS = (
     "## Run manifest",
     "## Obligations",
     "## Attempt ledger",
+    "## Adapter and evidence records",
     "## Scoped synthesis",
     "## Human promotion",
 )
@@ -163,7 +164,7 @@ RESEARCH_RUN_ROLES = {
     "statement-matcher",
     "synthesizer",
 }
-RESEARCH_RUN_CONTEXTS = {"fresh-isolated", "same-context-audit", "human", "tool"}
+RESEARCH_RUN_CONTEXTS = {"fresh-isolated", "independent-proof-audit", "same-context-audit", "human", "tool"}
 RESEARCH_RUN_BRANCH_STATES = {
     "planned",
     "running",
@@ -411,13 +412,11 @@ def validate_research_run_harness(
         for heading in RESEARCH_RUN_HARNESS_HEADINGS
         if re.search(rf"^{re.escape(heading)}\s*$", text, re.MULTILINE)
     }
-    if not present:
-        return
     relative = path.relative_to(ROOT)
     missing = [heading for heading in RESEARCH_RUN_HARNESS_HEADINGS if heading not in present]
-    if missing:
+    if present and missing:
         errors.append(
-            f"research-run harness is missing heading(s) {', '.join(repr(item) for item in missing)}: {relative}; restore the current template or remove all harness sections"
+            f"research-run harness is missing heading(s) {', '.join(repr(item) for item in missing)}: {relative}; restore the optional research-run extensions; omit them only when no branch, independent-context, or formal record needs them"
         )
         return
 
@@ -468,6 +467,18 @@ def validate_research_run_harness(
     found_attempt_table, attempt_rows = markdown_table_rows(
         attempt_section, attempt_header
     )
+    if not found_attempt_table and not present:
+        # The pre-branch template had Context but no Branch column. Read it
+        # without rewriting history; still check references and provenance.
+        legacy_header = attempt_header[:4] + attempt_header[5:]
+        found_attempt_table, legacy_rows = markdown_table_rows(attempt_section, legacy_header)
+        if found_attempt_table:
+            attempt_rows = []
+            for row in legacy_rows:
+                if len(row) != len(legacy_header):
+                    errors.append(f"legacy research-run Attempt ledger row has {len(row)} cells; expected 8: {relative}")
+                else:
+                    attempt_rows.append(row[:4] + ["none"] + row[4:])
     if not found_attempt_table:
         errors.append(f"research-run harness has an invalid Attempt ledger header: {relative}")
     attempts: dict[str, tuple[str, str, str]] = {}
@@ -508,7 +519,26 @@ def validate_research_run_harness(
             errors.append(
                 f"research-run attempt {attempt} has invalid context {context!r}: {relative}"
             )
+        if context == "independent-proof-audit" and direction != "check":
+            errors.append(f"independent-proof-audit attempt {attempt} requires direction check: {relative}")
         attempts[attempt] = (obligation, branch, context)
+
+    evidence_section = markdown_subsection(text, "## Adapter and evidence records")
+    formal_claimed = data.get("review_status") in {"formal-tool-checked", "human-and-formal"}
+    formal_claimed = formal_claimed or any(
+        normalized_table_id(cells[0]).casefold() == "formal-encoding-checked"
+        for line in evidence_section.splitlines()
+        if (cells := split_markdown_table_row(line))
+    )
+    if not present:
+        for attempt, (_, branch, context) in attempts.items():
+            if branch != "none" or context in {"fresh-isolated", "independent-proof-audit"}:
+                errors.append(f"research-run attempt {attempt} requires the optional execution records for its branch or independent context: {relative}")
+        if formal_claimed or data.get("adapter") == "formalization":
+            errors.append(f"formal review, evidence, or adapter requires the optional Formalization boundary and manifest: {relative}")
+        if data.get("adapter") == "mixed" and "formalization" in data.get("adapter_scope", "").casefold():
+            errors.append(f"mixed formalization adapter requires the optional Formalization boundary: {relative}")
+        return
 
     branch_section = markdown_subsection(text, "## Branch ledger")
     branch_header = ("Branch", "Parent", "Obligation", "Role", "Attempt", "State")
@@ -655,6 +685,10 @@ def validate_research_run_harness(
             errors.append(f"fresh-isolated research-run execution {attempt} must not receive parent or sibling reasoning: {relative}")
         if context == "fresh-isolated" and branch_roles.get(branch) == "repairer":
             errors.append(f"repairer research-run execution {attempt} cannot be fresh-isolated: {relative}")
+        if context == "independent-proof-audit" and related_reasoning != "no":
+            errors.append(f"independent-proof-audit execution {attempt} must exclude other attempts and prior reviewer verdicts: {relative}")
+        if context == "independent-proof-audit" and originating_reasoning != "yes":
+            errors.append(f"independent-proof-audit execution {attempt} must receive the exact candidate proof as originating reasoning: {relative}")
         for index, label in ((8, "seed and sampling"), (9, "budget and usage")):
             if not substantive_value(row[index]):
                 errors.append(f"research-run execution {attempt} requires {label}: {relative}")
@@ -693,14 +727,14 @@ def validate_research_run_harness(
             errors.append(
                 f"research-run branch {branch} attempt {attempt} has no Execution records row: {relative}"
             )
-    for attempt, (_, branch, _) in sorted(attempts.items()):
+    for attempt, (_, branch, context) in sorted(attempts.items()):
         if branch != "none" and branch not in branches:
             errors.append(
                 f"research-run attempt {attempt} references unknown branch {branch!r}: {relative}"
             )
-        if branch != "none" and attempt not in executions:
+        if (branch != "none" or context in {"fresh-isolated", "independent-proof-audit"}) and attempt not in executions:
             errors.append(
-                f"research-run attempt {attempt} assigned to branch {branch} has no Execution records row: {relative}"
+                f"research-run attempt {attempt} branch or independent context has no Execution records row: {relative}"
             )
 
     signal_section = markdown_subsection(text, "## Automation signals")
@@ -720,21 +754,25 @@ def validate_research_run_harness(
         if normalized_table_id(row[3]).casefold() != "none":
             errors.append(f"research-run automation signal {signal!r} must have Closure effect 'none': {relative}")
 
+    plan_section = markdown_subsection(text, "## Bounded branch plan")
+    execution_mode = markdown_bullet_value(plan_section, "Execution mode")
+    if execution_mode is not None and normalized_table_id(execution_mode) not in {"single-attempt", "bounded-branch-loop", "not used"}:
+        errors.append(f"invalid research-run Execution mode: {relative}")
+
     formal_section = markdown_subsection(text, "## Formalization boundary")
+    formal_record = markdown_bullet_value(formal_section, "Formal-encoding record")
+    if formal_record is not None:
+        formal_record = normalized_table_id(formal_record)
+        if formal_record not in {"unchecked", "recorded-pass", "recorded-fail", "conflict"}:
+            errors.append(f"invalid research-run Formal-encoding record: {relative}")
+    formal_claimed = formal_claimed or formal_record == "recorded-pass"
     manifest_value = markdown_bullet_value(formal_section, "Formalization manifest")
     if manifest_value is None:
         errors.append(f"research-run Formalization boundary is missing 'Formalization manifest': {relative}")
         return
     manifest_value = normalized_table_id(manifest_value)
-    evidence_section = markdown_subsection(text, "## Adapter and evidence records")
-    formal_claimed = data.get("review_status") in {"formal-tool-checked", "human-and-formal"}
-    formal_claimed = formal_claimed or any(
-        normalized_table_id(cells[0]).casefold() == "formal-encoding-checked"
-        for line in evidence_section.splitlines()
-        if (cells := split_markdown_table_row(line))
-    )
     if manifest_value.casefold() == "not used":
-        if formal_claimed:
+        if formal_claimed or formal_record not in {None, "unchecked"}:
             errors.append(f"formal review or evidence requires a validated formalization manifest: {relative}")
         return
     manifest_path = repository_relative_artifact(manifest_value)
@@ -757,6 +795,8 @@ def validate_research_run_harness(
     obligation_id = manifest_data.get("obligation_id")
     if isinstance(obligation_id, str) and obligation_id not in text:
         errors.append(f"formalization manifest obligation_id is not present in the research run: {relative}")
+    if formal_record is not None and formal_record != manifest_data.get("final_record", {}).get("formal_encoding"):
+        errors.append(f"Formal-encoding record contradicts the formalization manifest: {relative}")
     if formal_claimed and manifest_data.get("final_record", {}).get("formal_encoding") != "recorded-pass":
         errors.append(f"formal review or evidence requires final_record.formal_encoding recorded-pass: {relative}")
 
@@ -784,7 +824,11 @@ def validate_research_run(
     warnings: list[str],
 ) -> None:
     """Validate the optional research-run extension of a research log."""
-    if data is None or not (RESEARCH_RUN_FIELDS & data.keys()):
+    run_heading = re.search(r"^# Research run\s*$", text, re.MULTILINE)
+    if not run_heading and (data is None or not (RESEARCH_RUN_FIELDS & data.keys())):
+        return
+    if data is None:
+        errors.append(f"research run requires research-log frontmatter: {path.relative_to(ROOT)}")
         return
     relative = path.relative_to(ROOT)
     if data.get("type") != "research-log":
@@ -839,7 +883,7 @@ def validate_research_run(
     for heading in RESEARCH_RUN_HEADINGS:
         if re.search(rf"^{re.escape(heading)}\s*$", text, re.MULTILINE) is None:
             errors.append(
-                f"research run missing {heading!r}: {relative}; restore the research-run template or remove all run metadata"
+                f"research run missing {heading!r}: {relative}; restore the research-run contract; ordinary logs must omit both run metadata and run structure"
             )
 
     contract_section = markdown_subsection(text, "## Problem Contract")
@@ -869,7 +913,7 @@ def validate_research_run(
     if promotion_section:
         if markdown_bullet_value(promotion_section, RESEARCH_RUN_DECISION_FIELD) is None:
             errors.append(
-                f"research run Human promotion missing exact field {RESEARCH_RUN_DECISION_FIELD!r}: {relative}; restore the research-run template or remove all run metadata"
+                f"research run Human promotion missing exact field {RESEARCH_RUN_DECISION_FIELD!r}: {relative}; restore the research-run contract; ordinary logs must omit both run metadata and run structure"
             )
         for gate, labels in RESEARCH_RUN_CONFIRMATION_FIELDS.items():
             status_label, scope_label, actor_label, date_label = labels
@@ -879,7 +923,7 @@ def validate_research_run(
             missing_labels = [label for label, value in values.items() if value is None]
             if missing_labels:
                 errors.append(
-                    f"research run Human promotion missing exact field(s) {', '.join(repr(item) for item in missing_labels)}: {relative}; restore the research-run template or remove all run metadata"
+                    f"research run Human promotion missing exact field(s) {', '.join(repr(item) for item in missing_labels)}: {relative}; restore the research-run contract; ordinary logs must omit both run metadata and run structure"
                 )
                 confirmation_records[gate] = (False, False)
                 continue

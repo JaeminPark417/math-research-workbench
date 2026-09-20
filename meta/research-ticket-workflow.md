@@ -2,11 +2,34 @@
 
 Research issues preserve questions, claims, proof dependencies, failed approaches, counterexamples, evidence and the next action. They are local Markdown and JSON files, with no external tracker, account or background research service. You can keep speaking naturally; Codex maintains the records during requested work through the [research-issues skill](../.agents/skills/research-issues/SKILL.md).
 
+## Load the part needed now
+
+A status question needs bounded queries and the relevant source, not enrollment or a full workflow. On entering or resuming an enrolled project, read its registration/coverage and the sections below that match the action. Reuse that context during the same task; reload when scope, source versions or state change.
+
+| Current action | Read or do |
+| --- | --- |
+| Orient, search, or answer a status question | Enrollment/authority, current-action ownership, and bounded query guidance; no write contract or session start |
+| Perform a requested research activity | Restore the active/last operational session and relevant sources; begin or reuse one activity session |
+| Enroll or change ticket records | Relevant sections of [WRITE-API.md](research-tickets/WRITE-API.md) before the first mutation |
+| Map a paper argument or maintain manuscript issues | Relevant sections of [PAPER-WORKFLOW.md](research-tickets/PAPER-WORKFLOW.md) |
+| Manage a computational or experimental study | Relevant sections of [EXPERIMENTAL-WORKFLOW.md](research-tickets/EXPERIMENTAL-WORKFLOW.md) |
+| Recover an interrupted write | Recovery guidance and the inspected journal; never run recovery as routine setup |
+
+Ordinary explanations, small calculations, note edits and reading summaries do not need new activities or operational sessions merely because a store exists. If such work changes a relevant source or record, update the affected references through the guarded writer. Load math-run or adapter instructions only when their own task conditions apply.
+
 ## Enrollment and authority
 
 Enroll a project or selected paper only when the user requests issue-based management for that scope. New and existing projects remain unenrolled until that request; status questions never initialize a store. Inventory the project README, existing stable IDs, active research run, remaining actions and meaningful failed routes. Start with partial coverage and state what is not yet indexed. Do not copy another project's tickets or migrate all projects automatically.
 
 The project Research State Spine remains the canonical mathematical map under [math-workflow.md](math-workflow.md). Long research runs retain their Problem Contract, obligations, attempts and evidence. Ticket `RES-N` IDs identify records inside one store; they do not replace `Def-NNN`, `Lem-NNN`, `Prop-NNN`, `Thm-NNN`, `Cor-NNN` or `Gap-NNN`. Bind existing objects using `claim_ref.object_id` and exact source bytes. A new AI-authored mathematical formulation remains proposed. Bound statements cannot be overwritten; use append-only `propose` or a separately identified revision. Neither activity Done, paper read status, a source hash, nor AI agreement performs HUMAN PROMOTION.
+
+## One home for each current action
+
+- Within enrolled coverage, tickets are authoritative for current operational actions, priority and activity status. Use their existing IDs and link to them from the project README.
+- The Research State Spine remains authoritative for canonical mathematics, strategic direction and work outside ticket coverage. Keep unindexed actions visible there; an empty ticket queue is not project completion.
+- Session notes and research logs preserve dated outcomes, evidence, decisions and the resume point at that time. Link to the current ticket or Spine action instead of maintaining another live checklist. Persistent mathematical runs retain their own exact target and attempt/evidence history. Without a covered ticket, an active run owns its bounded immediate next step; the Spine links to that run. Without an active run, keep the small unindexed action list in the Spine.
+
+A request to continue the enrolled work authorizes its ordinary local record maintenance. Do not ask again for each ticket update, descriptive slug or record link. New enrollment scope, mathematical promotion, public/private destination changes and external transmission retain their own boundaries. Local maintenance never authorizes background research or an outbound request.
 
 ## Store layout
 
@@ -26,19 +49,19 @@ projects/<slug>/tickets/
 
 Runs, receipts and harness files appear when needed. Canonical files belong in the user's private research backup. Cache, pending journals, local full-text history, locks and enrollment staging are local recovery state, excluded from Git; never delete a live lock or pending journal to bypass an error. Preserve the data before repairing it. Missing canonical records require restoration, not invented replacements.
 
-For standalone reading, use the existing `papers/<slug>.md` and its sibling `papers/<slug>/tickets/`. Nested paper directories are supported. Workbench books use its existing `type: paper` schema; the engine also accepts legacy `type: book`, but this does not add that type to the Workbench note schema. Own manuscripts use the existing project store. Read [PAPER-WORKFLOW.md](research-tickets/PAPER-WORKFLOW.md) before mapping a proof or drafting a manuscript.
+For standalone reading, use the existing `papers/<slug>.md` and its sibling `papers/<slug>/tickets/`. Nested paper directories are supported. Workbench books use its existing `type: paper` schema; the engine also accepts legacy `type: book`, but this does not add that type to the Workbench note schema. Own manuscripts use the existing project store. Read the relevant [PAPER-WORKFLOW.md](research-tickets/PAPER-WORKFLOW.md) sections when mapping proof dependencies or maintaining manuscript issues; a short paper summary alone does not require the full contract.
 
 ## Start, work, checkpoint, end
 
-1. Read the project README and recent session. If no registration exists, use the existing workflow. For enrolled work, run `workflow start --limit 5`, inspect any active/last session, partial coverage and the README's unindexed Next actions. An empty Ready queue is not project completion.
-2. For requested research, choose one Ready/Todo `activity`, record why, and `begin` a short operational session. Priority 1 is urgent, 2 high, 3 normal, 4 low, and 0 unassigned (sorted last). Reconsider priorities when evidence or the user's direction changes. Operational `blocked_by` links may reference only activities and must be Done before beginning.
-3. At meaningful transitions, record mathematical objects (`theorem`, `lemma`, `obligation`, `counterexample`, `obstruction`), reviews (`analysis`) and scoped relations. Preserve failed routes and the precise stronger statement a counterexample refutes. Minor calculations stay in research logs. Shared lemmas stay one object with multiple dependent claims.
-4. Checkpoint evidence, the change in reasoning and the next action. If a sustained math run exists, use `math_run` with its exact source and stable run-local IDs. Several short ticket sessions may reference one persistent `Run-YYYYMMDD-NNN`; ending a ticket session never ends or proves that mathematical run automatically.
-5. End the operational session as completed/paused/blocked. These set the activity to Done/Ready/Backlog. Completed requires evidence of work performed, which may be a gap or negative result. Reconcile the session note and permitted Spine updates under the existing human-promotion boundary. Infrastructure maintenance and tests never begin real research sessions.
+1. On project entry or a real resume, read the README and only enough recent evidence to recover the requested work. If no registration exists, keep the existing note workflow. For enrolled work, use `workflow start --limit 5` to inspect active/last sessions, coverage and unindexed Spine actions. This query does not begin research. Do not repeat onboarding or re-read every guide at each reply.
+2. When carrying out a requested activity, choose a relevant Ready/Todo activity, record why, and begin or reuse its short operational session. Do not silently bypass an already active session. Priority 1 is urgent, 2 high, 3 normal, 4 low, and 0 unassigned (sorted last). Reconsider priorities when evidence or direction changes. Operational `blocked_by` links reference only activities and must be Done before beginning.
+3. Record meaningful mathematical objects, reviews, scoped relations and failed routes when they affect the argument or next decision. Keep minor calculations in the relevant log; do not create an issue for every thought. Preserve a counterexample's exact refutation scope and keep shared lemmas as one object with several dependents.
+4. Checkpoint when there is a useful result, a change of direction, a pause or an interruption risk. Record the evidence and update the current action in its authoritative ticket/Spine record. If a sustained math run exists, use `math_run` with exact source and stable run-local IDs. Several short ticket sessions can reference one persistent run; ending a ticket session does not end or prove it.
+5. Finish an open operational session as completed/paused/blocked with the relevant evidence. These set the activity to Done/Ready/Backlog; a gap or negative result can be a completed activity. Write a separate session note only when substantive work or a decision needs a readable historical summary. Link existing ticket/run evidence rather than copying it. Preserve the human-promotion boundary. Infrastructure maintenance, status checks and tests never begin real research sessions.
 
 The same engine can record `question → hypothesis → experiment → result → analysis → decision`. An experiment is a design, not an executable activity; negative/null/invalid results are retained. Conditional follow-ups stay Backlog until an explicit recorded decision activates them. This is an agent rule, not an enforced approval gate. See [EXPERIMENTAL-WORKFLOW.md](research-tickets/EXPERIMENTAL-WORKFLOW.md); no training stack, server or job runner is bundled.
 
-## Query before reading or writing
+## Bounded queries
 
 ```text
 python3 scripts/research-tickets.py --project projects/SLUG workflow start --limit 5
@@ -49,7 +72,7 @@ python3 scripts/research-tickets.py --project projects/SLUG show RES-1 --section
 python3 scripts/research-tickets.py --project projects/SLUG source check RES-1
 ```
 
-On Windows use `python` or the Python launcher selected at setup in place of `python3`. The agent prepares requests; users need not write JSON or learn commands. Reads may rebuild the disposable index, but never initialize tickets, begin work or change canonical records. Search covers metadata and bounded excerpts, not full text. Respect `excerpt_scope_complete`, warnings, `truncated` and cursors; a missing match does not prove that an assertion is absent.
+On Windows use `python` or the Python launcher selected at setup in place of `python3`. The agent chooses the query needed for the question and prepares any write request; this example list is not a checklist to run in full. Users need not write JSON or learn commands. Reads may rebuild the disposable index, but never initialize tickets, begin work or change canonical records. Search covers metadata and bounded excerpts, not full text. Respect `excerpt_scope_complete`, warnings, `truncated` and cursors; a missing match does not prove that an assertion is absent.
 
 `parent`/`contains` express organization, not proof. `requires-input-to` records one proof route; `sufficient-route-to`, `refutes`, `useful-for`, `reviews` and `related` retain route, logic, evidence and endpoint versions. No relation propagates truth, priorities or readiness automatically. Preserve superseded relations. `neighbors --include-noncurrent` inspects history.
 

@@ -34,8 +34,9 @@ The recommended route is a release ZIP. GitHub is optional.
    ```
 
 Opening a folder gives Codex access to the workspace, but it does not send a
-message or begin setup by itself. You must send **Start setup** (or invoke
-`$first-run`).
+message or begin setup by itself. Send **Start setup** (or invoke `$first-run`)
+when you want guided configuration. You can also start with an ordinary research
+question or Markdown note; unfinished optional setup does not block that work.
 
 Codex then asks one question at a time about:
 
@@ -54,6 +55,11 @@ Python 3.9 or newer supports safe setup checks and the optional local research i
 requirement. Every service and editor integration is optional. Codex shows the
 exact effect and asks for approval before installing software, changing an
 account, creating a remote repository, or writing outside this folder.
+
+Later tasks reuse your answered choices. Codex checks only the preferences and
+capabilities needed now; it does not restart onboarding for every session. Small
+questions and edits need no ticket store, research run, session note or external
+review. Add those records when they help preserve substantive work.
 
 For screen-by-screen instructions and a glossary, read
 [GETTING_STARTED.md](GETTING_STARTED.md).
@@ -76,7 +82,7 @@ You can keep working exactly as you would in an ordinary conversation: ask quest
 
 The spine gives stable, paper- or decision-relevant objects explicit identifiers: `Def-NNN` for definitions, `Lem-NNN` for lemmas, `Prop-NNN` for propositions, `Thm-NNN` for theorems, `Cor-NNN` for corollaries, and `Gap-NNN` for unresolved gaps. These identifiers organize the work; they do not certify that a claim is true. A consequence receives a `Cor-NNN` identifier only when it has become a stable downstream consequence worth carrying into the paper or later decisions.
 
-Exploratory calculations, temporary observations, failed approaches, and tentative consequences stay in `sessions/`, `logs/`, or `drafts/`. Codex promotes only the stable objects that matter to the paper or a research decision, and you do not need to edit the spine's tables by hand.
+Exploratory calculations, temporary observations, failed approaches, and tentative consequences stay in `sessions/`, `logs/`, or `drafts/`. Codex records stable objects under the mathematical promotion rules, and you do not need to edit the spine's tables by hand. A proposed mathematical change stays proposed until the required human judgment.
 
 For example, you can simply ask:
 
@@ -90,12 +96,15 @@ visual editor for the same Markdown files.
 ### Longer research runs stay inspectable
 
 Codex quietly starts a bounded research-run log when a project reaches a second
-serious attempt, resumes in a later session, needs multiple obligations or
-tools, or develops a claim that a paper depends on. You do not need a new
+serious attempt on a mathematical target, resumes substantive mathematical work
+in a later session, needs multiple obligations or tools, or develops a claim
+that a paper depends on. You do not need a new
 interface or command. The log fixes the exact problem statement, separates
 obligations, preserves prove and disprove attempts, records the limited scope
 of tools or sources, and leaves a clear resume point. If it is unclear whether
-the threshold has been reached, Codex keeps an ordinary log for now.
+the threshold has been reached, Codex keeps an ordinary log for now. A status
+question or routine edit after a break does not start a run. Extra branch or
+formalization records are added only when those methods are used.
 
 Codex does not create this extra record for a simple question, routine
 explanation, lightweight exposition, or one-step calculation. It pauses only
@@ -124,6 +133,12 @@ while we develop the argument and write the manuscript.
 ```
 
 Codex enrolls only the requested scope, states what is not indexed yet, and restores the current activity in later sessions. Selected paper reading can use the same approach beside its existing paper note. Activity completion does not prove a theorem or close a gap; the Research State Spine and your explicit mathematical judgment stay authoritative. Ticket records are private research and must not be pushed to this public distribution repository. See [the issue workflow](docs/research-issues.md).
+
+Within enrolled coverage, tickets hold the current operational actions. The
+Spine keeps canonical mathematics, strategic direction and unindexed work, with
+links to covered tickets. Sessions and logs record dated outcomes and evidence;
+they do not carry another live copy of the task queue. An active run can own
+its bounded next step when no ticket covers it; the Spine then links to the run.
 
 ## Useful first requests
 

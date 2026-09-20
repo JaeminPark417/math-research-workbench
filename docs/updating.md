@@ -84,10 +84,12 @@ includes `inbox/`, `ideas/`, `papers/`, `notes/`, `projects/`, and `files/`.
 If a release note says a research schema changed, ask Codex for a migration
 preview before approving it.
 
-Even if Codex proposes several changes together, one approval is not blanket
-permission for all of them. Review the file list and diff, then approve one
-operation at a time. Software installation, an external-service action, and a
-visibility change each require a separate explanation and approval.
+Review the exact framework file list, intended changes and checks, then approve
+that update scope once. Codex can apply those edits and run those checks without
+asking again for each file or command. Stop for an unexpected conflict or changed
+scope. Software installation, account changes, external-service actions and
+visibility changes keep their separate explanation and approval; every external
+AI transmission still needs its own exact content disclosure and consent.
 
 ## Adopt the Research State Spine in an existing project
 
@@ -98,6 +100,12 @@ Ask Codex to preview one project's mapping before changing it. Scratch work rema
 ```text
 Preview how this one project's README would migrate to the Research State Spine. Do not change any file yet. Keep scratch work in sessions, logs, or drafts; assign Def-NNN, Lem-NNN, Prop-NNN, Thm-NNN, Cor-NNN, and Gap-NNN only to stable objects that matter to the paper or a research decision, and explain every proposed mapping in ordinary language.
 ```
+
+## Adopt the lighter workflow without rewriting research
+
+The compact [research-run template](../meta/templates/research-run.md) keeps the target, obligations, attempts, evidence, synthesis and resume point. Add the [run extensions](../meta/templates/research-run-extensions.md) only when using branch execution or formalization. Existing full run records and ordinary legacy eight-column Attempt ledgers (which include Context but omit Branch) remain supported. Preserve their IDs, statements, evidence and history. Older claims of independent or formal checking still require the corresponding provenance; missing records remain an issue, not an invitation to invent evidence or treat the claim as verified. A framework update does not authorize bulk rewriting or migration of research logs or tickets.
+
+On the next substantive edit, use the relevant sections and link the authoritative current action: tickets for enrolled operational work, the project Spine for strategy and unindexed work. Historical logs remain dated snapshots. Minor edits need no new run, activity or session note. Existing setup answers also remain in place; revisit only a preference or capability needed by the task.
 
 ## Refresh the optional Workbench Obsidian plugin
 

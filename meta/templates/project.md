@@ -46,7 +46,7 @@ Use stable, explicit IDs: `Def-001`, `Lem-001`, `Prop-001`, `Thm-001`, `Cor-001`
 |---|---|
 | Active route or focus | TODO |
 | Blocking gaps | None recorded yet |
-| Immediate next action | TODO |
+| Immediate next action | Link the current covered ticket or active run; otherwise the action under Next actions below |
 
 ### Definition registry
 
@@ -62,6 +62,8 @@ Use stable, explicit IDs: `Def-001`, `Lem-001`, `Prop-001`, `Thm-001`, `Cor-001`
 | Prop-001 | TODO | conjectural | Lem-001 |  | unchecked | isolated |  |
 | Thm-001 | TODO | conjectural | Prop-001 |  | unchecked | isolated |  |
 | Cor-001 | TODO | conjectural | Thm-001 |  | unchecked | isolated |  |
+
+Use a ticket link in each `Next action` cell for covered work; for unindexed work, refer to the action below. Do not duplicate a live queue in each table.
 
 Keep the three state axes separate:
 
@@ -85,7 +87,9 @@ Keep the three state axes separate:
 
 ## Next actions
 
-- [ ] One small, concrete next action
+For enrolled coverage, link the current ticket activity or bounded issue view. Keep only strategic or unindexed actions here until they are mapped; an empty ticket queue does not erase this work. Without a covered ticket, link an active run for its bounded immediate step; otherwise maintain the project's small current action list here. Other tables and dated logs link to this section rather than copying it.
+
+- TODO: one concrete unindexed action, or a link to its authoritative ticket
 
 ## Session index
 
