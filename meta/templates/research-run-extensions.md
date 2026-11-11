@@ -28,6 +28,8 @@ Valid execution modes are `single-attempt`, `bounded-branch-loop`, and `not used
 |---|---|---|---|---|---|---|---|---|---|---|---|
 |  |  |  |  |  |  |  |  |  |  |  |  |
 
+In the **Originating reasoning supplied** column, count the candidate proof sent for audit as `yes`. In **Parent or sibling reasoning supplied**, count additional attempts, critiques or verdicts outside the frozen proof package. An audit given the originating conversation uses `same-context-audit`.
+
 Every executed branch connects to its Attempt ledger row. Record unavailable provider versions, seeds, sampling controls, or usage as `not exposed`, never invented values.
 
 `fresh-isolated` is blind search: both reasoning-supplied fields must be `no`, with no candidate proof or originating, parent, or sibling reasoning supplied.

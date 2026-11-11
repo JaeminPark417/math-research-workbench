@@ -130,7 +130,53 @@ class IssueStore:
                     'relations': [{k: v for k, v in edge.items() if k != 'group'} for edge in snapshot['relations']],
                     'revision': snapshot['generation']}
 
-    def workflow_start(self, limit=5, cursor=None, tag=None):
+    def _resume_view(self, snapshot, start, candidates, selected, capsule_links):
+        records = snapshot['records']
+
+        def link(identifier, kinds):
+            require(ix._id(identifier) and identifier in records,
+                    'Resume record not found in this store.', 'NOT_FOUND', id=identifier)
+            record = records[identifier]
+            require(record['kind'] in kinds, 'Record kind does not match its resume role.', id=identifier)
+            summary = record['excerpt'] if record['excerpt_source'] == 'desk_summary' or record['excerpt_scope_complete'] else None
+            return {'id': identifier, 'title': record['title'], 'summary': summary,
+                    'path': str(self.index.root / record['path']), 'version': record['source_hash']}
+
+        active = start['active']
+        failed, gaps, requested = selected
+        candidate_ids = [item['id'] for item in candidates]
+        identifier = active['issue'] if active else None
+        linked_activity = capsule_links.get('activity')
+        if not requested and linked_activity in candidate_ids and not active and not start['untracked_in_progress']:
+            requested = linked_activity
+        if requested:
+            available = requested == identifier if active else (requested in candidate_ids and not start['untracked_in_progress'])
+            require(available,
+                    'The requested activity is not the active or an available ready candidate. Inspect workflow start.',
+                    'WORKFLOW_CONFLICT', requested=requested, active=identifier)
+            identifier = requested
+        elif not active and not start['untracked_in_progress'] and len(candidate_ids) == 1:
+            identifier = candidate_ids[0]
+        if identifier and identifier == linked_activity:
+            def current_link(issue, kinds):
+                record = records.get(issue)
+                return bool(record and record['kind'] in kinds and not record['archived']
+                            and record['status'] not in ('Canceled', 'Duplicate'))
+            linked_failure = capsule_links.get('failed')
+            if not failed and current_link(linked_failure, ('obstruction', 'counterexample')):
+                failed = linked_failure
+            if not gaps:
+                gaps = [gap for gap in capsule_links.get('gaps', [])
+                        if current_link(gap, ('obligation',)) and records[gap]['status'] != 'Done']
+        return {'ok': True, 'failed_route': link(failed, ('obstruction', 'counterexample')) if failed else None,
+                'open_gaps': [link(gap, ('obligation',)) for gap in dict.fromkeys(gaps)],
+                'ticket': link(identifier, ('activity',)) if identifier else None,
+                'ticket_role': 'active' if active else 'candidate' if identifier else None,
+                'next_action': records[identifier]['next_action'] if identifier else None,
+                'candidate_count': len(candidate_ids), 'coverage': start['coverage']['state'],
+                'untracked_in_progress': start['untracked_in_progress']}
+
+    def workflow_start(self, limit=5, cursor=None, tag=None, resume=None, capsule_links=None):
         tags = ix.normalize_tags(tag)
         with self.index._lock() as fd:
             self.index._assert_readable()
@@ -160,6 +206,8 @@ class IssueStore:
                           untracked_in_progress=[i['id'] for i in snapshot['records'].values() if i['kind'] == 'activity' and i['status'] in ('In Progress', 'In Review') and not i['archived'] and (not active or i['id'] != active['issue'])][:20],
                           selection_rule='Priority order among operationally ready activities; research relations and results never imply readiness. Agent rule: conditional follow-ups remain Backlog until an explicit recorded decision activates them; the writer does not enforce that decision gate.')
             result['coverage'] = (snapshot.get('registration') or {}).get('coverage', {'state': 'partial', 'scope': 'Legacy test fixture', 'untracked': ['Consult the project capsule and research ledger.']})
+            if resume is not None:
+                return self._resume_view(snapshot, result, items, resume, capsule_links or {})
             subject = (snapshot.get('registration') or {}).get('subject')
             result['capsule'] = '../../' + subject['note'] if subject else '../README.md'
             result['subject'] = subject

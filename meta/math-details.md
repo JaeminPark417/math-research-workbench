@@ -1,6 +1,6 @@
 # Optional mathematical execution detail
 
-Read only the section needed for actual dispatch or formalization. Ordinary mathematical work uses the compact run template. The project Spine, Human Promotion, and private-transmission boundaries in `meta/math-workflow.md` remain authoritative.
+Read only the section needed for actual dispatch or formalization. Ordinary mathematical work uses the compact run template. Follow the active workflow for the project's canonical source, permitted execution, storage and external transmission. The researcher retains Human Promotion authority.
 
 ## Bounded dispatch
 
@@ -29,7 +29,7 @@ An independent context is a provenance claim to justify, not a proof status. Rec
 
 Formalization is optional. Choose a named obligation and preserve the exact encoded statement, definitions, imported assumptions, tool versions, artifacts, actual checks, and limitations. A checker accepts an encoding; it does not establish that the encoding expresses the intended theorem.
 
-Before solver execution, copy `meta/templates/formalization-manifest.json` to a repository-relative artifact path and append the execution extension to the run. Export the exact target verbatim as the `natural_statement` artifact; its SHA-256 must equal `exact_target_sha256`. Freeze a trusted challenge containing that statement, the expected Lean declaration/elaborated type, definitions, assumptions, allowed imports/axioms, toolchain, dependency lock, build/test argv, and file/tree hashes. Here trusted means verifier-side immutable input, not mathematical truth.
+Before solver execution, copy `meta/templates/formalization-manifest.json` to a repository-relative artifact path and append the execution extension to the run. Replace all example paths with paths relative to the repository containing the evidence. In `spine_target.project_readme`, use the actual project overview or canonical claim-ledger path. Export the exact target verbatim as the `natural_statement` artifact; its SHA-256 must equal `exact_target_sha256`. Freeze a trusted challenge containing that statement, the expected Lean declaration/elaborated type, definitions, assumptions, allowed imports/axioms, toolchain, dependency lock, build/test argv, and file/tree hashes. Here trusted means verifier-side immutable input, not mathematical truth.
 
 The schema-v1 `trusted_challenge.files` array exhaustively lists every regular file under `trusted_challenge.root` exactly once, including expected-type and lock artifacts stored there. An unlisted regular file invalidates the recorded boundary. The `sha256-v1` tree hash is SHA-256 of sorted UTF-8 records consisting of repository-relative path, NUL, `sha256:<digest>`, and LF.
 
@@ -39,11 +39,7 @@ Execute and observe the mandatory source-policy, pinned clean repository-state, 
 
 Use only `unchecked`, `recorded-pass`, `recorded-fail`, or `conflict` for `final_record.formal_encoding`. `recorded-pass` is self-recorded provenance, not an execution attestation. A failed mandatory check or same-kernel clean rebuild requires `recorded-fail`; reserve `conflict` for opposite pass/fail results from the primary kernel and a genuinely independent checker.
 
-After actual commands run, validate the recorded structure and artifact hashes:
-
-```text
-python3 scripts/formalization_manifest.py MANIFEST --root . --verify-files
-```
+After actual commands run, use the active workflow's `math_run_checks.py --root REPO --run RELPATH` command to check the run and its linked manifest. To inspect a manifest separately, invoke the sibling `formalization_manifest.py MANIFEST --root REPO --verify-files` with the same research repository root.
 
 The validator does not execute Lean, `build.argv`, Git checks, or another recorded command; it does not enforce an OS sandbox, authenticate a human, establish statement correspondence, or certify mathematical truth. A passing manifest alone establishes neither `formal-tool-checked` nor `formal-encoding-checked`. Record formal evidence only after actual command execution was observed and its durable logs and validated manifest are linked.
 

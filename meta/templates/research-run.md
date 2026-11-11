@@ -17,6 +17,8 @@ related_logs: []
 
 <!-- Use only for sustained substantive mathematics. Keep the structural
 headings and field labels in English; use the selected language for prose.
+Replace the example project link with the project's actual overview. The
+exact statement may live in a separate claim ledger in the research repository.
 This is unpublished research, never public distribution content. -->
 
 # Research run
@@ -24,7 +26,7 @@ This is unpublished research, never public distribution content. -->
 ## Problem Contract
 
 - Contract version: `v1`
-- Spine target reference: <stable ID; repository-relative project README path; current `HEAD` hash if the copied wording matches it, otherwise `working snapshot Run-YYYYMMDD-NNN` with this run's actual ID; `not applicable` for a new object>
+- Spine target reference: <stable ID; repository-relative path to the canonical statement (project README or claim ledger); current `HEAD` hash if the copied wording matches it, otherwise `working snapshot Run-YYYYMMDD-NNN` with this run's actual ID; `not applicable` for a new object>
 - Exact target: <copy the current Spine wording exactly, or state the proposed new target exactly>
 - Objects and definitions:
 - Hypotheses and quantifiers:
@@ -36,6 +38,8 @@ This is unpublished research, never public distribution content. -->
 - Ambiguities requiring researcher confirmation:
 
 Do not leave SPEC until the exact target, success criterion, and refutation criterion are explicit. The copied wording is the content anchor for a working snapshot; never invent a separate Spine version number. Version run-local revisions and preserve the project Spine's authority. A new AI-authored formulation or changed mathematical scope remains proposed until Human Promotion; record a merely proposed upstream change's downstream effects in the proposal.
+
+For an existing target, fill the run ID first. Use the `math_target.py capture` command in the active mathematical workflow to populate the reference and target above. Keep the sibling `.target.json` with this run and run `check` before resuming.
 
 ## Run manifest
 
@@ -98,11 +102,13 @@ Link exact attempts and evidence. A new truth-bearing step needs its own unverif
 - Statement-match scope:
 - Statement-match confirmed by (consented identifier or role):
 - Statement-match confirmation date:
+- Statement-match decision evidence:
 - Proposed mathematical-state change:
 - Closed-by-researcher confirmation: not confirmed
 - Closed-by-researcher scope:
 - Closed-by-researcher confirmed by (consented identifier or role):
 - Closed-by-researcher confirmation date:
+- Closed-by-researcher decision evidence:
 - Researcher decision and qualifications:
 
-The circulation baseline is the exact artifact version the researcher designates as ready to share. Leave confirmations at `not confirmed` until the researcher supplies a dated, scoped decision with linked evidence. These records do not authenticate identity. AI agreement, successful computation, formal encoding, and run completion never perform promotion. Follow `meta/safety.md` for private backup and each external transmission.
+The circulation baseline is the exact artifact version the researcher designates as ready to share. Leave confirmations at `not confirmed` until the researcher supplies a dated, scoped decision with linked evidence. For a confirmed decision on a captured target, fill its decision evidence line as `target version | repository-relative evidence path | sha256:digest`. Use the exact Target snapshot digest or the full source commit recorded in the target reference, and the actual digest of the reviewed evidence file. These records do not authenticate identity. AI agreement, successful computation, formal encoding, and run completion never perform promotion. Follow the workspace's rules for private backup and external transmission.

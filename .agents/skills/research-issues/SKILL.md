@@ -15,6 +15,8 @@ Read `meta/research-ticket-workflow.md` sections for the current action and the 
 
 Enroll only when requested. Inventory the README, existing stable objects, active run, meaningful failed routes and remaining actions; use `--project projects/SLUG init` or `--paper papers/SLUG.md init` for that scope only. Start with partial coverage and preserve unindexed work. A status question or missing registration never authorizes enrollment. Do not create real tickets in the public distribution checkout.
 
+For a question about where to resume, follow “Show the resume point” in `meta/research-ticket-workflow.md`. Use the compact `workflow resume` view, which reads the live project overview’s optional `resume_links`, preserve any pause, and cite the records. If there is no store, use the existing overview or run.
+
 On entry or resume, use `workflow start --limit 5` for an enrolled store. Inspect active/last work and partial coverage; use bounded `list`, `search`, `show` or `neighbors` queries as needed rather than reading the entire index. Respect warnings and pagination. Check the exact source of each claim/input relied on; hashes certify bytes, not proof, PDF fidelity, human identity or publication. A source check need not rescan unrelated evidence.
 
 ## Maintain requested work

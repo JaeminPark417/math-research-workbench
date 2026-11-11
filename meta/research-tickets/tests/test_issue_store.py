@@ -159,6 +159,38 @@ class StoreTests(unittest.TestCase):
         self.store.apply(self.packet(self.relation(type='refutes', to_inline_target='Only the old stronger claim', **{'to': 'RES-13'})))
         self.assertTrue(any(e.get('to_inline_target') == 'Only the old stronger claim' for e in self.index.refresh()['relations']))
 
+    def test_read_only_resume_uses_the_current_activity_and_explicit_evidence(self):
+        before = self.sources()
+        proposed = self.store.workflow_start(limit=1, resume=('RES-16', ['RES-6'], 'RES-13'))
+        self.assertEqual(('candidate', 'RES-13'), (proposed['ticket_role'], proposed['ticket']['id']))
+        self.assertEqual('RES-16', proposed['failed_route']['id'])
+        self.assertEqual(str(self.note('RES-6')), proposed['open_gaps'][0]['path'])
+        self.assertEqual(before, self.sources())
+        self.error('INVALID_ARGUMENT', self.store.workflow_start, resume=('RES-13', [], None))
+        self.error('NOT_FOUND', self.store.workflow_start, resume=(None, ['RES-90000'], None))
+        self.begin()
+        self.store.apply(self.packet(self.update(next_action='Read the corrected statement')))
+        self.error('WORKFLOW_CONFLICT', self.store.workflow_start, resume=(None, [], 'RES-14'))
+        resumed = self.store.workflow_start(limit=1, resume=(None, [], None))
+        self.assertEqual('active', resumed['ticket_role'])
+        self.assertEqual('Read the corrected statement', resumed['next_action'])
+        self.assertIsNone(resumed['failed_route'])
+        self.assertEqual([], resumed['open_gaps'])
+
+    def test_resume_does_not_choose_between_routes_or_restart_paused_work(self):
+        extra = self.store.apply(self.packet(self.create('another-route', 'activity', status='Ready')))
+        extra_id = extra['created']['another-route']
+        view = self.store.workflow_start(limit=1, resume=(None, [], None))
+        self.assertGreater(view['candidate_count'], 1)
+        self.assertIsNone(view['ticket'])
+        self.assertIsNone(view['next_action'])
+        self.begin()
+        self.store.apply(self.flow_packet('end', outcome='paused'))
+        view = self.store.workflow_start(limit=1, resume=(None, [], extra_id))
+        self.assertEqual('candidate', view['ticket_role'])
+        self.assertIsNone(self.store.workflow_start()['active'])
+        self.assertEqual('paused', self.store.workflow_start()['last_run']['status'])
+
     def test_workflow_full_lifecycle_restart_evidence_and_no_proof_promotion(self):
         original_math = {i: r['status'] for i, r in self.index.refresh()['records'].items() if r['kind'] != 'activity'}
         before = self.sources()

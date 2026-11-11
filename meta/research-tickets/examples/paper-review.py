@@ -156,12 +156,12 @@ def manuscript(base):
         create('recheck-v2', 'activity', 'Recheck the compactness argument in v2',
                'Inspect the changed domain and each proof input. The v1 review is not evidence that v2 was checked.',
                parent='@claim-v2', source_refs=[v2], tags=tags + ['version:v2', 'review:needs-recheck'],
-               status='Backlog', priority=2, next_action='Verify image compactness and attainment.'),
+               status='Ready', priority=2, next_action='Verify image compactness and attainment.'),
         relation('revision-link', ids['existing-claim'], '@claim-v2', 'related',
                  'v2 replaces the false v1 statement. This records revision provenance, not implication or verification.'))['created'])
     assert (root / old['path']).read_bytes() == old_bytes
     assert demo.store.index.refresh()['records'][ids['review-v1']]['source_refs'] == [v1]
-    assert not demo.store.workflow_start(tag=tags)['items']
+    assert [item['id'] for item in demo.store.workflow_start(tag=tags)['items']] == [ids['recheck-v2']]
     queried = demo.store.index.list_issues(tag=tags)
     assert queried['total'] == 4
     return dict(project=str(project), root=str(root), ids=ids, issues=queried['total'])

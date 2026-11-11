@@ -28,6 +28,15 @@ Continue an existing matching run; use `meta/templates/research-run.md` only whe
 
 For an existing target, record its stable ID and repository-relative README path in `Spine target reference`. Copy its exact current wording into `Exact target`. Record the current `HEAD` commit only if that wording matches it at SPEC start; otherwise use `working snapshot Run-YYYYMMDD-NNN` with the actual run ID. The copied text is the content anchor; never invent a separate Spine version number. Version run-local changes and keep the project Spine canonical. Do not leave SPEC until `Exact target`, `Success criterion`, and `Refutation criterion` are explicit.
 
+For an existing target, fill the run ID and use the helper to copy the exact source wording. From the Workbench root:
+
+```text
+python3 scripts/math_target.py capture --root . --run projects/example/logs/run.md --source projects/example/README.md --id Thm-001
+python3 scripts/math_target.py check --root . --run projects/example/logs/run.md
+```
+
+For a standalone Markdown statement, add `--heading "Exact statement"` to select its complete section. Use `--commit FULL_SHA` to start from a historical version. Keep the generated `.target.json` beside the run. It preserves the original wording even for unpublished work. On resume, check returns 0 for a match (or reports an unbound new target), 1 for an invalid binding, and 2 for a changed or unavailable source that needs inspection. Read the message before continuing. Preserve the old run when proposing a changed target. An older working snapshot without this file can be compared to the current source, but a discrepancy alone cannot tell which text changed.
+
 Record one Route row per selected adapter. Use the existing `adapter` and `adapter_scope` schema; `mixed` scopes are semicolon-separated `adapter-name: exact scope` entries. A method selects how to investigate an obligation, not its truth. Reuse a single bounded next action instead of maintaining independent copies in the manifest, a resume block, and a session summary.
 
 ## Develop and test the argument
@@ -56,7 +65,7 @@ Ordinary single-agent natural proof work keeps the compact template without thos
 
 ## Human decisions and evidence
 
-Use one scoped, non-cumulative evidence descriptor per row: `computationally-checked`, `formal-encoding-checked`, `statement-matched`, `literature-audited-within-scope`, or `expert-reviewed`. Record source/artifact version, result, assumptions, limitations, and applicable provenance. One descriptor never implies another or a truth status.
+Use one scoped, non-cumulative evidence descriptor per row: `candidate`, `computationally-checked`, `formal-encoding-checked`, `statement-matched`, `literature-audited-within-scope`, or `expert-reviewed`. Use `candidate` for an unverified proposal. Record source/artifact version, result, assumptions, limitations, and applicable provenance. One descriptor never implies another or a truth status.
 
 Keep the exact Human promotion fields at `not confirmed` until the researcher supplies a dated, scoped decision. `statement-matched` requires explicit human confirmation of correspondence to the intended mathematics. `closed-by-researcher` requires that decision and linked evidence. Record only a user-consented identifier or role; automation checks record structure, not human identity. The circulation baseline is the exact artifact version the researcher designates as ready to share. A completed run means that the activity ended, not that the theorem was proved.
 
@@ -67,3 +76,7 @@ At a meaningful transition, record what changed, its evidence, unresolved issues
 Use `meta/research-ticket-workflow.md` and `$research-issues` only for a requested enrollment or an existing store. Restore partial coverage and active/last operational state. A short ticket activity can refer to the same persistent run across sessions; activity completion and source checks never promote mathematical truth. Status inquiries do not enroll stores or start research.
 
 Preserve source notes and failed attempts. Extract genuinely reusable material into `notes/` with links to its provenance. Follow the normal private-backup and external-transmission rules in `meta/safety.md`; research runs never belong in the public Workbench distribution remote.
+
+For the decision about which evidence survives a revised statement, use [Reviewing and resuming a mathematical claim](math-research-contract.md). The worked example follows an open-interval counterexample through a proposed change of domain.
+
+From the Workbench folder, check a particular run with `python3 scripts/math_run_checks.py --root . --run projects/example/logs/run.md`, replacing the example with the actual repository-relative run path. Use the same check at a meaningful checkpoint and on resume. `python3 scripts/vault-lint.py` remains the workspace-wide check. A passing record does not attest a checker execution or a proof.

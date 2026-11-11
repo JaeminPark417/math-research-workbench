@@ -15,6 +15,8 @@ Assign the next unused project-local `Run-YYYYMMDD-NNN`; its date equals the not
 
 Preserve the template's English headings and field labels. Fill `Exact target`, `Success criterion`, and `Refutation criterion` before leaving SPEC. For an existing Spine target, copy its exact wording and record its stable ID and README path in `Spine target reference`. Use the current `HEAD` hash only if that wording matches it; otherwise record `working snapshot Run-YYYYMMDD-NNN` with this run's actual ID. The copied wording is the content anchor. Never invent a separate Spine version number.
 
+Use `scripts/math_target.py capture` when binding an existing target and `check` when resuming it, as shown in `meta/math-workflow.md`. Keep the sibling target snapshot with the run. Inspect a changed source before reusing the result.
+
 ## Work and record meaningful changes
 
 - Select a bounded route and exact obligations. Use `natural-proof`, `formalization`, `constructive-search`, `literature-audit`, or `mixed`; leave adapter fields empty if none applies. For `mixed`, give semicolon-separated per-adapter scopes and matching Route rows.

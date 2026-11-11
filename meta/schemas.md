@@ -360,7 +360,7 @@ It does not establish that the encoding matches the intended theorem. Only a
 human reviewer may assert that correspondence, and the note must name the
 scope and date of that review.
 
-Research-run evidence descriptors such as `computationally-checked`,
+Research-run evidence descriptors such as `candidate` (an unverified proposal), `computationally-checked`,
 `formal-encoding-checked`, `statement-matched`,
 `literature-audited-within-scope`, and `expert-reviewed` are scoped,
 non-cumulative provenance recorded in the note body. They are not additional

@@ -102,6 +102,11 @@ REQUIRED = {
     "scripts/doctor.ps1",
     "scripts/doctor.sh",
     "scripts/formalization_manifest.py",
+    "scripts/math_run_checks.py",
+    "scripts/math_target.py",
+    "scripts/tests/test_math_target.py",
+    "meta/math-research-contract.md",
+    "meta/research-tickets/tests/test_research_journey.py",
     "scripts/install-bundled-obsidian-plugin.py",
     "scripts/migrate-setup-v1.py",
     "scripts/remote-state.py",
@@ -1484,6 +1489,8 @@ def execute_vault_lint(
         scripts_dir = fixture_root / "scripts"
         scripts_dir.mkdir(parents=True)
         shutil.copy2(ROOT / "scripts/vault-lint.py", scripts_dir / "vault-lint.py")
+        for module in ("math_target.py", "math_run_checks.py"):
+            shutil.copy2(ROOT / "scripts" / module, scripts_dir / module)
         shutil.copy2(
             ROOT / "scripts/formalization_manifest.py",
             scripts_dir / "formalization_manifest.py",
@@ -2095,6 +2102,17 @@ def validate_vault_lint_fixtures(errors: list[str]) -> None:
         result = execute_vault_lint(note_text=content)
         if result.returncode != expected:
             errors.append(f"vault lint fixture failed: {label}: expected {expected}, got {result.returncode}: {result.stdout}")
+
+    # Bound targets must preserve the canonical wording, even in older compact runs.
+    target_ref = "- Spine target reference: Thm-001; notes/source.md; working snapshot Run-20260724-001"
+    canonical_target = "Every real symmetric matrix is orthogonally diagonalizable."
+    source_fixture = "| ID | Claim | Mathematical state |\n|---|---|---|\n| Thm-001 | " + canonical_target + " | open |\n"
+    for target, expected in ((canonical_target, 0), (canonical_target.replace("real symmetric", "positive definite real symmetric"), 1)):
+        bound = compact_run.replace("- Exact target: Prove the fixture theorem under its stated hypotheses.",
+                                    target_ref + "\n- Exact target: " + target)
+        result = execute_vault_lint(note_text=bound, extra_files={"notes/source.md": source_fixture})
+        if result.returncode != expected or (expected and "legacy working target" not in result.stdout):
+            errors.append("canonical target comparison fixture failed: " + result.stdout)
 
     invalid_calendar_run = valid_run.replace(
         "run_id: Run-20260724-001", "run_id: Run-20260230-001"
@@ -3247,7 +3265,7 @@ def main() -> int:
     version_file = ROOT / "VERSION"
     if version_file.exists():
         version_text = version_file.read_text(encoding="utf-8")
-        if not re.fullmatch(r"\d+\.\d+\.\d+\n?", version_text):
+        if not re.fullmatch(r"\d+\.\d+\.\d+(?:-dev)?\n?", version_text):
             errors.append("VERSION must contain one semantic version")
 
     if errors:

@@ -15,30 +15,39 @@ machine-learning setup.
 
 ## Start here
 
-The recommended route is a release ZIP. GitHub is optional.
+For the math workflows in this guide, download the **development version**. Neither ZIP requires Git or a GitHub account.
+
+| Download | What you can do | First message to send in Codex |
+| --- | --- | --- |
+| [Development version (main ZIP, 0.3.0-dev)](https://github.com/JaeminPark417/math-research-workbench/archive/refs/heads/main.zip) | Start with a math question. This version adds the project claim map, bounded research runs and local research issues described below. | Try the example below, without setup. |
+| [Official v0.2.0 release](https://github.com/JaeminPark417/math-research-workbench/releases/tag/v0.2.0) → named ZIP under **Assets** | Set up a workspace and keep ordinary Markdown research notes. | `Start setup` |
 
 1. On macOS or Windows, install the
    [ChatGPT desktop app](https://chatgpt.com/download/) and sign in. Linux users
    currently need the [Codex CLI](https://developers.openai.com/codex/cli/) and
    basic terminal familiarity.
-2. Download the ZIP from the
-   [latest release](https://github.com/JaeminPark417/math-research-workbench/releases/latest).
+2. Download one of the ZIPs above.
 3. Extract it into a local folder that is **not** managed by iCloud Drive,
    OneDrive, Dropbox, or Google Drive. A folder named `MathResearch` directly
    inside your home folder is usually a good choice.
 4. In the desktop app, select **Codex** and open the extracted folder.
-5. Send this message:
+5. Send the first message for your version. The app waits for your message after you open the folder.
 
-   ```text
-   Start setup
-   ```
+### Try a math question
 
-Opening a folder gives Codex access to the workspace, but it does not send a
-message or begin setup by itself. Send **Start setup** (or invoke `$first-run`)
-when you want guided configuration. You can also start with an ordinary research
-question or Markdown note; unfinished optional setup does not block that work.
+In the development version, start here immediately. In v0.2.0, follow or postpone the setup prompt and ask for the example as an ordinary Markdown note.
 
-Codex then asks one question at a time about:
+> Create a note called “Maximum example”. Does every bounded continuous real function on (0,1) attain a maximum? Test f(x) = x. Then write a second version with domain [0,1]. Keep the finding about the first version and leave checking the second version's proof for next time.
+
+Open a new chat in the **same folder** and ask:
+
+> Read “Maximum example”. Which version did the counterexample refute, and what proof step did we leave open?
+
+On the open interval, the supremum of f(x) = x is 1 and no point attains it. In the revised version the endpoints belong to the domain. The note should preserve the counterexample for v1 and identify what still needs a proof for v2. See [how to review the revised claim](meta/math-research-contract.md) or inspect the [executable example](meta/research-tickets/examples/paper-review.py).
+
+### Set up optional tools
+
+Send **Start setup** (or invoke `$first-run`) when you want guided configuration. In the development version Codex asks one question at a time about:
 
 - a Python 3.9-or-newer helper runtime for safe saved setup and resume (Codex first uses an
   existing or bundled runtime; no programming is required);

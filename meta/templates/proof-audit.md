@@ -12,8 +12,9 @@ related_papers: []
 related_logs: []
 ---
 
-<!-- This is a specialized research-log, not a separate note type. Use the
-language selected during setup for prose and headings. -->
+<!-- This is a specialized research-log, not a separate note type. Replace the
+example project link with the actual project overview. Use the researcher's
+chosen language for the mathematical prose. -->
 
 # Proof audit
 
@@ -42,7 +43,7 @@ exceptional cases. Link its source.
 |---|---|---|---|---|
 | S1 |  | Def-001 |  | partial |
 
-Reference the same stable IDs used in the project README. Use the project's mathematical-state vocabulary and reference a `Gap-NNN` whenever a step is blocked. An AI assistant may suggest a state, but a human decides whether a substantive gap is closed.
+Reference the stable IDs in the project's canonical claim ledger or README. Use the project's mathematical-state vocabulary and reference a `Gap-NNN` whenever a step is blocked. An AI assistant may suggest a state, but a human decides whether a substantive gap is closed.
 
 ## Hidden-assumption check
 

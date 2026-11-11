@@ -59,6 +59,35 @@ class HarnessTests(unittest.TestCase):
             fn(*args)
         self.assertEqual(code, raised.exception.code)
 
+    def test_resume_defaults_are_scoped_to_the_live_project_activity(self):
+        self.enroll()
+        ids = self.apply(self.create('route'), self.create('other'), self.create('failure', 'obstruction'),
+                         self.create('gap', 'obligation'), self.create('other-gap', 'obligation'))['created']
+        links = {'activity': ids['route'], 'failed': ids['failure'], 'gaps': [ids['gap']]}
+        field = 'resume_links: ' + json.dumps(links)
+        def overview(fields):
+            self.capsule.write_text('---\n' + fields + '\n---\n# Project\n', encoding='utf-8')
+        def resume(*options):
+            return self.call('workflow', 'resume', '--json', *options)
+
+        overview(field)
+        view = resume()
+        self.assertEqual(('candidate', ids['route'], ids['failure'], ids['gap']),
+                         (view['ticket_role'], view['ticket']['id'], view['failed_route']['id'], view['open_gaps'][0]['id']))
+        self.assertEqual(ids['other-gap'], resume('--gap', ids['other-gap'])['open_gaps'][0]['id'])
+        self.assertIsNone(resume('--activity', ids['other'])['failed_route'])
+        for fields in ('', field + '\n' + field, 'resume_links: {"activity":"RES-99999"}'):
+            overview(fields)
+            view = resume()
+            self.assertIsNone(view['ticket'])
+            self.assertIsNone(view['failed_route'])
+        overview(field)
+        self.apply(dict(op='begin', run_id='other', issue=ids['other'], reason='Selected a different route',
+                        next_action='Check its own evidence'), expected_harness_version=self.store.workflow_start()['harness_version'])
+        view = resume()
+        self.assertEqual(('active', ids['other'], None, []),
+                         (view['ticket_role'], view['ticket']['id'], view['failed_route'], view['open_gaps']))
+
     def test_unenrolled_queries_do_not_create_files(self):
         before = {str(p): p.read_bytes() for p in self.project.rglob('*') if p.is_file()}
         self.assertEqual('NOT_CONFIGURED', self.call('workflow', 'start')['error']['code'])

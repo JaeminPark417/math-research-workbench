@@ -18,6 +18,29 @@ def request_file(path):
     return json_read(raw, 'request file')
 
 
+def capsule_resume_links(project):
+    from ticket_project import project_path
+    from issue_sources import _read_file
+    from issue_index import _id
+    lines = _read_file(project_path(project), 'README.md').splitlines()
+    if not lines or lines[0] not in (b'---', b'\xef\xbb\xbf---') or b'---' not in lines[1:]:
+        return {}
+    values = [line[len(b'resume_links:'):].strip() for line in lines[1:lines.index(b'---', 1)]
+              if line.startswith(b'resume_links:')]
+    if len(values) != 1 or len(values[0]) > 2048:
+        return {}
+    try:
+        links = json_read(values[0], 'capsule resume_links')
+    except IndexErrorDetail:
+        return {}
+    if not isinstance(links, dict) or set(links) - {'activity', 'failed', 'gaps'} or not _id(links.get('activity')):
+        return {}
+    gaps = links.get('gaps', [])
+    if ('failed' in links and not _id(links['failed'])) or not isinstance(gaps, list) or len(gaps) > 20 or not all(_id(gap) for gap in gaps):
+        return {}
+    return links
+
+
 class Parser(argparse.ArgumentParser):
     def error(self, message):
         raise IndexErrorDetail('INVALID_ARGUMENT', message)
@@ -87,6 +110,11 @@ def main(argv=None):
     start.add_argument('--limit', type=int, default=5)
     start.add_argument('--cursor')
     start.add_argument('--tag', action='append', help='Filter candidates; global active/last sessions remain visible')
+    resume = flow.add_parser('resume', help='Show a compact read-only handoff from the current store')
+    resume.add_argument('--activity', metavar='RES-N', help='Activity identified by the project overview when several candidates exist')
+    resume.add_argument('--failed', metavar='RES-N', help='Recorded obstruction or counterexample for this route')
+    resume.add_argument('--gap', action='append', default=[], metavar='RES-N', help='Recorded obligation still open on this route; repeat for parallel obligations')
+    resume.add_argument('--json', action='store_true', help='Emit machine-readable output')
     for name in ('begin', 'checkpoint', 'end'):
         flow.add_parser(name).add_argument('--request-file', required=True)
     run = flow.add_parser('run')
@@ -144,6 +172,27 @@ def main(argv=None):
             store = IssueStore(root)
             if action == 'start':
                 result = store.workflow_start(**args)
+            elif action == 'resume':
+                links = capsule_resume_links(project) if project else {}
+                result = store.workflow_start(limit=1, resume=(args['failed'], args['gap'], args['activity']), capsule_links=links)
+                if not args['json']:
+                    def display(item, evidence=False):
+                        description = item['title']
+                        if evidence and item['summary'] and item['summary'] != description:
+                            description += ' — ' + item['summary']
+                        return f"{item['id']} {description} ({item['path']})"
+                    ticket_label = {'active': 'Active ticket', 'candidate': 'Candidate ticket'}.get(result['ticket_role'], 'Ticket')
+                    print('Failed route:', display(result['failed_route'], evidence=True) if result['failed_route'] else 'No linked evidence supplied.')
+                    print('Open gap:', ' / '.join(display(gap, evidence=True) for gap in result['open_gaps']) or 'No linked evidence supplied.')
+                    print(ticket_label + ':', display(result['ticket']) if result['ticket'] else 'No active or selected ticket.')
+                    print('Next action:', result['next_action'] or 'Not recorded for the selection.')
+                    if not result['ticket'] and result['candidate_count'] > 1 and not result['untracked_in_progress']:
+                        print('Multiple candidates. Inspect workflow start, then use --activity RES-N for the selected route.')
+                    if result['coverage'] == 'partial' and not result['ticket']:
+                        print('Coverage: partial. Consult the project overview for unindexed work.')
+                    if result['untracked_in_progress']:
+                        print('Inspect in-progress activities:', ', '.join(result['untracked_in_progress']))
+                    return 0
             elif action == 'run':
                 result = store.workflow_run(**args)
             else:

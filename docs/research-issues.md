@@ -23,6 +23,8 @@ unindexed next steps, then work on the next step toward our goal.
 
 Or request only the current state; that does not start an activity. A blank issue queue does not mean the whole project is finished: earlier notes or other routes may be outside the selected scope.
 
+To see just the handoff, ask: “Where did this route fail, which gap remains, which ticket owns it and what would I do next?” Codex returns those four lines with the evidence it can find. If the work is paused, the next action stays conditional on resuming it.
+
 ## Keep one current action list
 
 Within the enrolled scope, tickets hold the current actions, priorities and activity status. The project Spine keeps canonical mathematics, strategic direction and work not yet indexed, with links to relevant tickets. Session notes and research logs preserve what happened and point back to the current action; they do not repeat a live checklist. When no ticket covers an active mathematical run, that run holds its bounded immediate step and the Spine links to it.

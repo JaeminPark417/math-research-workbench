@@ -8,6 +8,7 @@ language: en
 research_question: ""
 related_ideas: []
 related_papers: []
+resume_links: {}
 ---
 
 <!-- Save this file as projects/project-slug/README.md. Use the language selected during setup for prose and ordinary headings. Keep the Research State Spine structural headings and table headers exactly as written in English so cross-project search and lint remain reliable. Codex maintains these tables for the user. -->
@@ -45,8 +46,11 @@ Use stable, explicit IDs: `Def-001`, `Lem-001`, `Prop-001`, `Thm-001`, `Cor-001`
 | Item | Current value |
 |---|---|
 | Active route or focus | TODO |
-| Blocking gaps | None recorded yet |
+| Relevant failed approach | None recorded yet; when known, link its scoped failure and retry condition |
+| Blocking gaps | None recorded yet; when known, link the affected obligation or gap |
 | Immediate next action | Link the current covered ticket or active run; otherwise the action under Next actions below |
+
+For an enrolled project, fill the optional `resume_links` above with the local IDs you link here, following [the resume example](../../meta/research-ticket-workflow.md#show-the-resume-point). Leave it empty until there is a designated activity.
 
 ### Definition registry
 

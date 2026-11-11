@@ -38,13 +38,14 @@ for those files later.
 
 ## 2. Get a copy of the workbench
 
-### Recommended: release ZIP
+### Choose a ZIP
 
-1. Open the [latest release page](https://github.com/JaeminPark417/math-research-workbench/releases/latest).
-2. Under **Assets**, download the ZIP named for Math Research Workbench.
-3. Move the ZIP to the safe location chosen above.
-4. Extract or unzip it.
-5. Open the extracted folder and confirm that you can see `README.md` and
+- To use the project claim map, research runs and local research issues, download the [development version (main ZIP)](https://github.com/JaeminPark417/math-research-workbench/archive/refs/heads/main.zip). It lets you start with a math question before setup.
+- For guided setup and ordinary Markdown notes in the official v0.2.0 release, open the [v0.2.0 release page](https://github.com/JaeminPark417/math-research-workbench/releases/tag/v0.2.0) and download the Workbench ZIP under **Assets**. The project claim map, research runs and local issues were added after v0.2.0.
+
+1. Move your chosen ZIP to the safe location above.
+2. Extract it into a new folder.
+3. Open the extracted folder and confirm that you can see `README.md` and
    `AGENTS.md`. That is the folder to open in Codex.
 
 A ZIP is a snapshot. It does not connect your research to GitHub. Setup will
@@ -63,8 +64,8 @@ repository.
 5. Choose **Code** → **Open with GitHub Desktop** and clone it into the safe,
    non-sync location described above. This keeps the local folder connected to
    the private repository.
-6. If you do not want GitHub Desktop, use the recommended release-ZIP route
-   instead. Downloading a ZIP from your newly created private repository does
+6. If you do not want GitHub Desktop, use one of the ZIPs above.
+   Downloading a ZIP from your newly created private repository does
    not connect the extracted folder to that repository.
 
 A repository made from a template does not receive template updates
@@ -78,7 +79,7 @@ there is currently no ChatGPT desktop app; using this workbench requires the
 [Codex CLI](https://developers.openai.com/codex/cli/) and basic terminal
 familiarity. The rest of this section describes the beginner desktop route; on
 Linux, follow the official CLI guide, change into the extracted workbench
-folder, start Codex there, and send the same `Start setup` message.
+folder, start Codex there, and send the first message for your version in step 4.
 
 1. Download the [ChatGPT desktop app](https://chatgpt.com/download/) from
    OpenAI's official site.
@@ -96,8 +97,9 @@ The Codex CLI is not required on macOS or Windows.
 
 ## 4. Send the first message
 
-Opening the folder does **not** start a conversation. Codex waits for you to
-send a message. Type and send:
+Opening the folder does **not** start a conversation. In the **development version**, try the [maximum example](README.md#try-a-math-question) first. It gives you two messages to send in separate chats. You will see how the counterexample f(x) = x on (0,1) stays attached to v1 when the domain of v2 changes to [0,1], and how to find the pending proof check in a new chat.
+
+For **v0.2.0**, or when you want guided configuration in the development version, type and send:
 
 ```text
 Start setup
@@ -115,9 +117,7 @@ Once that helper is available, closing the app halfway through is safe: reopen
 the same folder and send the same message. Setup records completed answers
 locally and resumes at the first unfinished question.
 
-You may postpone setup and begin ordinary Markdown work immediately. Missing or
-outdated setup state does not block a question or note edit. Configure an
-optional integration only when you want to use it.
+In v0.2.0 you may postpone setup explicitly to work on a note. In the development version a missing or outdated setup file does not start setup on its own. Configure an optional integration when you want to use it.
 
 ## 5. Answer the setup questions
 

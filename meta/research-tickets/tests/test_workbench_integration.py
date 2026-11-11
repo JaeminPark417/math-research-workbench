@@ -39,7 +39,7 @@ class WorkbenchTests(unittest.TestCase):
         for name in ('inbox', 'ideas', 'papers', 'notes', 'projects'):
             (self.root / name).mkdir(exist_ok=True)
         (self.root / 'scripts').mkdir(exist_ok=True)
-        for name in ('vault-lint.py', 'formalization_manifest.py'):
+        for name in ('vault-lint.py', 'formalization_manifest.py', 'math_run_checks.py', 'math_target.py'):
             shutil.copyfile(ROOT / 'scripts' / name, self.root / 'scripts' / name)
         shutil.copytree(APP / 'scripts', self.root / 'meta/research-tickets/scripts')
 
